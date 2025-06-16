@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual environment
+venv/
+env/
+.venv/
+.env/
+ENV/
+
+# PyTorch
+*.pt
+
