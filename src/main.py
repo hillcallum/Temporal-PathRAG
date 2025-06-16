@@ -1,4 +1,11 @@
-from src.ingest_data.populate_graph import create_university
+from kg.db import Neo4jConnection
+from kg.manager import KnowledgeGraphManager
+
+def main():
+    with Neo4jConnection() as conn:
+        kg = KnowledgeGraphManager(conn)
+        # Example usage
+        print("Knowledge Graph Manager initialized")
 
 if __name__ == "__main__":
-    create_university("Imperial College London")
+    main()
