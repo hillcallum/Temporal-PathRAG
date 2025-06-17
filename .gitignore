@@ -12,3 +12,5 @@ ENV/
 # PyTorch
 *.pt
 
+# VS Code
+*.vscode

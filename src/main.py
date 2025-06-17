@@ -4,8 +4,7 @@ from kg.manager import KnowledgeGraphManager
 def main():
     with Neo4jConnection() as conn:
         kg = KnowledgeGraphManager(conn)
-        # Example usage
-        print("Knowledge Graph Manager initialized")
+        print("Knowledge Graph Manager initialised")
 
 if __name__ == "__main__":
     main()
