@@ -1,6 +1,9 @@
+"""
+PathRAG data models for representing nodes, edges, and paths in knowledge graphs
+"""
+
 from dataclasses import dataclass, field
 from typing import List, Dict, Any, Optional
-import numpy as np
 import uuid
 
 @dataclass
@@ -18,6 +21,8 @@ class PathRAGNode:
     def __post_init__(self):
         if not self.id:
             self.id = str(uuid.uuid4())
+        if not self.name:
+            self.name = self.id
 
 @dataclass 
 class PathRAGEdge:
@@ -30,6 +35,7 @@ class PathRAGEdge:
     
     # PathRAG specific properties for flow-based pruning
     flow_capacity: float = 1.0
+    properties: Dict[str, Any] = field(default_factory=dict)
     
 @dataclass
 class Path:
@@ -37,9 +43,8 @@ class Path:
     nodes: List[PathRAGNode] = field(default_factory=list)
     edges: List[PathRAGEdge] = field(default_factory=list)
     score: float = 0.0
+    metadata: Dict[str, Any] = field(default_factory=dict)
     
-    def __len__(self):
-        return len(self.nodes)
     
     def add_node(self, node: PathRAGNode):
         """Add a node to the path"""
@@ -49,22 +54,42 @@ class Path:
         """Add an edge to the path"""
         self.edges.append(edge)
     
+    def get_length(self) -> int:
+        """Get the number of hops in the path"""
+        return len(self.edges)
+    
     def get_node_ids(self) -> List[str]:
         """Get list of node IDs in the path"""
         return [node.id for node in self.nodes]
 
-# Simple data models for toy graph
+    def __str__(self) -> List[str]:
+        if not self.nodes:
+            return "Empty path"
+        
+        path_str = self.nodes[0].name
+        for i, edge in enumerate(self.edges):
+            if i + 1 < len(self.nodes):
+                path_str += f" --[{edge.relation_type}] --> {self.nodes[i + 1].name}"
+        
+        return f"Path: {path_str} (score: {self.score:.3f})"
+
+# Additional entity types, purely for toy implementation, will remove in the future
 @dataclass
-class Person:
-    """Simple person entity for toy graph"""
-    id: str
-    name: str
-    year_born: int 
+class Person(PathRAGNode):
+    """Represents a person entity"""
+    birth_date: Optional[str] = None
+    nationality: Optional[str] = None
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.entity_type = "Person"
 
 @dataclass
-class Event:
-    """Simple event entity for toy graph"""
-    id: str
-    name: str
-    year: int
-    participants: List[str]  # list of person IDs
+class Event(PathRAGNode):
+    """Represents an event entity"""
+    date: Optional[str] = None
+    location: Optional[str] = None
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.entity_type = "Event"
