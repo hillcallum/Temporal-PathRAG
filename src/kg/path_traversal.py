@@ -282,6 +282,17 @@ class BasicPathTraversal:
                     entity2_path_map[node.id] = []
                 entity2_path_map[node.id].append(path)
         
+        # Debug: Print what nodes each entity can reach
+        print(f"DEBUG: Nodes reachable from {entity1_id}:")
+        for path in entity1_paths:
+            node_names = [node.name for node in path.nodes]
+            print(f"  Path: {' -> '.join(node_names)}")
+
+        print(f"DEBUG: Nodes reachable from {entity2_id}:")
+        for path in entity2_paths:
+            node_names = [node.name for node in path.nodes]
+            print(f"  Path: {' -> '.join(node_names)}")
+        
         # Find shared nodes (not including the starting entities)
         shared_nodes = entity1_nodes.intersection(entity2_nodes)
         shared_nodes.discard(entity1_id)
