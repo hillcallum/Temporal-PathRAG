@@ -80,5 +80,61 @@ def main():
         print(f" Path {i+1}: {' -> '.join(node_names)} (score: {path.score:.3f}, flow: {flow:.3f})")
     print()
 
+    # 5. Demonstrate ability to answer Q3
+    print("\n5. Attempt at fixing Q3")
+    print("-" * 30)
+    
+    # Find shared connections between Einstein and Curie
+    print("\n5a. Finding shared connections between Einstein and Curie:")
+    shared_info = traversal.find_shared_connections("albert_einstein", "marie_curie", max_hops=2)
+    
+    if shared_info['shared_nodes']:
+        print("Shared connections:")
+        for node in shared_info['shared_nodes']:
+            print(f" - {node['name']} ({node['entity_type']})")
+            
+        # Show paths to the first shared connection (Nobel Prize)
+        first_shared = shared_info['shared_nodes'][0]
+        shared_id = first_shared['id']
+        print(f"\n Paths to {first_shared['name']}:")
+        
+        einstein_paths = traversal.find_paths("albert_einstein", shared_id, max_hops=1, top_k=3)
+        curie_paths = traversal.find_paths("marie_curie", shared_id, max_hops=1, top_k=3)
+        
+        print("From Einstein:")
+        for path in einstein_paths:
+            node_names = [node.name for node in path.nodes]
+            relations = [edge.relation_type for edge in path.edges]
+            print(f" {' -> '.join(node_names)} ({' -> '.join(relations)})")
+            
+        print("From Curie:")
+        for path in curie_paths:
+            node_names = [node.name for node in path.nodes]
+            relations = [edge.relation_type for edge in path.edges]
+            print(f" {' -> '.join(node_names)} ({' -> '.join(relations)})")
+    else:
+        print("No shared connections found within 2 hops.")
+    
+    # Find connecting paths
+    print("\n5b. Finding connecting paths between Einstein and Curie:")
+    connecting_paths = traversal.find_connecting_paths("albert_einstein", "marie_curie", max_hops=4)
+    
+    if connecting_paths:
+        print("Connection paths:")
+        for i, path in enumerate(connecting_paths):
+            if 'connection_info' in path.metadata:
+                conn_info = path.metadata['connection_info']
+                shared_name = None
+                if graph.has_node(conn_info['shared_connection']):
+                    shared_name = graph.nodes[conn_info['shared_connection']]['name']
+                print(f"Path {i+1}: Connected through {shared_name} ({conn_info['connection_type']})")
+            else:
+                node_names = [node.name for node in path.nodes]
+                print(f"Path {i+1}: {' -> '.join(node_names)}")
+    else:
+        print("No connecting paths found")
+    
+    print()
+
 if __name__ == "__main__":
     main()

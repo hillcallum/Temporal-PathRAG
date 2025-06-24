@@ -8,8 +8,6 @@ from .models import PathRAGNode, PathRAGEdge, Path
 class BasicPathTraversal:
     """
     Basic PathRAG path traversal implementation
-    
-
     """
     
     def __init__(self, graph: nx.DiGraph):
@@ -253,3 +251,113 @@ class BasicPathTraversal:
         # Score and return top paths
         scored_paths = self.score_paths(paths)
         return scored_paths[:top_k]
+    
+    def find_shared_connections(self, 
+                              entity1_id: str, 
+                              entity2_id: str,
+                              max_hops: int = 2) -> Dict[str, any]:
+        """
+        Find shared connections between two entities
+        """
+        # Get neighbourhood for both entities
+        entity1_paths = self.explore_neighbourhood(entity1_id, max_hops=max_hops, top_k=20)
+        entity2_paths = self.explore_neighbourhood(entity2_id, max_hops=max_hops, top_k=20)
+        
+        # Extract all nodes reachable from each entity
+        entity1_nodes = set()
+        entity1_path_map = {}
+        for path in entity1_paths:
+            for node in path.nodes:
+                entity1_nodes.add(node.id)
+                if node.id not in entity1_path_map:
+                    entity1_path_map[node.id] = []
+                entity1_path_map[node.id].append(path)
+        
+        entity2_nodes = set()
+        entity2_path_map = {}
+        for path in entity2_paths:
+            for node in path.nodes:
+                entity2_nodes.add(node.id)
+                if node.id not in entity2_path_map:
+                    entity2_path_map[node.id] = []
+                entity2_path_map[node.id].append(path)
+        
+        # Find shared nodes (not including the starting entities)
+        shared_nodes = entity1_nodes.intersection(entity2_nodes)
+        shared_nodes.discard(entity1_id)
+        shared_nodes.discard(entity2_id)
+        
+        # Build result
+        result = {
+            'shared_nodes': [],
+            'entity1_paths': {},
+            'entity2_paths': {}
+        }
+        
+        for node_id in shared_nodes:
+            if self.graph.has_node(node_id):
+                node_data = self.graph.nodes[node_id]
+                result['shared_nodes'].append({
+                    'id': node_id,
+                    'name': node_data.get('name', node_id),
+                    'entity_type': node_data.get('entity_type', 'UNKNOWN'),
+                    'description': node_data.get('description', '')
+                })
+                
+                # Get paths to this shared node
+                result['entity1_paths'][node_id] = entity1_path_map.get(node_id, [])
+                result['entity2_paths'][node_id] = entity2_path_map.get(node_id, [])
+        
+        return result
+    
+    def find_connecting_paths(self,
+                            entity1_id: str,
+                            entity2_id: str,
+                            max_hops: int = 4) -> List[Path]:
+        """
+        Find paths that connect two entities through intermediate nodes
+        """
+        # First try direct paths
+        direct_paths = self.find_paths(entity1_id, entity2_id, max_hops=max_hops, top_k=5)
+        if direct_paths:
+            return direct_paths
+        
+        # If no direct paths, look for paths through shared connections
+        shared_info = self.find_shared_connections(entity1_id, entity2_id, max_hops=max_hops//2)
+        
+        connecting_paths = []
+        
+        for shared_node in shared_info['shared_nodes']:
+            shared_id = shared_node['id']
+            
+            # Get paths from entity1 to shared node
+            paths1 = self.find_paths(entity1_id, shared_id, max_hops=max_hops//2, top_k=3)
+            
+            # Get paths from entity2 to shared node  
+            paths2 = self.find_paths(entity2_id, shared_id, max_hops=max_hops//2, top_k=3)
+            
+            # Create combined paths through thay specific shared node
+            for path1 in paths1:
+                for path2 in paths2:
+                    # Create a conceptual 'connecting path' metadata
+                    connection_info = {
+                        'entity1': entity1_id,
+                        'entity2': entity2_id,
+                        'shared_connection': shared_id,
+                        'path1': path1,
+                        'path2': path2,
+                        'connection_type': shared_node['entity_type']
+                    }
+                    
+                    # Use path1 as the base and add metadata
+                    combined_path = Path()
+                    combined_path.nodes = path1.nodes.copy()
+                    combined_path.edges = path1.edges.copy()
+                    combined_path.score = (path1.score + path2.score) / 2
+                    combined_path.metadata['connection_info'] = connection_info
+                    
+                    connecting_paths.append(combined_path)
+        
+        # Sort by score and return top paths
+        connecting_paths.sort(key=lambda p: p.score, reverse=True)
+        return connecting_paths[:5]
