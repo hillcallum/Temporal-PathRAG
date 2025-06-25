@@ -60,9 +60,9 @@ class LLMManager:
                     logger.info("Using OpenAI as primary client")
                     return
                 else:
-                    logger.warning("OpenAI connection failed, trying fallbacks")
+                    logger.info("OpenAI connection failed, trying fallbacks")
             except Exception as e:
-                logger.warning(f"OpenAI connection test failed: {e}")
+                logger.info(f"OpenAI connection test failed: {e}")
         
         # Fallback to local LLM
         if 'local' in self.clients:
