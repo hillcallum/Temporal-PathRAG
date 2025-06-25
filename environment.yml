@@ -1,0 +1,152 @@
+name: temporal-pathrag
+channels:
+  - pytorch
+  - conda-forge
+  - defaults
+dependencies:
+  # Python
+  - python=3.10.18
+  
+  # Core ML/AI Libraries
+  - pytorch
+  - pytorch-mutex
+  - torchvision
+  - torchaudio
+  - transformers
+  - tokenizers
+  - safetensors
+  
+  # Graph Processing
+  - networkx
+  
+  # Data Processing
+  - numpy=1.24.3
+  - numpy-base=1.24.3
+  - pandas
+  - scipy
+  - scikit-learn
+  
+  # Text Processing and NLP
+  - regex
+  - pyyaml
+  - tqdm
+  - requests
+  - urllib3
+  - certifi
+  - charset-normalizer
+  - idna
+  
+  # Visualization
+  - matplotlib
+  - matplotlib-base
+  - seaborn
+  - seaborn-base
+  - plotly
+  
+  # Utilities
+  - jinja2
+  - markupsafe
+  - packaging
+  - setuptools
+  - wheel
+  - pip
+  - filelock
+  - fsspec
+  - typing-extensions
+  - sympy
+  - mpmath
+  
+  # Development Tools
+  - jupyter
+  - ipython
+  - ipykernel
+  - notebook
+  
+  # System Dependencies
+  - openssl
+  - ca-certificates
+  - sqlite
+  - libffi
+  - zlib
+  - bzip2
+  - xz
+  - ncurses
+  - readline
+  - tk
+  
+  # Math Libraries
+  - blas
+  - mkl
+  - mkl-service
+  - mkl_fft
+  - mkl_random
+  - liblapack
+  - libblas
+  - libcblas
+  
+  # Compression
+  - lz4-c
+  - zstd
+  - snappy
+  
+  # Networking
+  - libcurl
+  - krb5
+  - libssh2
+  - libnghttp2
+  
+  # Image Processing
+  - pillow
+  - jpeg
+  - libpng
+  - libtiff
+  - freetype
+  - fonttools
+  
+  # Threading
+  - intel-openmp
+  - llvm-openmp
+  - tbb
+  - threadpoolctl
+  
+  # Python packages via pip
+  - pip:
+      # Core RAG Libraries
+      - faiss-cpu>=1.7.0
+      - sentence-transformers>=2.2.0
+      - langchain>=0.1.0
+      - langchain-community>=0.0.20
+      - langchain-core>=0.1.0
+      - llama-index>=0.10.0
+      
+      # NLP Libraries
+      - nltk>=3.8
+      - spacy>=3.7.0
+      
+      # Development Tools
+      - black>=23.0.0
+      - flake8>=6.0.0
+      - python-dotenv>=1.0.0
+      - dataclasses-json>=0.6.0
+      
+      # Database Support
+      - neo4j>=5.8.0
+      - pymongo>=4.4.0
+      
+      # Additional ML Tools
+      - datasets
+      - huggingface-hub
+      
+      # Jupyter Extensions
+      - ipywidgets
+      - jupyterlab-widgets
+      - widgetsnbextension
+      - matplotlib-inline
+      
+      # Memory and Performance
+      - psutil
+      
+      # Additional utilities
+      - click
+      - rich
+      - typer
