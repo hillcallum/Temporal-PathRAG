@@ -83,7 +83,7 @@ class ToyGraphBuilder:
         print()
 
         # Debugging - checking for reverse edges
-        print("DEBUG - All edges in both directions:")
+        print("Debug - All edges in both directions:")
         for node in self.graph.nodes():
             print(f"{node} successors: {list(self.graph.successors(node))}")
             print(f"{node} predecessors: {list(self.graph.predecessors(node))}")
