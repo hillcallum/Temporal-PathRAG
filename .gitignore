@@ -13,4 +13,4 @@ ENV/
 *.pt
 
 # VS Code
-*.vscode
+*.vscode.env
