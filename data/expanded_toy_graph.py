@@ -211,7 +211,7 @@ class ExpandedToyGraphBuilder:
                 edge['target'],
                 relation_type=edge['relation_type'],
                 description=edge['description'],
-                weight=edge['weight']
+                weight=edge['weight'],
                 **{k: v for k, v in edge.items() if k not in ['source', 'target', 'relation_type', 'description', 'weight']} 
             )
     

@@ -17,7 +17,7 @@ if parent_dir not in sys.path:
 
 from src.llm import llm_manager
 from src.kg.path_traversal import BasicPathTraversal
-from data.toy_graph import ToyGraphBuilder
+from data.expanded_toy_graph import create_expanded_toy_graph
 
 # Configure logging
 logging.basicConfig(level=logging.WARNING)  # Reduce noise
@@ -27,9 +27,8 @@ class PathRAGDemo:
     
     def __init__(self):
         """Initialise PathRAG demo"""
-        # Create knowledge graph
-        self.builder = ToyGraphBuilder()
-        self.graph = self.builder.get_graph()
+        # Create expanded knowledge graph
+        self.graph = create_expanded_toy_graph()
         self.traversal = BasicPathTraversal(self.graph)
         
         print("PathRAG Demo Initialised")
@@ -56,9 +55,9 @@ class PathRAGDemo:
         
         print(f"Found {len(paths)} paths in knowledge graph")
         
-        # Step 2: Display paths
+        # Step 2: Display paths with PathRAG textual chunks
         if paths:
-            print("Knowledge Graph Paths:")
+            print("Knowledge Graph Paths (with PathRAG textual chunks):")
             for i, path in enumerate(paths[:3]):  # Show top 3
                 node_names = [node.name for node in path.nodes]
                 relations = [edge.relation_type for edge in path.edges] if path.edges else []
@@ -72,6 +71,10 @@ class PathRAGDemo:
                     path_str = " -> ".join(node_names)
                 
                 print(f" {i+1}. {path_str} (score: {path.score:.3f})")
+                # Show PathRAG textual representation
+                if hasattr(path, 'path_text') and path.path_text:
+                    print(f"     PathRAG text: {path.path_text[:150]}...")
+                print()
         
         # Step 3: Generate LLM answer
         llm_answer = None
@@ -166,19 +169,19 @@ class PathRAGDemo:
         # Demo questions
         questions = [
             {
-                "question": "Where was Albert Einstein born?",
-                "source": "albert_einstein",
-                "target": "ulm"
+                "question": "Where was Marie Curie born?",
+                "source": "marie_curie",
+                "target": "poland"
             },
             {
-                "question": "What did Einstein win a Nobel Prize for?",
+                "question": "What theory did Einstein develop?",
                 "source": "albert_einstein",
-                "target": "photoelectric_effect"
+                "target": "relativity_theory"
             },
             {
-                "question": "What do Einstein and Curie have in common?",
-                "source": "albert_einstein",
-                "target": None
+                "question": "How are Marie and Pierre Curie connected?",
+                "source": "marie_curie",
+                "target": "pierre_curie"
             }
         ]
         

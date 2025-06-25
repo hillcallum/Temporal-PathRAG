@@ -107,11 +107,11 @@ class BasicPathTraversal:
         return 1.0 / (weight + 0.1)  # Avoid division by 0 by adding 0.1 to denominator 
     
     def construct_path(self, node_ids: List[str], edge_data_list: List[Dict]) -> Optional[Path]:
-        """Construct a Path object from node IDs and edge data"""
+        """Construct a Path object from node IDs and edge data with textual chunks"""
         try:
             path = Path()
             
-            # Add nodes
+            # Add nodes with textual chunks (tv)
             for node_id in node_ids:
                 if self.graph.has_node(node_id):
                     node_data = self.graph.nodes[node_id]
@@ -120,11 +120,12 @@ class BasicPathTraversal:
                         entity_type=node_data.get('entity_type', 'UNKNOWN'),
                         name=node_data.get('name', node_id),
                         properties=node_data,
-                        description=node_data.get('description', '')
+                        description=node_data.get('description', ''),
+                        # tv will be auto-generated in __post_init__
                     )
                     path.add_node(pathrag_node)
             
-            # Add edges
+            # Add edges with textual chunks (te)
             for i, edge_data in enumerate(edge_data_list):
                 if i < len(node_ids) - 1:
                     pathrag_edge = PathRAGEdge(
@@ -134,6 +135,7 @@ class BasicPathTraversal:
                         weight=edge_data.get('weight', 1.0),
                         description=edge_data.get('description', ''),
                         flow_capacity=edge_data.get('flow_capacity', 1.0)
+                        # te will be auto-generated in __post_init__
                     )
                     path.add_edge(pathrag_edge)
             

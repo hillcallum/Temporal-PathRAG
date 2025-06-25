@@ -14,7 +14,7 @@ parent_dir = os.path.dirname(current_dir)
 if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
-from data.toy_graph import ToyGraphBuilder
+from data.expanded_toy_graph import create_expanded_toy_graph
 from src.kg.path_traversal import BasicPathTraversal
 
 def main():
@@ -23,12 +23,11 @@ def main():
     print("Multi-hop QA Toy Graph Demo")
     print("="*60)
     
-    # 1. Create toy KG
-    print("\n1. Creating toy knowledge graph")
+    # 1. Create expanded toy KG
+    print("\n1. Creating expanded toy knowledge graph")
     print("-" * 30)
-    builder = ToyGraphBuilder()
-    graph = builder.get_graph()
-    builder.print_graph_info()
+    graph = create_expanded_toy_graph()
+    print(f"Graph loaded: {graph.number_of_nodes()} nodes, {graph.number_of_edges()} edges")
     
     # 2. Initialise path traversal
     print("\n2. Initialising path traversal")
@@ -36,10 +35,31 @@ def main():
     traversal = BasicPathTraversal(graph)
     print("BasicPathTraversal initialised")
     
-    # 3. Test sample queries
-    print("\n3. Running multi-hop queries")
+    # 3. Test sample queries with new PathRAG textual chunks
+    print("\n3. Running multi-hop queries with PathRAG textual chunks")
     print("-" * 30)
-    queries = builder.get_sample_queries()
+    
+    # Define sample queries
+    queries = {
+        "query_1": {
+            "description": "Where was Marie Curie born?",
+            "source": "marie_curie",
+            "target": "poland",
+            "expected_hops": 1
+        },
+        "query_2": {
+            "description": "What did Einstein develop?",
+            "source": "albert_einstein", 
+            "target": "relativity_theory",
+            "expected_hops": 1
+        },
+        "query_3": {
+            "description": "Connection between Marie and Pierre Curie",
+            "source": "marie_curie",
+            "target": "pierre_curie", 
+            "expected_hops": 1
+        }
+    }
     
     for key, query in queries.items():
         print(f"\n{key}: {query['description']}")
@@ -56,6 +76,8 @@ def main():
                 print(f" Path {i + 1}: {' -> '.join(node_names)} (score: {path.score:.3f})")
                 if relations:
                     print(f" Relations: {' -> '.join(relations)}")
+                # Show PathRAG textual chunks
+                print(f" PathRAG text: {path.path_text[:100]}...")
         else:
             # Neighbourhood query
             paths = traversal.explore_neighbourhood(source, max_hops=max_hops, top_k=5)
