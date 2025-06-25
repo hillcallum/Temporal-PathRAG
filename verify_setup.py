@@ -95,7 +95,7 @@ def test_pathrag_environment():
         x = torch.randn(100, 768).to(device)
         y = torch.randn(768, 256).to(device)
         z = torch.mm(x, y)
-        print(f"✅ Matrix operations: {z.shape}")
+        print(f"Matrix operations: {z.shape}")
         
         # Clean up
         del x, y, z

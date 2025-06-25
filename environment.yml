@@ -4,110 +4,29 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  # Python
-  - python=3.10.18
+  # Core
+  - python=3.10
+  - pip
   
-  # Core ML/AI Libraries
+  # ML/AI Stack
   - pytorch
-  - pytorch-mutex
   - torchvision
   - torchaudio
   - transformers
-  - tokenizers
-  - safetensors
-  
-  # Graph Processing
   - networkx
   
-  # Data Processing
-  - numpy=1.24.3
-  - numpy-base=1.24.3
+  # Data Science
+  - numpy
   - pandas
   - scipy
-  - scikit-learn
-  
-  # Text Processing and NLP
-  - regex
-  - pyyaml
-  - tqdm
-  - requests
-  - urllib3
-  - certifi
-  - charset-normalizer
-  - idna
-  
-  # Visualization
   - matplotlib
-  - matplotlib-base
   - seaborn
-  - seaborn-base
-  - plotly
-  
-  # Utilities
-  - jinja2
-  - markupsafe
-  - packaging
-  - setuptools
-  - wheel
-  - pip
-  - filelock
-  - fsspec
-  - typing-extensions
-  - sympy
-  - mpmath
-  
-  # Development Tools
   - jupyter
-  - ipython
-  - ipykernel
-  - notebook
   
-  # System Dependencies
-  - openssl
-  - ca-certificates
-  - sqlite
-  - libffi
-  - zlib
-  - bzip2
-  - xz
-  - ncurses
-  - readline
-  - tk
-  
-  # Math Libraries
-  - blas
-  - mkl
-  - mkl-service
-  - mkl_fft
-  - mkl_random
-  - liblapack
-  - libblas
-  - libcblas
-  
-  # Compression
-  - lz4-c
-  - zstd
-  - snappy
-  
-  # Networking
-  - libcurl
-  - krb5
-  - libssh2
-  - libnghttp2
-  
-  # Image Processing
-  - pillow
-  - jpeg
-  - libpng
-  - libtiff
-  - freetype
-  - fonttools
-  
-  # Threading
-  - intel-openmp
-  - llvm-openmp
-  - tbb
-  - threadpoolctl
+  # Basic utilities
+  - requests
+  - tqdm
+  - pyyaml
   
   # Python packages via pip
   - pip:
