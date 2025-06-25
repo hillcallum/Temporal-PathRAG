@@ -14,7 +14,7 @@ parent_dir = os.path.dirname(current_dir)
 if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
-from data.expanded_toy_graph import create_expanded_toy_graph
+from data.expanded_toy_graph import ExpandedToyGraphBuilder
 from src.kg.path_traversal import BasicPathTraversal
 
 def main():
@@ -26,7 +26,8 @@ def main():
     # 1. Create expanded toy KG
     print("\n1. Creating expanded toy knowledge graph")
     print("-" * 30)
-    graph = create_expanded_toy_graph()
+    builder = ExpandedToyGraphBuilder()
+    graph = builder.get_graph()
     print(f"Graph loaded: {graph.number_of_nodes()} nodes, {graph.number_of_edges()} edges")
     
     # 2. Initialise path traversal
@@ -35,56 +36,74 @@ def main():
     traversal = BasicPathTraversal(graph)
     print("BasicPathTraversal initialised")
     
-    # 3. Test sample queries with new PathRAG textual chunks
-    print("\n3. Running multi-hop queries with PathRAG textual chunks")
+    # 3. Test sample queries from expanded toy graph
+    print("\n3. Running challenging queries with PathRAG textual chunks and bidirectional search")
     print("-" * 30)
     
-    # Define sample queries
-    queries = {
-        "query_1": {
-            "description": "Where was Marie Curie born?",
-            "source": "marie_curie",
-            "target": "poland",
-            "expected_hops": 1
-        },
-        "query_2": {
-            "description": "What did Einstein develop?",
-            "source": "albert_einstein", 
-            "target": "relativity_theory",
-            "expected_hops": 1
-        },
-        "query_3": {
-            "description": "Connection between Marie and Pierre Curie",
-            "source": "marie_curie",
-            "target": "pierre_curie", 
-            "expected_hops": 1
-        }
+    # Get all sample queries from the expanded toy graph
+    queries = builder.get_sample_queries()
+    
+    # Filter to show a mix of difficulties
+    selected_queries = {
+        "query_1": queries["query_1"],  # Easy
+        "query_4": queries["query_4"],  # Bidirectional
+        "query_5": queries["query_5"],  # Medium  
+        "query_11": queries["query_11"], # Bidirectional
+        "query_13": queries["query_13"]  # Hard
     }
     
-    for key, query in queries.items():
-        print(f"\n{key}: {query['description']}")
+    for key, query in selected_queries.items():
+        print(f"\n{key.upper()}: {query['description']}")
+        print(f"Difficulty: {query['difficulty']}, Expected hops: {query['expected_hops']}")
+        
         source = query['source']
         target = query.get('target')
-        max_hops = query.get('expected_hops', 3)
+        max_hops = query.get('expected_hops', 3) + 1
+        query_type = query.get('query_type', 'unidirectional')
 
-        if target:
-            paths = traversal.find_paths(source, target, max_hops=max_hops, top_k=5)
-            print(f" Found {len(paths)} paths:")
-            for i, path in enumerate(paths):
-                node_names = [node.name for node in path.nodes]
-                relations = [edge.relation_type for edge in path.edges]
-                print(f" Path {i + 1}: {' -> '.join(node_names)} (score: {path.score:.3f})")
-                if relations:
-                    print(f" Relations: {' -> '.join(relations)}")
-                # Show PathRAG textual chunks
-                print(f" PathRAG text: {path.path_text[:100]}...")
+        if query_type == 'bidirectional':
+            # Use bidirectional search for shared connection queries
+            print(f"Bidirectional search: {source} ↔ {target}")
+            
+            bidirectional_results = traversal.find_bidirectional_paths(source, target, max_hops=max_hops*2, top_k=3)
+            
+            if bidirectional_results:
+                print(f"Found {len(bidirectional_results)} shared connections:")
+                for i, conn in enumerate(bidirectional_results, 1):
+                    shared_node = conn['shared_node']
+                    shared_name = conn['shared_node_data'].get('name', shared_node)
+                    print(f" {i}. {conn['connection_text']}")
+                    print(f" Via: {shared_name} (score: {conn['connection_score']:.3f})")
+                    print(f" Paths: {conn['source_hops']} + {conn['target_hops']} hops")
+            else:
+                print(f"No shared connections found")
+                
+        elif target:
+            # Regular unidirectional path finding
+            print(f"→ Path search: {source} → {target}")
+            
+            paths = traversal.find_paths(source, target, max_hops=max_hops, top_k=3)
+            
+            if paths:
+                print(f"Found {len(paths)} paths:")
+                for i, path in enumerate(paths, 1):
+                    node_names = [node.name for node in path.nodes]
+                    relations = [edge.relation_type for edge in path.edges]
+                    print(f" {i}. {' -> '.join(node_names)} (score: {path.score:.3f})")
+                    if relations:
+                        print(f"Relations: {' -> '.join(relations)}")
+                    # Show PathRAG textual chunks (truncated)
+                    print(f"PathRAG text: {path.path_text[:120]}")
+            else:
+                print(f"No paths found")
         else:
-            # Neighbourhood query
+            # Neighbourhood exploration
+            print(f"Neighbourhood exploration: {source}")
             paths = traversal.explore_neighbourhood(source, max_hops=max_hops, top_k=5)
-            print(f" Found {len(paths)} neighbouring paths:")
+            print(f"Found {len(paths)} neighbouring paths:")
             for i, path in enumerate(paths):
                 node_names = [node.name for node in path.nodes]
-                print(f" Path {i + 1}: {' -> '.join(node_names)} (score: {path.score:.3f})")
+                print(f"{i + 1}. {' -> '.join(node_names)} (score: {path.score:.3f})")
         print()
 
     # 4. Demonstrate flow-based pruning
@@ -94,12 +113,12 @@ def main():
     paths_before = traversal.dijkstra_paths(source, target, max_hops=3)
     paths_after = traversal.find_paths(source, target, max_hops=3, top_k=3)
 
-    print(f" Before pruning: {len(paths_before)} paths")
-    print(f" After pruning: {len(paths_after)} paths")
+    print(f"Before pruning: {len(paths_before)} paths")
+    print(f"After pruning: {len(paths_after)} paths")
     for i, path in enumerate(paths_after):
         node_names = [node.name for node in path.nodes]
         flow = traversal.calculate_path_flow(path)
-        print(f" Path {i+1}: {' -> '.join(node_names)} (score: {path.score:.3f}, flow: {flow:.3f})")
+        print(f"Path {i+1}: {' -> '.join(node_names)} (score: {path.score:.3f}, flow: {flow:.3f})")
     print()
 
     # 5. Demonstrate ability to answer Q3

@@ -374,3 +374,199 @@ class BasicPathTraversal:
         # Sort by score and return top paths
         connecting_paths.sort(key=lambda p: p.score, reverse=True)
         return connecting_paths[:5]
+    
+    def find_bidirectional_paths(self, 
+                               source_node_id: str, 
+                               target_node_id: str,
+                               max_hops: int = 3,
+                               top_k: int = 10) -> List[Dict]:
+        """
+        Find bidirectional paths that connect two nodes through shared intermediate nodes.
+        """
+        # Find paths from source to intermediate nodes
+        source_paths = self.explore_neighbourhood(source_node_id, max_hops=max_hops//2 + 1, top_k=top_k*2)
+        
+        # Find all nodes reachable from source
+        source_reachable = set()
+        source_path_map = {}
+        for path in source_paths:
+            for node in path.nodes[1:]:  # Skip source node itself
+                source_reachable.add(node.id)
+                if node.id not in source_path_map:
+                    source_path_map[node.id] = []
+                source_path_map[node.id].append(path)
+        
+        # Find paths from target to intermediate nodes  
+        target_paths = self.explore_neighbourhood(target_node_id, max_hops=max_hops//2 + 1, top_k=top_k*2)
+        
+        # Find all nodes reachable from target
+        target_reachable = set()
+        target_path_map = {}
+        for path in target_paths:
+            for node in path.nodes[1:]:  # Skip target node itself
+                target_reachable.add(node.id)
+                if node.id not in target_path_map:
+                    target_path_map[node.id] = []
+                target_path_map[node.id].append(path)
+        
+        # Find shared intermediate nodes
+        shared_nodes = source_reachable.intersection(target_reachable)
+        
+        if not shared_nodes:
+            return []
+        
+        # Create bidirectional connection objects
+        bidirectional_connections = []
+        
+        for shared_node in shared_nodes:
+            source_to_shared = source_path_map.get(shared_node, [])
+            target_to_shared = target_path_map.get(shared_node, [])
+            
+            if source_to_shared and target_to_shared:
+                # Use the best path from each side (shortest first, then highest score)
+                best_source_path = min(source_to_shared, 
+                                     key=lambda p: (len(p.nodes), -p.score))
+                best_target_path = min(target_to_shared, 
+                                     key=lambda p: (len(p.nodes), -p.score))
+                
+                # Calculate connection quality score
+                connection_score = self.calculate_bidirectional_score(
+                    best_source_path, best_target_path, shared_node
+                )
+                
+                # Create bidirectional connection info
+                connection_info = {
+                    'type': 'bidirectional',
+                    'source_node': source_node_id,
+                    'target_node': target_node_id,
+                    'shared_node': shared_node,
+                    'shared_node_data': self.graph.nodes.get(shared_node, {}),
+                    'source_path': best_source_path,
+                    'target_path': best_target_path,
+                    'source_hops': len(best_source_path.edges),
+                    'target_hops': len(best_target_path.edges),
+                    'total_hops': len(best_source_path.edges) + len(best_target_path.edges),
+                    'connection_score': connection_score,
+                    'connection_text': self.generate_bidirectional_text(
+                        best_source_path, best_target_path, shared_node
+                    )
+                }
+                
+                bidirectional_connections.append(connection_info)
+        
+        # Sort by connection score (higher is better)
+        bidirectional_connections.sort(key=lambda x: x['connection_score'], reverse=True)
+        
+        return bidirectional_connections[:top_k]
+    
+    def calculate_bidirectional_score(self, 
+                                    source_path: Path, 
+                                    target_path: Path, 
+                                    shared_node: str) -> float:
+        """
+        Calculate quality score for a bidirectional connection.
+        
+        Higher scores indicate better connections (shorter paths, higher individual scores).
+        """
+        # Favour shorter total paths
+        total_hops = len(source_path.edges) + len(target_path.edges)
+        length_penalty = 1.0 / (1.0 + total_hops * 0.2)
+        
+        # Consider individual path quality
+        avg_path_score = (source_path.score + target_path.score) / 2.0
+        
+        # Bonus for important node types (awards, institutions, concepts)
+        shared_node_data = self.graph.nodes.get(shared_node, {})
+        node_type = shared_node_data.get('entity_type', '').lower()
+        
+        importance_bonus = 1.0
+        if 'award' in node_type:
+            importance_bonus = 1.5  
+        elif 'concept' in node_type or 'theory' in node_type:
+            importance_bonus = 1.3  
+        elif 'institution' in node_type:
+            importance_bonus = 1.2  
+        
+        # Final score combines all factors
+        final_score = length_penalty * avg_path_score * importance_bonus
+        
+        return final_score
+    
+    def generate_bidirectional_text(self, 
+                                   source_path: Path, 
+                                   target_path: Path, 
+                                   shared_node: str) -> str:
+        """
+        Generate human-readable text describing the bidirectional connection.
+        """
+        source_start = source_path.nodes[0].name if source_path.nodes else "Unknown"
+        target_start = target_path.nodes[0].name if target_path.nodes else "Unknown" 
+        shared_node_data = self.graph.nodes.get(shared_node, {})
+        shared_name = shared_node_data.get('name', shared_node)
+        
+        # Create description based on node type
+        node_type = shared_node_data.get('entity_type', '').lower()
+        
+        if 'award' in node_type:
+            connection_text = f"Both {source_start} and {target_start} received the {shared_name}"
+        elif 'concept' in node_type or 'theory' in node_type:
+            connection_text = f"Both {source_start} and {target_start} are connected to {shared_name}"
+        elif 'institution' in node_type:
+            connection_text = f"Both {source_start} and {target_start} have connections to {shared_name}"
+        elif 'event' in node_type:
+            connection_text = f"Both {source_start} and {target_start} were involved in {shared_name}"
+        else:
+            connection_text = f"{source_start} and {target_start} share a connection through {shared_name}"
+        
+        # Add path details
+        source_relation = source_path.edges[0].relation_type if source_path.edges else "connected to"
+        target_relation = target_path.edges[0].relation_type if target_path.edges else "connected to"
+        
+        if source_relation == target_relation:
+            connection_text += f" (both via {source_relation})"
+        else:
+            connection_text += f" ({source_start} via {source_relation}, {target_start} via {target_relation})"
+        
+        return connection_text
+    
+    def find_shared_connections(self, 
+                              source_node_id: str, 
+                              target_node_id: str,
+                              max_hops: int = 2,
+                              top_k: int = 5) -> Dict[str, any]:
+        """
+        Enhanced version of find_shared_connections using bidirectional search.
+        """
+        bidirectional_paths = self.find_bidirectional_paths(
+            source_node_id, target_node_id, max_hops=max_hops*2, top_k=top_k*2
+        )
+        
+        # Convert to the original format for backwards compatibility
+        shared_nodes = []
+        source_paths_map = {}
+        target_paths_map = {}
+        
+        for conn in bidirectional_paths:
+            shared_node_id = conn['shared_node']
+            shared_node_data = conn['shared_node_data']
+            
+            # Add to shared nodes list
+            shared_nodes.append({
+                'id': shared_node_id,
+                'name': shared_node_data.get('name', shared_node_id),
+                'entity_type': shared_node_data.get('entity_type', 'UNKNOWN'),
+                'description': shared_node_data.get('description', ''),
+                'connection_score': conn['connection_score'],
+                'connection_text': conn['connection_text']
+            })
+            
+            # Map paths for compatibility
+            source_paths_map[shared_node_id] = [conn['source_path']]
+            target_paths_map[shared_node_id] = [conn['target_path']]
+        
+        return {
+            'shared_nodes': shared_nodes,
+            'source_paths': source_paths_map,
+            'target_paths': target_paths_map,
+            'bidirectional_connections': bidirectional_paths
+        }

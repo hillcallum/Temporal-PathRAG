@@ -35,6 +35,8 @@ class ExpandedToyGraphBuilder:
             {'id': 'marie_tharp', 'entity_type': 'Person', 'name': 'Marie Tharp', 'description': 'American geological cartographer who co-created the first map of the Atlantic Ocean floor.', 'born_year': 1920, 'died_year': 2006},
             {'id': 'charles_darwin', 'entity_type': 'Person', 'name': 'Charles Darwin', 'description': 'English naturalist, best known for his contributions to the science of evolution.', 'born_year': 1809, 'died_year': 1882},
             {'id': 'rosalind_franklin', 'entity_type': 'Person', 'name': 'Rosalind Franklin', 'description': 'British chemist and X-ray crystallographer whose work was central to the understanding of the molecular structures of DNA and RNA.', 'born_year': 1920, 'died_year': 1958},
+            {'id': 'werner_heisenberg', 'entity_type': 'Person', 'name': 'Werner Heisenberg', 'description': 'German physicist known for uncertainty principle and contributions to quantum mechanics.', 'born_year': 1901, 'died_year': 1976},
+            {'id': 'erwin_schrodinger', 'entity_type': 'Person', 'name': 'Erwin Schrödinger', 'description': 'Austrian physicist known for wave mechanics and Schrödinger equation.', 'born_year': 1887, 'died_year': 1961},
 
             # Institutions
             {'id': 'princeton_university', 'entity_type': 'Institution', 'name': 'Princeton University', 'description': 'Ivy League research university in New Jersey, USA.'},
@@ -81,6 +83,8 @@ class ExpandedToyGraphBuilder:
             {'id': 'dna_structure', 'entity_type': 'Discovery', 'name': 'DNA Structure', 'description': 'Double helix structure of deoxyribonucleic acid.'},
             {'id': 'plate_tectonics', 'entity_type': 'Theory', 'name': 'Plate Tectonics Theory', 'description': 'Scientific theory describing the large-scale motion of Earth\'s lithosphere.'},
             {'id': 'mid_atlantic_ridge', 'entity_type': 'Geographical Feature', 'name': 'Mid-Atlantic Ridge', 'description': 'Mid-ocean ridge, a divergent plate boundary.'},
+            {'id': 'uncertainty_principle', 'entity_type': 'Concept', 'name': 'Uncertainty Principle', 'description': 'Heisenberg\'s fundamental principle stating limits to precision of measurements.'},
+            {'id': 'atomic_structure', 'entity_type': 'Concept', 'name': 'Atomic Structure', 'description': 'Structure and behavior of atoms, developed through quantum mechanics.'},
 
             # Publications
             {'id': 'principia_mathematica', 'entity_type': 'Publication', 'name': 'Philosophiæ Naturalis Principia Mathematica', 'description': 'Newton\'s seminal work on classical mechanics.', 'year': 1687},
@@ -114,10 +118,12 @@ class ExpandedToyGraphBuilder:
             {'source': 'marie_tharp', 'target': 'usa', 'relation_type': 'BORN_IN_COUNTRY', 'description': 'Tharp was born in the USA.', 'weight': 0.9},
             {'source': 'charles_darwin', 'target': 'uk', 'relation_type': 'BORN_IN_COUNTRY', 'description': 'Darwin was born in the UK.', 'weight': 0.9},
             {'source': 'rosalind_franklin', 'target': 'uk', 'relation_type': 'BORN_IN_COUNTRY', 'description': 'Franklin was born in the UK.', 'weight': 0.9},
+            {'source': 'werner_heisenberg', 'target': 'germany', 'relation_type': 'BORN_IN_COUNTRY', 'description': 'Heisenberg was born in Germany.', 'weight': 0.9},
+            {'source': 'erwin_schrodinger', 'target': 'austria', 'relation_type': 'BORN_IN_COUNTRY', 'description': 'Schrödinger was born in Austria.', 'weight': 0.9},
 
             # Institutional Affiliations/Work
             {'source': 'albert_einstein', 'target': 'princeton_university', 'relation_type': 'WORKED_AT', 'description': 'Einstein worked at Princeton University.', 'weight': 0.8, 'start_year': 1933, 'end_year': 1955},
-            {'source': 'marie_curie', 'target': 'university_of_paris', 'relation_type': 'WORKED_AT', 'description': 'Marie Curie worked at the University of Paris.', 'weight': 0.8, 'start_year': 1906, 'end_year': 1934}, #Became professor in 1906
+            {'source': 'marie_curie', 'target': 'university_of_paris', 'relation_type': 'WORKED_AT', 'description': 'Marie Curie worked at the University of Paris.', 'weight': 0.8, 'start_year': 1906, 'end_year': 1934}, 
             {'source': 'pierre_curie', 'target': 'university_of_paris', 'relation_type': 'WORKED_AT', 'description': 'Pierre Curie worked at the University of Paris.', 'weight': 0.8, 'start_year': 1900, 'end_year': 1906},
             {'source': 'niels_bohr', 'target': 'university_of_copenhagen', 'relation_type': 'WORKED_AT', 'description': 'Bohr worked at the University of Copenhagen.', 'weight': 0.8, 'start_year': 1916, 'end_year': 1962},
             {'source': 'max_planck', 'target': 'gottingen_university', 'relation_type': 'STUDIED_AT', 'description': 'Planck studied at University of Göttingen.', 'weight': 0.75, 'year': 1874},
@@ -125,7 +131,7 @@ class ExpandedToyGraphBuilder:
             {'source': 'alan_turing', 'target': 'cambridge_university', 'relation_type': 'STUDIED_AT', 'description': 'Turing studied at Cambridge University.', 'weight': 0.75, 'start_year': 1931, 'end_year': 1934},
             {'source': 'alan_turing', 'target': 'bell_labs', 'relation_type': 'VISITED', 'description': 'Turing visited Bell Labs.', 'weight': 0.6, 'year': 1942},
             {'source': 'rosalind_franklin', 'target': 'cambridge_university', 'relation_type': 'STUDIED_AT', 'description': 'Franklin studied at Cambridge University.', 'weight': 0.75, 'start_year': 1938, 'end_year': 1941},
-            {'source': 'rosalind_franklin', 'target': 'university_of_paris', 'relation_type': 'WORKED_AT', 'description': 'Franklin worked at University of Paris.', 'weight': 0.8, 'start_year': 1947, 'end_year': 1950}, # Lab des services chimiques de l'État
+            {'source': 'rosalind_franklin', 'target': 'university_of_paris', 'relation_type': 'WORKED_AT', 'description': 'Franklin worked at University of Paris.', 'weight': 0.8, 'start_year': 1947, 'end_year': 1950}, 
 
             # Location of Institutions
             {'source': 'princeton_university', 'target': 'usa', 'relation_type': 'LOCATED_IN_COUNTRY', 'description': 'Princeton University is in the USA.', 'weight': 1.0},
@@ -149,6 +155,8 @@ class ExpandedToyGraphBuilder:
             {'source': 'isaac_newton', 'target': 'royal_society', 'relation_type': 'CHAIRED', 'description': 'Newton chaired the Royal Society.', 'weight': 0.7, 'start_year': 1703, 'end_year': 1727},
             {'source': 'isaac_newton', 'target': 'copley_medal', 'relation_type': 'AWARDED', 'description': 'Newton received the Copley Medal.', 'weight': 0.9, 'year': 1707},
             {'source': 'charles_darwin', 'target': 'copley_medal', 'relation_type': 'AWARDED', 'description': 'Darwin received the Copley Medal.', 'weight': 0.9, 'year': 1864},
+            {'source': 'werner_heisenberg', 'target': 'nobel_prize_physics', 'relation_type': 'AWARDED', 'description': 'Heisenberg won Nobel Prize in Physics.', 'weight': 0.95, 'year': 1932},
+             {'source': 'erwin_schrodinger', 'target': 'nobel_prize_physics', 'relation_type': 'AWARDED', 'description': 'Schrödinger won Nobel Prize in Physics.', 'weight': 0.95, 'year': 1933},
 
             # Scientific Contributions/Discoveries/Developments
             {'source': 'albert_einstein', 'target': 'relativity_theory', 'relation_type': 'DEVELOPED', 'description': 'Einstein developed the theory of relativity.', 'weight': 0.9},
@@ -166,6 +174,9 @@ class ExpandedToyGraphBuilder:
             {'source': 'marie_tharp', 'target': 'plate_tectonics', 'relation_type': 'SUPPORTED_THEORY', 'description': 'Marie Tharp\'s work supported the theory of plate tectonics.', 'weight': 0.85},
             {'source': 'charles_darwin', 'target': 'evolution_theory', 'relation_type': 'PROPOSED', 'description': 'Charles Darwin proposed the theory of evolution by natural selection.', 'weight': 0.9},
             {'source': 'rosalind_franklin', 'target': 'dna_structure', 'relation_type': 'CONTRIBUTED_TO_DISCOVERY', 'description': 'Rosalind Franklin\'s work was crucial to DNA structure discovery.', 'weight': 0.9},
+            {'source': 'werner_heisenberg', 'target': 'uncertainty_principle', 'relation_type': 'FORMULATED', 'description': 'Heisenberg formulated the uncertainty principle.', 'weight': 0.9},
+            {'source': 'werner_heisenberg', 'target': 'quantum_mechanics', 'relation_type': 'CONTRIBUTED_TO', 'description': 'Heisenberg contributed to quantum mechanics.', 'weight': 0.85},
+            {'source': 'erwin_schrodinger', 'target': 'quantum_mechanics', 'relation_type': 'CONTRIBUTED_TO', 'description': 'Schrödinger contributed to quantum mechanics.', 'weight': 0.85},
 
             # Publications
             {'source': 'isaac_newton', 'target': 'principia_mathematica', 'relation_type': 'AUTHORED', 'description': 'Newton authored Principia Mathematica.', 'weight': 0.9},
@@ -202,6 +213,17 @@ class ExpandedToyGraphBuilder:
             {'source': 'uk', 'target': 'ww2', 'relation_type': 'PARTICIPANT_IN', 'description': 'UK was a major participant in WWII.', 'weight': 0.9},
             {'source': 'radioactivity', 'target': 'manhattan_project', 'relation_type': 'APPLIED_IN', 'description': 'Radioactivity principles were applied in the Manhattan Project.', 'weight': 0.85},
             {'source': 'cold_war', 'target': 'manhattan_project', 'relation_type': 'PRECEDED_BY', 'description': 'The Manhattan Project preceded the Cold War.', 'weight': 0.8}, # Temporal relationship
+            
+            # Connect uncertainty principle and atomic structure to quantum mechanics
+            {'source': 'uncertainty_principle', 'target': 'quantum_mechanics', 'relation_type': 'PART_OF', 'description': 'Uncertainty principle is a fundamental part of quantum mechanics.', 'weight': 0.9},
+            {'source': 'atomic_structure', 'target': 'quantum_mechanics', 'relation_type': 'EXPLAINED_BY', 'description': 'Atomic structure is explained by quantum mechanics.', 'weight': 0.85},
+            {'source': 'atomic_model', 'target': 'atomic_structure', 'relation_type': 'DESCRIBES', 'description': 'Bohr model describes atomic structure.', 'weight': 0.8},
+            
+            # Add paths from Marie Curie to quantum mechanics via radioactivity research
+            {'source': 'radioactivity', 'target': 'atomic_structure', 'relation_type': 'REVEALS', 'description': 'Radioactivity research revealed aspects of atomic structure.', 'weight': 0.75},
+            
+            # Connect Marie Curie to Denmark via Nobel Prize network
+            {'source': 'nobel_prize_physics', 'target': 'niels_bohr', 'relation_type': 'AWARDED_TO', 'description': 'Nobel Prize in Physics was awarded to Niels Bohr.', 'weight': 0.95},
         ]
         
         # Add edges to graph
@@ -288,7 +310,8 @@ class ExpandedToyGraphBuilder:
                 "target": "marie_curie",
                 "via": "nobel_prize_physics",
                 "expected_hops": 2,
-                "difficulty": "medium"
+                "difficulty": "medium",
+                "query_type": "bidirectional"
             },
             "query_5": {
                 "description": "Which country did Einstein work in later in his career?",
@@ -304,7 +327,8 @@ class ExpandedToyGraphBuilder:
                 "target": "max_planck",
                 "via": "quantum_mechanics",
                 "expected_hops": 2,
-                "difficulty": "medium"
+                "difficulty": "medium",
+                "query_type": "bidirectional"
             },
             "query_7": {
                 "description": "Find a path from Marie Curie to quantum mechanics through collaborations",
@@ -337,6 +361,32 @@ class ExpandedToyGraphBuilder:
                 "possible_via": ["quantum_mechanics", "marie_curie", "university_of_paris"],
                 "expected_hops": 4,
                 "difficulty": "very_hard"
+            },
+            "query_11": {
+                "description": "What shared scientific contributions connect Marie and Pierre Curie?",
+                "source": "marie_curie",
+                "target": "pierre_curie", 
+                "via": "radioactivity",
+                "expected_hops": 2,
+                "difficulty": "easy",
+                "query_type": "bidirectional"
+            },
+            "query_12": {
+                "description": "How are quantum mechanics pioneers Heisenberg and Schrödinger connected?",
+                "source": "werner_heisenberg",
+                "target": "erwin_schrodinger",
+                "via": "quantum_mechanics",
+                "expected_hops": 2,
+                "difficulty": "medium", 
+                "query_type": "bidirectional"
+            },
+            "query_13": {
+                "description": "Connect Einstein to atomic structure through quantum theory",
+                "source": "albert_einstein",
+                "target": "atomic_structure",
+                "possible_via": ["quantum_mechanics", "max_planck", "niels_bohr"],
+                "expected_hops": 3,
+                "difficulty": "hard"
             }
         }
 

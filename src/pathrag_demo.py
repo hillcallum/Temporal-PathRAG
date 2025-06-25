@@ -17,7 +17,7 @@ if parent_dir not in sys.path:
 
 from src.llm import llm_manager
 from src.kg.path_traversal import BasicPathTraversal
-from data.expanded_toy_graph import create_expanded_toy_graph
+from data.expanded_toy_graph import ExpandedToyGraphBuilder
 
 # Configure logging
 logging.basicConfig(level=logging.WARNING)  # Reduce noise
@@ -28,7 +28,8 @@ class PathRAGDemo:
     def __init__(self):
         """Initialise PathRAG demo"""
         # Create expanded knowledge graph
-        self.graph = create_expanded_toy_graph()
+        self.builder = ExpandedToyGraphBuilder()
+        self.graph = self.builder.get_graph()
         self.traversal = BasicPathTraversal(self.graph)
         
         print("PathRAG Demo Initialised")
@@ -36,14 +37,24 @@ class PathRAGDemo:
         print(f" LLM Status: {llm_manager.get_status()['active_client'] or 'No LLM available'}")
         print()
     
-    def answer_question(self, question: str, source_entity: str = None, target_entity: str = None) -> dict:
+    def answer_question(self, question: str, source_entity: str = None, target_entity: str = None, query_type: str = "unidirectional") -> dict:
         """
         Answer a question using PathRAG pipeline
         """
         print(f"Question: {question}")
         
-        # Step 1: Find relevant paths
-        if source_entity and target_entity:
+        # Step 1: Find relevant paths based on query type
+        paths = []
+        bidirectional_results = []
+        
+        if query_type == "bidirectional" and source_entity and target_entity:
+            # Use bidirectional search for shared connection queries
+            print(f"Using bidirectional search: {source_entity} ↔ {target_entity}")
+            bidirectional_results = self.traversal.find_bidirectional_paths(source_entity, target_entity, max_hops=4, top_k=5)
+            # Convert bidirectional results to paths for LLM processing
+            for conn in bidirectional_results:
+                paths.extend([conn['source_path'], conn['target_path']])
+        elif source_entity and target_entity:
             # Direct path finding
             paths = self.traversal.find_paths(source_entity, target_entity, max_hops=3, top_k=5)
         elif source_entity:
@@ -56,6 +67,14 @@ class PathRAGDemo:
         print(f"Found {len(paths)} paths in knowledge graph")
         
         # Step 2: Display paths with PathRAG textual chunks
+        if bidirectional_results:
+            print("Bidirectional Connections Found:")
+            for i, conn in enumerate(bidirectional_results[:3], 1):
+                print(f"{i}. {conn['connection_text']}")
+                print(f"Via: {conn['shared_node_data'].get('name', conn['shared_node'])} (score: {conn['connection_score']:.3f})")
+                print(f"Paths: {conn['source_hops']} + {conn['target_hops']} hops")
+                print()
+        
         if paths:
             print("Knowledge Graph Paths (with PathRAG textual chunks):")
             for i, path in enumerate(paths[:3]):  # Show top 3
@@ -73,7 +92,7 @@ class PathRAGDemo:
                 print(f" {i+1}. {path_str} (score: {path.score:.3f})")
                 # Show PathRAG textual representation
                 if hasattr(path, 'path_text') and path.path_text:
-                    print(f"     PathRAG text: {path.path_text[:150]}...")
+                    print(f" PathRAG text: {path.path_text[:150]}")
                 print()
         
         # Step 3: Generate LLM answer
@@ -166,22 +185,27 @@ class PathRAGDemo:
         print("=" * 60)
         print()
         
-        # Demo questions
+        # Demo questions using sample queries from expanded toy graph
+        sample_queries = self.builder.get_sample_queries()
+        
         questions = [
             {
-                "question": "Where was Marie Curie born?",
-                "source": "marie_curie",
-                "target": "poland"
+                "question": sample_queries["query_1"]["description"],
+                "source": sample_queries["query_1"]["source"],
+                "target": sample_queries["query_1"]["target"],
+                "query_type": "unidirectional"
             },
             {
-                "question": "What theory did Einstein develop?",
-                "source": "albert_einstein",
-                "target": "relativity_theory"
+                "question": sample_queries["query_4"]["description"], 
+                "source": sample_queries["query_4"]["source"],
+                "target": sample_queries["query_4"]["target"],
+                "query_type": "bidirectional"
             },
             {
-                "question": "How are Marie and Pierre Curie connected?",
-                "source": "marie_curie",
-                "target": "pierre_curie"
+                "question": sample_queries["query_11"]["description"],
+                "source": sample_queries["query_11"]["source"],
+                "target": sample_queries["query_11"]["target"], 
+                "query_type": "bidirectional"
             }
         ]
         
@@ -190,7 +214,8 @@ class PathRAGDemo:
             result = self.answer_question(
                 q["question"], 
                 source_entity=q["source"], 
-                target_entity=q["target"]
+                target_entity=q["target"],
+                query_type=q["query_type"]
             )
             results.append(result)
         
