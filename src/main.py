@@ -37,22 +37,29 @@ def main():
     print("BasicPathTraversal initialised")
     
     # 3. Test sample queries from expanded toy graph
-    print("\n3. Running challenging queries with PathRAG textual chunks and bidirectional search")
+    print("\n3. Running enhanced PathRAG queries with new features")
     print("-" * 30)
     
     # Get all sample queries from the expanded toy graph
     queries = builder.get_sample_queries()
     
-    # Filter to show a mix of difficulties
-    selected_queries = {
-        "query_1": queries["query_1"],  # Easy
-        "query_4": queries["query_4"],  # Bidirectional
-        "query_5": queries["query_5"],  # Medium  
-        "query_11": queries["query_11"], # Bidirectional
-        "query_13": queries["query_13"]  # Hard
+    # Test queries with new enhanced features
+    enhanced_queries = {
+        "query_1": {**queries["query_1"], "test_features": ["basic", "error_handling"]},  # Easy
+        "query_4": {**queries["query_4"], "test_features": ["bidirectional", "multi_path_aggregation"]},  # Bidirectional
+        "query_5": {**queries["query_5"], "test_features": ["via_nodes", "semantic_scoring"]},  # Via nodes
+        "query_11": {**queries["query_11"], "test_features": ["bidirectional", "temporal_scoring"]}, # Temporal
+        "missing_node_test": {
+            "description": "Test error handling with missing node",
+            "source": "nonexistent_person", 
+            "target": "albert_einstein",
+            "expected_hops": 2,
+            "difficulty": "error_test",
+            "test_features": ["error_handling", "graceful_degradation"]
+        }
     }
     
-    for key, query in selected_queries.items():
+    for key, query in enhanced_queries.items():
         print(f"\n{key.upper()}: {query['description']}")
         print(f"Difficulty: {query['difficulty']}, Expected hops: {query['expected_hops']}")
         
@@ -104,6 +111,25 @@ def main():
             for i, path in enumerate(paths):
                 node_names = [node.name for node in path.nodes]
                 print(f"{i + 1}. {' -> '.join(node_names)} (score: {path.score:.3f})")
+        
+        # Demonstrate new features (26th June) for this query
+        if 'test_features' in query:
+            print(f"Testing features: {', '.join(query['test_features'])}")
+            
+            # Test via nodes if specified
+            if 'via_nodes' in query['test_features'] and 'via' in query:
+                print(f"Via-node search through: {query['via']}")
+                via_paths = traversal.find_paths(source, target, max_hops=max_hops, top_k=3, via_nodes=[query['via']])
+                print(f"Found {len(via_paths)} via-node paths")
+                
+            # Test multi-path aggregation
+            if 'multi_path_aggregation' in query['test_features'] and target:
+                all_paths = traversal.find_paths(source, target, max_hops=max_hops, top_k=5)
+                if all_paths:
+                    aggregation = traversal.aggregate_multiple_paths(all_paths, query.get('description'))
+                    print(f"Multi-path aggregation: {aggregation['summary']}")
+                    print(f"Confidence: {aggregation['confidence']:.3f}, Evidence: {aggregation['evidence_strength']}")
+        
         print()
 
     # 4. Demonstrate flow-based pruning
@@ -174,6 +200,38 @@ def main():
                 print(f"Path {i+1}: {' -> '.join(node_names)}")
     else:
         print("No connecting paths found")
+    
+    # 6. Demonstrate new scoring features
+    print("\\n6. Enhanced scoring demonstration")
+    print("-" * 30)
+    
+    # Test semantic and temporal scoring
+    einstein_paths = traversal.find_paths("albert_einstein", "quantum_mechanics", max_hops=3, top_k=5)
+    if einstein_paths:
+        print("Enhanced scoring for Einstein -> Quantum Mechanics paths:")
+        for i, path in enumerate(einstein_paths[:3]):
+            node_names = [node.name for node in path.nodes]
+            print(f"{i+1}. {' -> '.join(node_names)}")
+            
+            # Show scoring breakdown
+            semantic_score = traversal.calculate_semantic_similarity(path)
+            temporal_score = traversal.calculate_temporal_coherence(path)
+            print(f"   Semantic score: {semantic_score:.3f}, Temporal score: {temporal_score:.3f}")
+            print(f"   Combined score: {path.score:.3f}")
+    
+    # 7. Error handling and graceful degradation demo
+    print("\\n7. Error handling demonstration")
+    print("-" * 30)
+    
+    # Test with missing node
+    print("Testing with missing source node:")
+    missing_paths = traversal.find_paths("missing_person", "albert_einstein", max_hops=3, top_k=3)
+    print(f"Paths found: {len(missing_paths)}")
+    
+    # Test validation
+    validation = traversal.validate_nodes(["albert_einstein", "missing_person", "marie_curie"])
+    print(f"Node validation: {validation['missing_count']} missing out of 3 nodes")
+    print(f"Missing nodes: {validation['missing_nodes']}")
     
     print()
 

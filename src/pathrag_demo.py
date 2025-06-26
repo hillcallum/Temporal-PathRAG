@@ -37,7 +37,7 @@ class PathRAGDemo:
         print(f" LLM Status: {llm_manager.get_status()['active_client'] or 'No LLM available'}")
         print()
     
-    def answer_question(self, question: str, source_entity: str = None, target_entity: str = None, query_type: str = "unidirectional") -> dict:
+    def answer_question(self, question: str, source_entity: str = None, target_entity: str = None, query_type: str = "unidirectional", via_nodes: List[str] = None) -> dict:
         """
         Answer a question using PathRAG pipeline
         """
@@ -55,8 +55,8 @@ class PathRAGDemo:
             for conn in bidirectional_results:
                 paths.extend([conn['source_path'], conn['target_path']])
         elif source_entity and target_entity:
-            # Direct path finding
-            paths = self.traversal.find_paths(source_entity, target_entity, max_hops=3, top_k=5)
+            # Direct path finding with optional via nodes
+            paths = self.traversal.find_paths(source_entity, target_entity, max_hops=3, top_k=5, via_nodes=via_nodes)
         elif source_entity:
             # Explore from source
             paths = self.traversal.explore_neighbourhood(source_entity, max_hops=2, top_k=5)
@@ -103,7 +103,16 @@ class PathRAGDemo:
         except Exception as e:
             print(f"LLM unavailable: {str(e)[:50]}")
         
-        # Step 4: Create structured answer
+        # Step 4: Enhanced analysis with new features (26th June)
+        if paths and len(paths) > 1:
+            # Demonstrate multi-path aggregation
+            aggregation = self.traversal.aggregate_multiple_paths(paths, question)
+            print(f"Multi-path Analysis:")
+            print(f"Confidence: {aggregation['confidence']:.3f}")
+            print(f"Evidence Strength: {aggregation['evidence_strength']}")
+            print(f"Key entities: {[e['name'] for e in aggregation['key_entities'][:3]]}")
+        
+        # Step 5: Create structured answer
         structured_answer = self.create_structured_answer(question, paths, llm_answer)
         print(f"Structured Answer: {structured_answer['answer']}")
         print()
@@ -202,10 +211,17 @@ class PathRAGDemo:
                 "query_type": "bidirectional"
             },
             {
-                "question": sample_queries["query_11"]["description"],
-                "source": sample_queries["query_11"]["source"],
-                "target": sample_queries["query_11"]["target"], 
-                "query_type": "bidirectional"
+                "question": sample_queries["query_5"]["description"] + " (via Princeton University)",
+                "source": sample_queries["query_5"]["source"],
+                "target": sample_queries["query_5"]["target"],
+                "via_nodes": [sample_queries["query_5"]["via"]],
+                "query_type": "via_nodes"
+            },
+            {
+                "question": "Test error handling: What connects a missing person to Einstein?",
+                "source": "nonexistent_scientist",
+                "target": "albert_einstein",
+                "query_type": "error_test"
             }
         ]
         
@@ -214,8 +230,9 @@ class PathRAGDemo:
             result = self.answer_question(
                 q["question"], 
                 source_entity=q["source"], 
-                target_entity=q["target"],
-                query_type=q["query_type"]
+                target_entity=q.get("target"),
+                query_type=q["query_type"],
+                via_nodes=q.get("via_nodes")
             )
             results.append(result)
         

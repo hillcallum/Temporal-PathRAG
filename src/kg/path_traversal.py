@@ -18,31 +18,51 @@ class BasicPathTraversal:
                    source_node_id: str, 
                    target_node_id: str,
                    max_hops: int = 3,
-                   top_k: int = 10) -> List[Path]:
+                   top_k: int = 10,
+                   via_nodes: List[str] = None,
+                   fallback_search: bool = True) -> List[Path]:
         """
-        Find paths between source and target nodes using our bassic PathRAG approach
+        Find paths between source and target nodes using our basic PathRAG approach
+        """
+        try:
+            # Validate input nodes
+            validation_result = self.validate_nodes([source_node_id, target_node_id])
+            if not validation_result['all_valid']:
+                return self.handle_missing_nodes(source_node_id, target_node_id, validation_result, fallback_search, max_hops, top_k)
             
-        Returns:
-            List of paths ranked by score
-        """
-        # Check cache first
-        cache_key = f"{source_node_id}_{target_node_id}_{max_hops}"
-        if cache_key in self.path_cache:
-            return self.path_cache[cache_key][:top_k]
-        
-        # Find all paths
-        all_paths = self.dijkstra_paths(source_node_id, target_node_id, max_hops)
-        
-        # Score paths
-        scored_paths = self.score_paths(all_paths)
-        
-        # Apply basic flow-based pruning
-        pruned_paths = self.flow_based_pruning(scored_paths, top_k)
-        
-        # Cache results
-        self.path_cache[cache_key] = pruned_paths
-        
-        return pruned_paths[:top_k]
+            # Handle via-node queries
+            if via_nodes:
+                return self.find_paths_via_nodes(source_node_id, target_node_id, via_nodes, max_hops, top_k)
+            
+            # Check cache first
+            cache_key = f"{source_node_id}_{target_node_id}_{max_hops}"
+            if cache_key in self.path_cache:
+                return self.path_cache[cache_key][:top_k]
+            
+            # Find all paths
+            all_paths = self.dijkstra_paths(source_node_id, target_node_id, max_hops)
+            
+            # If no paths found and fallback enabled, try alternative searches
+            if not all_paths and fallback_search:
+                all_paths = self.fallback_path_search(source_node_id, target_node_id, max_hops)
+            
+            # Score paths
+            scored_paths = self.score_paths(all_paths)
+            
+            # Apply basic flow-based pruning
+            pruned_paths = self.flow_based_pruning(scored_paths, top_k)
+            
+            # Cache results
+            self.path_cache[cache_key] = pruned_paths
+            
+            return pruned_paths[:top_k]
+            
+        except Exception as e:
+            print(f"Error in find_paths: {e}")
+            if fallback_search:
+                # Graceful degradation - try neighbourhood exploration
+                return self.graceful_fallback(source_node_id, target_node_id, max_hops, top_k)
+            return []
     
     def dijkstra_paths(self, 
                        source: str, 
@@ -146,7 +166,7 @@ class BasicPathTraversal:
             return None
     
     def score_paths(self, paths: List[Path]) -> List[Path]:
-        """Score paths based on basic PathRAG principles"""
+        """Score paths based on enhanced PathRAG principles with semantic and temporal factors"""
         for path in paths:
             # Basic scoring considering path length and edge weights
             length_penalty = 1.0 / (len(path.nodes) + 1)
@@ -156,9 +176,161 @@ class BasicPathTraversal:
                 edge_weights = [edge.weight for edge in path.edges]
                 edge_quality = sum(edge_weights) / len(edge_weights)
             
-            path.score = length_penalty * edge_quality
+            # Semantic similarity bonus based on entity types and relationships
+            semantic_score = self.calculate_semantic_similarity(path)
+            
+            # Temporal constraint scoring
+            temporal_score = self.calculate_temporal_coherence(path)
+            
+            # Combined score with weights
+            path.score = (length_penalty * 0.3 + 
+                         edge_quality * 0.4 + 
+                         semantic_score * 0.2 + 
+                         temporal_score * 0.1)
         
         return sorted(paths, key=lambda p: p.score, reverse=True)
+    
+    def calculate_semantic_similarity(self, path: Path) -> float:
+        """
+        Calculate semantic similarity score based on entity types and relationships
+        """
+        if not path.nodes or not path.edges:
+            return 0.5  # neutral score
+        
+        score = 0.5  # base score
+        
+        # Bonus for coherent entity type sequences
+        entity_types = [node.entity_type for node in path.nodes]
+        
+        # Higher score for paths connecting related types
+        coherent_patterns = [
+            ['Person', 'Institution', 'Country'],  # person -> institution -> location
+            ['Person', 'Award', 'Person'],         # person -> award -> person (shared award)
+            ['Person', 'Concept', 'Person'],       # person -> concept -> person (shared work)
+            ['Person', 'Publication', 'Concept'],  # person -> publication -> concept
+            ['Concept', 'Person', 'Institution']   # concept -> person -> institution
+        ]
+        
+        for pattern in coherent_patterns:
+            if len(entity_types) >= len(pattern):
+                for i in range(len(entity_types) - len(pattern) + 1):
+                    if entity_types[i:i+len(pattern)] == pattern:
+                        score += 0.2
+                        break
+        
+        # Bonus for high-quality relationship types
+        high_quality_relations = {
+            'DEVELOPED', 'INVENTED', 'DISCOVERED', 'FOUNDED', 'AWARDED',
+            'COLLABORATED_WITH', 'INFLUENCED', 'AUTHORED'
+        }
+        
+        quality_relations = sum(1 for edge in path.edges 
+                              if edge.relation_type in high_quality_relations)
+        if path.edges:
+            relation_quality = quality_relations / len(path.edges)
+            score += relation_quality * 0.3
+        
+        return min(score, 1.0)  # cap at 1.0
+    
+    def calculate_temporal_coherence(self, path: Path) -> float:
+        """
+        Calculate temporal coherence score based on time constraints in the data
+        """
+        if not path.edges:
+            return 0.5  # neutral score for nodes-only paths
+        
+        temporal_consistency = 0.5  # base score
+        temporal_edges = 0
+        
+        # Check for temporal information in edges and nodes
+        for edge in path.edges:
+            if hasattr(edge, 'source_id') and hasattr(edge, 'target_id'):
+                source_node = None
+                target_node = None
+                
+                # Find the corresponding nodes
+                for node in path.nodes:
+                    if node.id == edge.source_id:
+                        source_node = node
+                    elif node.id == edge.target_id:
+                        target_node = node
+                
+                if source_node and target_node:
+                    # Check temporal constraints from graph data
+                    source_data = self.graph.nodes.get(source_node.id, {})
+                    target_data = self.graph.nodes.get(target_node.id, {})
+                    edge_data = None
+                    
+                    # Get edge data from graph
+                    if self.graph.has_edge(source_node.id, target_node.id):
+                        edge_data = self.graph.edges[source_node.id, target_node.id]
+                    
+                    # Check temporal consistency
+                    temporal_valid = self.check_temporal_consistency(
+                        source_data, target_data, edge_data
+                    )
+                    
+                    if temporal_valid is not None:
+                        temporal_edges += 1
+                        if temporal_valid:
+                            temporal_consistency += 0.2
+                        else:
+                            temporal_consistency -= 0.1
+        
+        # Normalise based on number of temporal edges found
+        if temporal_edges > 0:
+            temporal_consistency = max(0.0, min(1.0, temporal_consistency))
+        
+        return temporal_consistency
+    
+    def check_temporal_consistency(self, source_data: dict, target_data: dict, edge_data: dict) -> Optional[bool]:
+        """
+        Check if temporal constraints are satisfied between nodes
+        """
+        if not edge_data:
+            return None
+        
+        # Check for temporal information in edge
+        edge_year = edge_data.get('year')
+        edge_start = edge_data.get('start_year')
+        edge_end = edge_data.get('end_year')
+        
+        # Check birth/death years for people
+        source_birth = source_data.get('born_year')
+        source_death = source_data.get('died_year')
+        target_birth = target_data.get('born_year')
+        target_death = target_data.get('died_year')
+        
+        # If we have edge timing and person lifespans, check consistency
+        if edge_year and source_birth:
+            # Person must be alive when edge event occurred
+            if edge_year < source_birth:
+                return False
+            if source_death and edge_year > source_death:
+                return False
+        
+        if edge_year and target_birth:
+            if edge_year < target_birth:
+                return False
+            if target_death and edge_year > target_death:
+                return False
+        
+        # Check start/end year constraints
+        if edge_start and edge_end:
+            if source_birth and source_birth > edge_end:
+                return False
+            if source_death and source_death < edge_start:
+                return False
+            if target_birth and target_birth > edge_end:
+                return False
+            if target_death and target_death < edge_start:
+                return False
+        
+        # If we found temporal constraints and passed all checks
+        if any([edge_year, edge_start, edge_end, source_birth, target_birth]):
+            return True
+        
+        return None  # No temporal information found
     
     def flow_based_pruning(self, paths: List[Path], top_k: int) -> List[Path]:
         """
@@ -570,3 +742,404 @@ class BasicPathTraversal:
             'target_paths': target_paths_map,
             'bidirectional_connections': bidirectional_paths
         }
+    
+    def find_paths_via_nodes(self, 
+                           source_node_id: str, 
+                           target_node_id: str,
+                           via_nodes: List[str],
+                           max_hops: int = 3,
+                           top_k: int = 10) -> List[Path]:
+        """
+        Find paths that must pass through specified intermediate nodes
+        """
+        if not via_nodes:
+            return self.find_paths(source_node_id, target_node_id, max_hops, top_k)
+        
+        # Check if via nodes exist in graph
+        missing_nodes = [node for node in via_nodes if not self.graph.has_node(node)]
+        if missing_nodes:
+            print(f"Warning: Via nodes not found in graph: {missing_nodes}")
+            via_nodes = [node for node in via_nodes if node not in missing_nodes]
+            if not via_nodes:
+                return []
+        
+        all_via_paths = []
+        
+        # For each via node, find paths through it
+        for via_node in via_nodes:
+            # Find paths from source to via node
+            source_to_via = self.find_paths(source_node_id, via_node, max_hops//2, top_k)
+            
+            # Find paths from via node to target
+            via_to_target = self.find_paths(via_node, target_node_id, max_hops//2, top_k)
+            
+            # Combine paths
+            for path1 in source_to_via:
+                for path2 in via_to_target:
+                    combined_path = self.combine_paths(path1, path2, via_node)
+                    if combined_path and len(combined_path.nodes) <= max_hops + 1:
+                        all_via_paths.append(combined_path)
+        
+        # Score and sort paths
+        scored_paths = self.score_paths(all_via_paths)
+        
+        # Apply flow-based pruning
+        pruned_paths = self.flow_based_pruning(scored_paths, top_k)
+        
+        return pruned_paths[:top_k]
+    
+    def combine_paths(self, path1: Path, path2: Path, via_node: str) -> Optional[Path]:
+        """
+        Combine two paths that meet at a via node
+        """
+        try:
+            # Verify paths meet at via node
+            if not path1.nodes or not path2.nodes:
+                return None
+            
+            if path1.nodes[-1].id != via_node or path2.nodes[0].id != via_node:
+                return None
+            
+            # Create combined path
+            combined_path = Path()
+            
+            # Add nodes from first path
+            for node in path1.nodes:
+                combined_path.add_node(node)
+            
+            # Add nodes from second path (skip the via node to avoid duplication)
+            for node in path2.nodes[1:]:
+                combined_path.add_node(node)
+            
+            # Add edges from first path
+            for edge in path1.edges:
+                combined_path.add_edge(edge)
+            
+            # Add edges from second path
+            for edge in path2.edges:
+                combined_path.add_edge(edge)
+            
+            # Calculate combined score
+            combined_path.score = (path1.score + path2.score) / 2
+            
+            # Add metadata about the combination
+            combined_path.metadata['via_node'] = via_node
+            combined_path.metadata['source_path_score'] = path1.score
+            combined_path.metadata['target_path_score'] = path2.score
+            
+            return combined_path
+            
+        except Exception as e:
+            print(f"Error combining paths: {e}")
+            return None
+    
+    def aggregate_multiple_paths(self, paths: List[Path], query_context: str = None) -> dict:
+        """
+        Aggregate multiple paths to provide better answers
+        """
+        if not paths:
+            return {
+                'summary': 'No paths found',
+                'confidence': 0.0,
+                'key_entities': [],
+                'relationships': [],
+                'evidence_strength': 'none'
+            }
+        
+        # Extract key information from all paths
+        all_entities = {}
+        all_relationships = {}
+        path_scores = [path.score for path in paths]
+        
+        # Aggregate entities with frequency and importance
+        for path in paths:
+            for node in path.nodes:
+                if node.id not in all_entities:
+                    all_entities[node.id] = {
+                        'name': node.name,
+                        'type': node.entity_type,
+                        'frequency': 0,
+                        'importance_score': 0.0,
+                        'descriptions': set()
+                    }
+                
+                all_entities[node.id]['frequency'] += 1
+                all_entities[node.id]['importance_score'] += path.score
+                if hasattr(node, 'description') and node.description:
+                    all_entities[node.id]['descriptions'].add(node.description)
+        
+        # Aggregate relationships
+        for path in paths:
+            for edge in path.edges:
+                rel_key = f"{edge.source_id}_{edge.relation_type}_{edge.target_id}"
+                if rel_key not in all_relationships:
+                    all_relationships[rel_key] = {
+                        'source': edge.source_id,
+                        'target': edge.target_id,
+                        'relation': edge.relation_type,
+                        'frequency': 0,
+                        'strength': 0.0,
+                        'descriptions': set()
+                    }
+                
+                all_relationships[rel_key]['frequency'] += 1
+                all_relationships[rel_key]['strength'] += path.score
+                if hasattr(edge, 'description') and edge.description:
+                    all_relationships[rel_key]['descriptions'].add(edge.description)
+        
+        # Calculate confidence based on path consensus
+        confidence = self.calculate_path_consensus(paths)
+        
+        # Identify key entities (most frequent and important)
+        key_entities = sorted(
+            all_entities.items(),
+            key=lambda x: (x[1]['frequency'], x[1]['importance_score']),
+            reverse=True
+        )[:5]  # top 5 entities
+        
+        # Identify key relationships
+        key_relationships = sorted(
+            all_relationships.items(),
+            key=lambda x: (x[1]['frequency'], x[1]['strength']),
+            reverse=True
+        )[:5]  # top 5 relationships
+        
+        # Generate summary based on aggregated paths
+        summary = self.generate_path_summary(paths, key_entities, key_relationships, query_context)
+        
+        # Determine evidence strength
+        evidence_strength = self.assess_evidence_strength(paths, confidence)
+        
+        return {
+            'summary': summary,
+            'confidence': confidence,
+            'key_entities': [
+                {
+                    'id': ent_id,
+                    'name': ent_data['name'],
+                    'type': ent_data['type'],
+                    'frequency': ent_data['frequency'],
+                    'importance': ent_data['importance_score'] / len(paths)
+                }
+                for ent_id, ent_data in key_entities
+            ],
+            'relationships': [
+                {
+                    'source': rel_data['source'],
+                    'target': rel_data['target'],
+                    'relation': rel_data['relation'],
+                    'frequency': rel_data['frequency'],
+                    'strength': rel_data['strength'] / len(paths)
+                }
+                for _, rel_data in key_relationships
+            ],
+            'evidence_strength': evidence_strength,
+            'num_supporting_paths': len(paths),
+            'avg_path_score': sum(path_scores) / len(path_scores) if path_scores else 0.0
+        }
+    
+    def calculate_path_consensus(self, paths: List[Path]) -> float:
+        """
+        Calculate consensus score based on how much paths agree
+        """
+        if len(paths) <= 1:
+            return 1.0 if paths else 0.0
+        
+        # Count shared entities and relationships across paths
+        entity_appearances = {}
+        relationship_appearances = {}
+        
+        for path in paths:
+            # Count entity appearances
+            for node in path.nodes:
+                entity_appearances[node.id] = entity_appearances.get(node.id, 0) + 1
+            
+            # Count relationship appearances
+            for edge in path.edges:
+                rel_key = f"{edge.source_id}_{edge.relation_type}_{edge.target_id}"
+                relationship_appearances[rel_key] = relationship_appearances.get(rel_key, 0) + 1
+        
+        # Calculate consensus based on overlap
+        num_paths = len(paths)
+        
+        # Entity consensus (how many entities appear in multiple paths)
+        entity_consensus = sum(1 for count in entity_appearances.values() if count > 1) / max(len(entity_appearances), 1)
+        
+        # Relationship consensus
+        rel_consensus = sum(1 for count in relationship_appearances.values() if count > 1) / max(len(relationship_appearances), 1)
+        
+        # Combined consensus score
+        consensus = (entity_consensus + rel_consensus) / 2
+        
+        # Bonus for high-scoring paths agreeing
+        avg_score = sum(path.score for path in paths) / num_paths
+        consensus = consensus * (0.7 + 0.3 * avg_score)
+        
+        return min(consensus, 1.0)
+    
+    def generate_path_summary(self, paths: List[Path], key_entities: list, key_relationships: list, query_context: str = None) -> str:
+        """
+        Generate a textual summary of aggregated paths
+        """
+        if not paths:
+            return "No relevant paths found."
+        
+        # Extract most common entities
+        entity_names = [ent_data['name'] for ent_id, ent_data in key_entities[:3]]
+        
+        # Extract most common relationships
+        rel_types = [rel_data['relation'] for _, rel_data in key_relationships[:3]]
+        
+        if len(paths) == 1:
+            path = paths[0]
+            node_names = [node.name for node in path.nodes]
+            return f"Found connection: {' → '.join(node_names)}"
+        
+        # Multi-path summary
+        summary_parts = []
+        
+        if entity_names:
+            summary_parts.append(f"Key entities involved: {', '.join(entity_names)}")
+        
+        if rel_types:
+            unique_rel_types = list(set(rel_types))
+            summary_parts.append(f"Main relationships: {', '.join(unique_rel_types)}")
+        
+        summary_parts.append(f"Found {len(paths)} supporting paths")
+        
+        # Add confidence indicator
+        confidence = self.calculate_path_consensus(paths)
+        if confidence > 0.8:
+            summary_parts.append("(high confidence)")
+        elif confidence > 0.5:
+            summary_parts.append("(moderate confidence)")
+        else:
+            summary_parts.append("(low confidence)")
+        
+        return ". ".join(summary_parts) + "."
+    
+    def assess_evidence_strength(self, paths: List[Path], confidence: float) -> str:
+        """
+        Assess the strength of evidence based on paths and confidence
+        """
+        num_paths = len(paths)
+        avg_score = sum(path.score for path in paths) / num_paths if paths else 0.0
+        
+        if num_paths >= 3 and confidence > 0.7 and avg_score > 0.7:
+            return "strong"
+        elif num_paths >= 2 and confidence > 0.5 and avg_score > 0.5:
+            return "moderate"
+        elif num_paths >= 1 and avg_score > 0.3:
+            return "weak"
+        else:
+            return "insufficient"
+    
+    def validate_nodes(self, node_ids: List[str]) -> dict:
+        """
+        Validate that all specified nodes exist in the graph
+        """
+        missing_nodes = []
+        existing_nodes = []
+        
+        for node_id in node_ids:
+            if self.graph.has_node(node_id):
+                existing_nodes.append(node_id)
+            else:
+                missing_nodes.append(node_id)
+        
+        return {
+            'all_valid': len(missing_nodes) == 0,
+            'missing_nodes': missing_nodes,
+            'existing_nodes': existing_nodes,
+            'missing_count': len(missing_nodes)
+        }
+    
+    def handle_missing_nodes(self, source_node_id: str, target_node_id: str, 
+                           validation_result: dict, fallback_search: bool,
+                           max_hops: int, top_k: int) -> List[Path]:
+        """
+        Handle cases where some nodes are missing from the graph
+        """
+        missing = validation_result['missing_nodes']
+        existing = validation_result['existing_nodes']
+        
+        print(f"Warning: Missing nodes in graph: {missing}")
+        
+        if not fallback_search:
+            return []
+        
+        # If only one node is missing, try alternatives
+        if len(missing) == 1:
+            missing_node = missing[0]
+            existing_node = existing[0] if existing else None
+            
+            if existing_node:
+                # Find similar nodes or do neighbourhood exploration
+                return self.find_similar_node_paths(existing_node, missing_node, max_hops, top_k)
+        
+        # If both nodes missing, return empty
+        return []
+    
+    def find_similar_node_paths(self, existing_node: str, missing_node: str, 
+                              max_hops: int, top_k: int) -> List[Path]:
+        """
+        Find paths using similar nodes when target node is missing
+        """
+        print(f"Attempting to find alternatives for missing node: {missing_node}")
+        
+        # Try neighbourhood exploration around existing node
+        neighbourhood_paths = self.explore_neighbourhood(existing_node, max_hops=max_hops, top_k=top_k)
+        
+        if neighbourhood_paths:
+            print(f"Found {len(neighbourhood_paths)} alternative paths via neighbourhood exploration")
+        
+        return neighbourhood_paths
+    
+    def fallback_path_search(self, source_node_id: str, target_node_id: str, max_hops: int) -> List[Path]:
+        """
+        Attempt alternative search strategies when direct path search fails
+        """
+        fallback_paths = []
+        
+        # Try bidirectional search
+        try:
+            bidirectional_results = self.find_bidirectional_paths(source_node_id, target_node_id, max_hops*2, top_k=5)
+            for conn in bidirectional_results:
+                if 'source_path' in conn and 'target_path' in conn:
+                    fallback_paths.extend([conn['source_path'], conn['target_path']])
+        except Exception as e:
+            print(f"Bidirectional fallback failed: {e}")
+        
+        # Try via shared connections
+        if not fallback_paths:
+            try:
+                shared_info = self.find_shared_connections(source_node_id, target_node_id, max_hops=max_hops//2)
+                if shared_info.get('shared_nodes'):
+                    # Get paths via first shared node
+                    first_shared = shared_info['shared_nodes'][0]['id']
+                    source_to_shared = self.find_paths(source_node_id, first_shared, max_hops//2, 3, fallback_search=False)
+                    shared_to_target = self.find_paths(first_shared, target_node_id, max_hops//2, 3, fallback_search=False)
+                    fallback_paths.extend(source_to_shared)
+                    fallback_paths.extend(shared_to_target)
+            except Exception as e:
+                print(f"Shared connection fallback failed: {e}")
+        
+        return fallback_paths
+    
+    def graceful_fallback(self, source_node_id: str, target_node_id: str, 
+                         max_hops: int, top_k: int) -> List[Path]:
+        """
+        Final fallback when all other methods fail
+        """
+        print(f"Graceful fallback: exploring neighbourhood around {source_node_id}")
+        
+        try:
+            # Just explore neighbourhood of source
+            if self.graph.has_node(source_node_id):
+                return self.explore_neighbourhood(source_node_id, max_hops=max_hops//2, top_k=top_k)
+            elif self.graph.has_node(target_node_id):
+                return self.explore_neighbourhood(target_node_id, max_hops=max_hops//2, top_k=top_k)
+        except Exception as e:
+            print(f"Graceful fallback failed: {e}")
+        
+        return []
