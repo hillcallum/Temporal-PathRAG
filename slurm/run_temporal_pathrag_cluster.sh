@@ -1,6 +1,5 @@
-# Internal SLURM job script - DO NOT RUN DIRECTLY 
-
 #!/bin/bash
+# Internal SLURM job script - DO NOT RUN DIRECTLY
 #SBATCH --job-name=temporal_pathrag_demo
 #SBATCH --partition=gpgpuC
 #SBATCH --time=02:00:00
@@ -58,10 +57,10 @@ echo "Installing packages to /vol/bitbucket (avoid disk quota)"
 export PYTHONUSERBASE="/vol/bitbucket/${USER}/python_packages"
 mkdir -p "$PYTHONUSERBASE"
 
-python3 -m pip install --user --upgrade pip
-python3 -m pip install --user torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
-python3 -m pip install --user transformers networkx numpy pandas scipy tqdm
-python3 -m pip install --user python-dotenv pyyaml requests
+python3 -m pip install --user --break-system-packages --upgrade pip
+python3 -m pip install --user --break-system-packages torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+python3 -m pip install --user --break-system-packages transformers networkx numpy pandas scipy tqdm
+python3 -m pip install --user --break-system-packages python-dotenv pyyaml requests
 
 # Add to Python path
 export PYTHONPATH="$PYTHONUSERBASE/lib/python3.12/site-packages:$PYTHONPATH"
