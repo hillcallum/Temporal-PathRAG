@@ -16,3 +16,14 @@ ENV/
 # VS Code
 *.vscode.env
 .vscode/
+
+# Logs
+logs/
+*.log
+*.out
+*.err
+
+# Temporary files
+.DS_Store
+*~
+.tmp/
