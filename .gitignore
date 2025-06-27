@@ -27,3 +27,7 @@ logs/
 .DS_Store
 *~
 .tmp/
+
+# Large dataset files
+data/MultiTQ/
+data/TimeQuestions/
