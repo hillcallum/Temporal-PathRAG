@@ -60,10 +60,17 @@ mkdir -p "$PYTHONUSERBASE"
 python3 -m pip install --user --break-system-packages --upgrade pip
 python3 -m pip install --user --break-system-packages torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 python3 -m pip install --user --break-system-packages transformers networkx numpy pandas scipy tqdm
+python3 -m pip install --user --break-system-packages sentence-transformers
 python3 -m pip install --user --break-system-packages python-dotenv pyyaml requests
 
 # Add to Python path
 export PYTHONPATH="$PYTHONUSERBASE/lib/python3.12/site-packages:$PYTHONPATH"
+
+# Set HuggingFace cache to avoid home directory quota issues
+export HF_HOME="/vol/bitbucket/${USER}/hf_cache"
+export TRANSFORMERS_CACHE="/vol/bitbucket/${USER}/hf_cache"
+export HF_DATASETS_CACHE="/vol/bitbucket/${USER}/hf_cache"
+mkdir -p "/vol/bitbucket/${USER}/hf_cache"
 
 echo "Package installation completed"
 

@@ -16,12 +16,19 @@ if parent_dir not in sys.path:
 
 from data.expanded_toy_graph import ExpandedToyGraphBuilder
 from src.kg.path_traversal import BasicPathTraversal
+from src.utils.device import setup_device_and_logging, optimise_for_pathrag
 
 def main():
     """Main demo function"""
     print("="*60)
-    print("Multi-hop QA Toy Graph Demo")
+    print("Temporal PathRAG Demo using GPU capabilities")
     print("="*60)
+    
+    # 0. Setup GPU device and optimisation
+    print("\n0. Setting up GPU acceleration")
+    print("-" * 30)
+    device = setup_device_and_logging()
+    device = optimise_for_pathrag()
     
     # 1. Create expanded toy KG
     print("\n1. Creating expanded toy knowledge graph")
@@ -30,11 +37,16 @@ def main():
     graph = builder.get_graph()
     print(f"Graph loaded: {graph.number_of_nodes()} nodes, {graph.number_of_edges()} edges")
     
-    # 2. Initialise path traversal
-    print("\n2. Initialising path traversal")
+    # 2. Initialise GPU-accelerated path traversal
+    print("\n2. Initialising GPU-accelerated path traversal")
     print("-" * 30)
-    traversal = BasicPathTraversal(graph)
-    print("BasicPathTraversal initialised")
+    traversal = BasicPathTraversal(graph, device=device)
+    print(f"BasicPathTraversal initialised with device: {device}")
+    
+    # Show initial GPU memory usage
+    gpu_info = traversal.get_gpu_memory_usage()
+    if 'allocated_gb' in gpu_info:
+        print(f"GPU Memory: {gpu_info['allocated_gb']:.2f}GB allocated, {gpu_info['utilisation_percent']:.1f}% utilisation")
     
     # 3. Test sample queries from expanded toy graph
     print("\n3. Running enhanced PathRAG queries with new features")
@@ -234,6 +246,15 @@ def main():
     print(f"Missing nodes: {validation['missing_nodes']}")
     
     print()
+    
+    # GPU cleanup and final memory report
+    print("\n8. GPU Memory Summary")
+    print("-" * 30)
+    final_gpu_info = traversal.get_gpu_memory_usage()
+    if 'allocated_gb' in final_gpu_info:
+        print(f"Final GPU Memory: {final_gpu_info['allocated_gb']:.2f}GB allocated, {final_gpu_info['utilisation_percent']:.1f}% utilisation")
+        print("Cleaning up GPU memory...")
+        traversal.cleanup_gpu_memory()
 
 if __name__ == "__main__":
     main()

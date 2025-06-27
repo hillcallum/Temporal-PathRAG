@@ -2,17 +2,71 @@ import networkx as nx
 from collections import defaultdict, deque
 from typing import List, Dict, Optional, Tuple
 import heapq
+import torch
+import numpy as np
 
 from .models import PathRAGNode, PathRAGEdge, Path
 
 class BasicPathTraversal:
     """
-    Basic PathRAG path traversal implementation
+    GPU-accelerated PathRAG path traversal implementation
     """
     
-    def __init__(self, graph: nx.DiGraph):
+    def __init__(self, graph: nx.DiGraph, device: torch.device = None):
         self.graph = graph
         self.path_cache: Dict[str, List[Path]] = {}
+        
+        # Setup device for GPU acceleration
+        if device is None:
+            self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        else:
+            self.device = device
+            
+        print(f"PathRAG using device: {self.device}")
+        
+        # Initialise sentence transformer for semantic similarity (GPU-accelerated)
+        self.init_sentence_transformer()
+        
+    def init_sentence_transformer(self):
+        """Initialise sentence transformer for GPU-accelerated semantic similarity"""
+        try:
+            from sentence_transformers import SentenceTransformer
+            model_name = 'all-MiniLM-L6-v2'  
+            print(f"Loading sentence transformer: {model_name}")
+            self.sentence_transformer = SentenceTransformer(model_name, device=self.device)
+            self.use_gpu_embeddings = True
+            print("GPU-accelerated semantic similarity enabled")
+        except ImportError:
+            print("Warning: sentence-transformers not available, using basic similarity")
+            self.sentence_transformer = None
+            self.use_gpu_embeddings = False
+    
+    def get_gpu_memory_usage(self) -> Dict[str, float]:
+        """
+        Get current GPU memory usage for monitoring
+        """
+        if self.device.type == 'cuda' and torch.cuda.is_available():
+            allocated = torch.cuda.memory_allocated(self.device) / 1e9
+            reserved = torch.cuda.memory_reserved(self.device) / 1e9
+            total = torch.cuda.get_device_properties(self.device).total_memory / 1e9
+            
+            return {
+                'allocated_gb': allocated,
+                'reserved_gb': reserved,
+                'total_gb': total,
+                'free_gb': total - reserved,
+                'utilisation_percent': (reserved / total) * 100
+            }
+        else:
+            return {'device': 'cpu', 'message': 'GPU not available'}
+    
+    def cleanup_gpu_memory(self):
+        """
+        Clean up GPU memory cache
+        """
+        if self.device.type == 'cuda' and torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            print("GPU memory cache cleared")
     
     def find_paths(self, 
                    source_node_id: str, 
@@ -166,37 +220,133 @@ class BasicPathTraversal:
             return None
     
     def score_paths(self, paths: List[Path]) -> List[Path]:
-        """Score paths based on enhanced PathRAG principles with semantic and temporal factors"""
+        """
+        GPU-accelerated path scoring, which uses batch processing for semantic similarity calculations
+        """
+        if not paths:
+            return paths
+            
+        # Pre-calculate all basic scores 
+        length_penalties = []
+        edge_qualities = []
+        temporal_scores = []
+        
         for path in paths:
             # Basic scoring considering path length and edge weights
             length_penalty = 1.0 / (len(path.nodes) + 1)
+            length_penalties.append(length_penalty)
             
             edge_quality = 1.0
             if path.edges:
                 edge_weights = [edge.weight for edge in path.edges]
                 edge_quality = sum(edge_weights) / len(edge_weights)
+            edge_qualities.append(edge_quality)
             
-            # Semantic similarity bonus based on entity types and relationships
-            semantic_score = self.calculate_semantic_similarity(path)
-            
-            # Temporal constraint scoring
+            # Temporal constraint scoring (kept individual for now)
             temporal_score = self.calculate_temporal_coherence(path)
-            
+            temporal_scores.append(temporal_score)
+        
+        # GPU-accelerated batch semantic similarity calculation
+        semantic_scores = self.batch_calculate_semantic_similarity(paths)
+        
+        # Combine all scores
+        for i, path in enumerate(paths):
             # Combined score with weights
-            path.score = (length_penalty * 0.3 + 
-                         edge_quality * 0.4 + 
-                         semantic_score * 0.2 + 
-                         temporal_score * 0.1)
+            path.score = (length_penalties[i] * 0.3 + 
+                         edge_qualities[i] * 0.4 + 
+                         semantic_scores[i] * 0.2 + 
+                         temporal_scores[i] * 0.1)
         
         return sorted(paths, key=lambda p: p.score, reverse=True)
     
     def calculate_semantic_similarity(self, path: Path) -> float:
         """
-        Calculate semantic similarity score based on entity types and relationships
+        Calculate semantic similarity score using GPU-accelerated embeddings and rule-based patterns
         """
         if not path.nodes or not path.edges:
             return 0.5  # neutral score
         
+        # Use GPU-accelerated semantic similarity if available
+        if self.use_gpu_embeddings and self.sentence_transformer:
+            return self.calculate_gpu_semantic_similarity(path)
+        else:
+            return self.calculate_rule_based_similarity(path)
+    
+    def calculate_gpu_semantic_similarity(self, path: Path) -> float:
+        """
+        GPU-accelerated semantic similarity using sentence transformers
+        """
+        try:
+            # Extract semantic content from the path
+            path_text = path.path_text if hasattr(path, 'path_text') and path.path_text else ""
+            if not path_text:
+                # Fallback option by constructing text from nodes and edges
+                node_texts = [f"{node.name}: {getattr(node, 'description', '')}" for node in path.nodes]
+                edge_texts = [edge.relation_type for edge in path.edges]
+                path_text = " -> ".join([f"{node_texts[i]} --[{edge_texts[i]}]-->" if i < len(edge_texts) else node_texts[i] 
+                                       for i in range(len(node_texts))])
+            
+            # Create a reference query for semantic similarity
+            # Use the source and target nodes to create an expected semantic context
+            source_context = f"{path.nodes[0].name} {getattr(path.nodes[0], 'description', '')}"
+            target_context = f"{path.nodes[-1].name} {getattr(path.nodes[-1], 'description', '')}"
+            reference_query = f"How is {source_context} related to {target_context}?"
+            
+            # Encode both texts using GPU
+            with torch.no_grad():
+                path_embedding = self.sentence_transformer.encode([path_text], 
+                                                               convert_to_tensor=True,
+                                                               device=self.device)
+                query_embedding = self.sentence_transformer.encode([reference_query], 
+                                                                convert_to_tensor=True,
+                                                                device=self.device)
+                
+                # Calculate cosine similarity on GPU
+                similarity = torch.nn.functional.cosine_similarity(
+                    path_embedding, query_embedding, dim=1
+                ).cpu().item()
+                
+                # Normalise to [0, 1] range as cosine similarity is [-1, 1]
+                normalised_similarity = (similarity + 1) / 2
+                
+                # Apply path quality bonus (combine with rule-based factors)
+                quality_bonus = self.calculate_path_quality_bonus(path)
+                
+                # Final score: 70% semantic similarity + 30% structural quality
+                final_score = 0.7 * normalised_similarity + 0.3 * quality_bonus
+                
+                return min(final_score, 1.0)
+                
+        except Exception as e:
+            print(f"Warning: GPU semantic similarity failed ({e}), falling back to rule-based")
+            return self.calculate_rule_based_similarity(path)
+    
+    def calculate_path_quality_bonus(self, path: Path) -> float:
+        """
+        Calculate structural quality bonus for the path
+        """
+        # Bonus for high-quality relationship types
+        high_quality_relations = {
+            'DEVELOPED', 'INVENTED', 'DISCOVERED', 'FOUNDED', 'AWARDED',
+            'COLLABORATED_WITH', 'INFLUENCED', 'AUTHORED'
+        }
+        
+        if not path.edges:
+            return 0.5
+            
+        quality_relations = sum(1 for edge in path.edges 
+                              if edge.relation_type in high_quality_relations)
+        relation_quality = quality_relations / len(path.edges)
+        
+        # Path length penalty (shorter paths are often better)
+        length_penalty = 1.0 / (1.0 + len(path.nodes) * 0.1)
+        
+        return 0.6 * relation_quality + 0.4 * length_penalty
+    
+    def calculate_rule_based_similarity(self, path: Path) -> float:
+        """
+        Fallback rule-based semantic similarity (original implementation)
+        """
         score = 0.5  # base score
         
         # Bonus for coherent entity type sequences
@@ -218,19 +368,99 @@ class BasicPathTraversal:
                         score += 0.2
                         break
         
-        # Bonus for high-quality relationship types
-        high_quality_relations = {
-            'DEVELOPED', 'INVENTED', 'DISCOVERED', 'FOUNDED', 'AWARDED',
-            'COLLABORATED_WITH', 'INFLUENCED', 'AUTHORED'
-        }
-        
-        quality_relations = sum(1 for edge in path.edges 
-                              if edge.relation_type in high_quality_relations)
-        if path.edges:
-            relation_quality = quality_relations / len(path.edges)
-            score += relation_quality * 0.3
+        # Add quality bonus
+        quality_bonus = self._calculate_path_quality_bonus(path)
+        score += quality_bonus * 0.3
         
         return min(score, 1.0)  # cap at 1.0
+    
+    def batch_calculate_semantic_similarity(self, paths: List[Path]) -> List[float]:
+        """
+        Batch calculate semantic similarity for multiple paths using GPU acceleration
+        """
+        if not paths:
+            return []
+            
+        # Use GPU batch processing if available
+        if self.use_gpu_embeddings and self.sentence_transformer and len(paths) > 1:
+            return self.batch_gpu_semantic_similarity(paths)
+        else:
+            # Fallback to individual calculations
+            return [self.calculate_semantic_similarity(path) for path in paths]
+    
+    def batch_gpu_semantic_similarity(self, paths: List[Path]) -> List[float]:
+        """
+        GPU-accelerated batch semantic similarity calculation
+        """
+        try:
+            # Extract all path texts
+            path_texts = []
+            reference_queries = []
+            
+            for path in paths:
+                # Extract semantic content from the path
+                path_text = path.path_text if hasattr(path, 'path_text') and path.path_text else ""
+                if not path_text:
+                    # Fallback: construct text from nodes and edges
+                    node_texts = [f"{node.name}: {getattr(node, 'description', '')}" for node in path.nodes]
+                    edge_texts = [edge.relation_type for edge in path.edges]
+                    path_text = " -> ".join([f"{node_texts[i]} --[{edge_texts[i]}]-->" if i < len(edge_texts) else node_texts[i] 
+                                           for i in range(len(node_texts))])
+                
+                # Create reference query
+                source_context = f"{path.nodes[0].name} {getattr(path.nodes[0], 'description', '')}"
+                target_context = f"{path.nodes[-1].name} {getattr(path.nodes[-1], 'description', '')}"
+                reference_query = f"How is {source_context} related to {target_context}?"
+                
+                path_texts.append(path_text)
+                reference_queries.append(reference_query)
+            
+            # Batch encode all texts using GPU
+            with torch.no_grad():
+                # Process in smaller batches to avoid memory issues
+                batch_size = 32
+                all_similarities = []
+                
+                for i in range(0, len(paths), batch_size):
+                    batch_paths = path_texts[i:i+batch_size]
+                    batch_queries = reference_queries[i:i+batch_size]
+                    
+                    # Encode batch
+                    path_embeddings = self.sentence_transformer.encode(
+                        batch_paths, 
+                        convert_to_tensor=True,
+                        device=self.device,
+                        batch_size=len(batch_paths)
+                    )
+                    query_embeddings = self.sentence_transformer.encode(
+                        batch_queries, 
+                        convert_to_tensor=True,
+                        device=self.device,
+                        batch_size=len(batch_queries)
+                    )
+                    
+                    # Calculate cosine similarities for the batch
+                    similarities = torch.nn.functional.cosine_similarity(
+                        path_embeddings, query_embeddings, dim=1
+                    ).cpu().numpy()
+                    
+                    # Normalise to [0, 1] range
+                    normalised_similarities = (similarities + 1) / 2
+                    all_similarities.extend(normalised_similarities)
+                
+                # Apply path quality bonuses
+                final_scores = []
+                for i, path in enumerate(paths):
+                    quality_bonus = self.calculate_path_quality_bonus(path)
+                    # 70% semantic similarity + 30% structural quality
+                    final_score = 0.7 * all_similarities[i] + 0.3 * quality_bonus
+                    final_scores.append(min(final_score, 1.0))
+                
+                return final_scores
+                
+        except Exception as e:
+            print(f"Warning: Batch GPU semantic similarity failed ({e}), falling back to individual")
+            return [self.calculate_semantic_similarity(path) for path in paths]
     
     def calculate_temporal_coherence(self, path: Path) -> float:
         """
