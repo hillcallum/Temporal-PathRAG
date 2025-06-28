@@ -1,0 +1,10 @@
+{
+  "dataset_type": "TimeQuestions",
+  "format": "TimeR4_compatible",
+  "description": "TimeQuestions dataset processed for temporal knowledge graph research",
+  "structure": {
+    "kg/": "Knowledge graph files with Wikidata mappings",
+    "questions/": "Question datasets for evaluation",
+    "prompt/": "Prompt files (if available)"
+  }
+}
