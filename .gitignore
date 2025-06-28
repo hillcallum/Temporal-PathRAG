@@ -29,5 +29,4 @@ logs/
 .tmp/
 
 # Large dataset files
-data/MultiTQ/
-data/TimeQuestions/
+raw_datasets/
