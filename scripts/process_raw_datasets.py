@@ -10,7 +10,7 @@ import argparse
 
 
 class DatasetProcessor:
-    """Process raw datasets into research-ready format"""
+    """Process raw datasets into correct format"""
     
     def __init__(self, clean_existing=False):
         self.raw_path = Path("raw_datasets")
@@ -38,11 +38,11 @@ class DatasetProcessor:
         print("Copying MultiTQ structure")
         shutil.copytree(src, dst, dirs_exist_ok=True)
         
-        # Add metadata for research tracking
+        # Add metadata for tracking
         metadata = {
             "dataset_type": "MultiTQ",
             "format": "TimeR4_compatible", 
-            "description": "MultiTQ dataset processed for temporal knowledge graph research",
+            "description": "MultiTQ dataset processed for temporal knowledge graph",
             "structure": {
                 "kg/": "Knowledge graph files",
                 "questions/": "Question datasets for evaluation",
@@ -69,11 +69,11 @@ class DatasetProcessor:
         print("Copying TimeQuestions structure")
         shutil.copytree(src, dst, dirs_exist_ok=True)
         
-        # Add metadata for research tracking
+        # Add metadata for tracking
         metadata = {
             "dataset_type": "TimeQuestions",
             "format": "TimeR4_compatible",
-            "description": "TimeQuestions dataset processed for temporal knowledge graph research", 
+            "description": "TimeQuestions dataset processed for temporal knowledge graph", 
             "structure": {
                 "kg/": "Knowledge graph files with Wikidata mappings",
                 "questions/": "Question datasets for evaluation",
