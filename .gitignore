@@ -30,3 +30,9 @@ logs/
 
 # Large dataset files
 raw_datasets/
+
+# Git Attributes
+.gitattributes
+
+# TimeR4 datasets cloned from Git repo 
+timeR4_datasets/
