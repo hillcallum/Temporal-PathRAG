@@ -19,7 +19,7 @@ import re
 class TemporalGraphDatabase:
     """NetworkX-based temporal knowledge graph database"""
     
-    def __init__(self, db_path: str = "temporal_graph_db"):
+    def __init__(self, db_path: str = "analysis_results/temporal_graph_db"):
         self.db_path = Path(db_path)
         self.db_path.mkdir(exist_ok=True)
         

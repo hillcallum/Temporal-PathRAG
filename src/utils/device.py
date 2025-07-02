@@ -88,7 +88,7 @@ def optimise_for_pathrag():
 def test_pathrag_operations():
     """Test basic operations needed for PathRAG"""
     device = get_device()
-    print(f"\nTesting PathRAG operations on {device}...")
+    print(f"\nTesting PathRAG operations on {device}")
     
     try:
         # Test tensor operations
