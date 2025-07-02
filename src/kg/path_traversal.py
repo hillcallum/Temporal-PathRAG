@@ -5,16 +5,29 @@ import heapq
 import torch
 import numpy as np
 
-from .models import PathRAGNode, PathRAGEdge, Path
+from .models import TemporalPathRAGNode, TemporalPathRAGEdge, Path
+from .temporal_scoring import TemporalWeightingFunction, TemporalPathRanker, TemporalPath, TemporalRelevanceMode
 
 class BasicPathTraversal:
     """
     GPU-accelerated PathRAG path traversal implementation
     """
     
-    def __init__(self, graph: nx.DiGraph, device: torch.device = None):
+    def __init__(self, graph: nx.DiGraph, device: torch.device = None, 
+                 temporal_mode: TemporalRelevanceMode = TemporalRelevanceMode.EXPONENTIAL_DECAY):
         self.graph = graph
         self.path_cache: Dict[str, List[Path]] = {}
+        
+        # Initialise temporal weighting system
+        self.temporal_weighting = TemporalWeightingFunction(
+            decay_rate=0.1,
+            temporal_window=365,  # 1 year window
+            chronological_weight=0.3,
+            proximity_weight=0.4, 
+            consistency_weight=0.3
+        )
+        self.temporal_ranker = TemporalPathRanker(self.temporal_weighting)
+        self.temporal_mode = temporal_mode
         
         # Setup device for GPU acceleration
         if device is None:
@@ -74,7 +87,9 @@ class BasicPathTraversal:
                    max_hops: int = 3,
                    top_k: int = 10,
                    via_nodes: List[str] = None,
-                   fallback_search: bool = True) -> List[Path]:
+                   fallback_search: bool = True,
+                   query_time: str = None,
+                   temporal_constraints: Dict = None) -> List[Path]:
         """
         Find paths between source and target nodes using our basic PathRAG approach
         """
@@ -100,8 +115,8 @@ class BasicPathTraversal:
             if not all_paths and fallback_search:
                 all_paths = self.fallback_path_search(source_node_id, target_node_id, max_hops)
             
-            # Score paths
-            scored_paths = self.score_paths(all_paths)
+            # Score paths with temporal enhancement
+            scored_paths = self.score_paths(all_paths, query_time)
             
             # Apply basic flow-based pruning
             pruned_paths = self.flow_based_pruning(scored_paths, top_k)
@@ -189,7 +204,7 @@ class BasicPathTraversal:
             for node_id in node_ids:
                 if self.graph.has_node(node_id):
                     node_data = self.graph.nodes[node_id]
-                    pathrag_node = PathRAGNode(
+                    pathrag_node = TemporalPathRAGNode(
                         id=node_id,
                         entity_type=node_data.get('entity_type', 'UNKNOWN'),
                         name=node_data.get('name', node_id),
@@ -202,7 +217,7 @@ class BasicPathTraversal:
             # Add edges with textual chunks (te)
             for i, edge_data in enumerate(edge_data_list):
                 if i < len(node_ids) - 1:
-                    pathrag_edge = PathRAGEdge(
+                    pathrag_edge = TemporalPathRAGEdge(
                         source_id=node_ids[i],
                         target_id=node_ids[i + 1],
                         relation_type=edge_data.get('relation_type', 'RELATED'),
@@ -219,17 +234,23 @@ class BasicPathTraversal:
             print(f"Error constructing path: {e}")
             return None
     
-    def score_paths(self, paths: List[Path]) -> List[Path]:
+    def score_paths(self, paths: List[Path], query_time: str = None) -> List[Path]:
         """
-        GPU-accelerated path scoring, which uses batch processing for semantic similarity calculations
+        Enhanced path scoring with temporal weighting integration
+        Combines PathRAG's structural flow with sophisticated temporal scoring
         """
         if not paths:
             return paths
             
+        # Use current time if no query time provided
+        if query_time is None:
+            from datetime import datetime
+            query_time = datetime.now().isoformat()
+            
         # Pre-calculate all basic scores 
         length_penalties = []
         edge_qualities = []
-        temporal_scores = []
+        basic_temporal_scores = []
         
         for path in paths:
             # Basic scoring considering path length and edge weights
@@ -242,20 +263,61 @@ class BasicPathTraversal:
                 edge_quality = sum(edge_weights) / len(edge_weights)
             edge_qualities.append(edge_quality)
             
-            # Temporal constraint scoring (kept individual for now)
-            temporal_score = self.calculate_temporal_coherence(path)
-            temporal_scores.append(temporal_score)
+            # Basic temporal constraint scoring (legacy compatibility)
+            basic_temporal_score = self.calculate_temporal_coherence(path)
+            basic_temporal_scores.append(basic_temporal_score)
         
         # GPU-accelerated batch semantic similarity calculation
         semantic_scores = self.batch_calculate_semantic_similarity(paths)
         
-        # Combine all scores
+        # Convert to TemporalPath objects and apply enhanced temporal scoring
+        temporal_paths = []
         for i, path in enumerate(paths):
-            # Combined score with weights
-            path.score = (length_penalties[i] * 0.3 + 
-                         edge_qualities[i] * 0.4 + 
-                         semantic_scores[i] * 0.2 + 
-                         temporal_scores[i] * 0.1)
+            # Extract timestamps from path edges
+            timestamps = []
+            edges_with_timestamps = []
+            
+            for edge in path.edges:
+                # Check if edge has timestamp information
+                if hasattr(edge, 'timestamp') and edge.timestamp:
+                    timestamps.append(edge.timestamp)
+                    # Create edge tuple for TemporalPath
+                    edges_with_timestamps.append((
+                        edge.source_id, edge.relation_type, 
+                        edge.target_id, edge.timestamp
+                    ))
+                else:
+                    # Use a default timestamp if none available (current approach fallback)
+                    timestamps.append(query_time)
+                    edges_with_timestamps.append((
+                        edge.source_id, edge.relation_type,
+                        edge.target_id, query_time
+                    ))
+            
+            # Calculate original PathRAG score (structural component)
+            original_score = (length_penalties[i] * 0.3 + 
+                            edge_qualities[i] * 0.4 + 
+                            semantic_scores[i] * 0.2 + 
+                            basic_temporal_scores[i] * 0.1)
+            
+            # Create TemporalPath for enhanced scoring
+            temporal_path = TemporalPath(
+                nodes=[node.id for node in path.nodes],
+                edges=edges_with_timestamps,
+                timestamps=timestamps,
+                original_score=original_score
+            )
+            
+            temporal_paths.append((path, temporal_path))
+        
+        # Apply enhanced temporal scoring
+        enhanced_scores = []
+        for path, temporal_path in temporal_paths:
+            enhanced_score = self.temporal_weighting.enhanced_reliability_score(
+                temporal_path, query_time, temporal_path.original_score
+            )
+            enhanced_scores.append(enhanced_score)
+            path.score = enhanced_score  # Update path score
         
         return sorted(paths, key=lambda p: p.score, reverse=True)
     
@@ -783,7 +845,7 @@ class BasicPathTraversal:
                                max_hops: int = 3,
                                top_k: int = 10) -> List[Dict]:
         """
-        Find bidirectional paths that connect two nodes through shared intermediate nodes.
+        Find bidirectional paths that connect two nodes through shared intermediate nodes
         """
         # Find paths from source to intermediate nodes
         source_paths = self.explore_neighbourhood(source_node_id, max_hops=max_hops//2 + 1, top_k=top_k*2)
@@ -866,9 +928,9 @@ class BasicPathTraversal:
                                     target_path: Path, 
                                     shared_node: str) -> float:
         """
-        Calculate quality score for a bidirectional connection.
+        Calculate quality score for a bidirectional connection
         
-        Higher scores indicate better connections (shorter paths, higher individual scores).
+        Higher scores indicate better connections (shorter paths, higher individual scores)
         """
         # Favour shorter total paths
         total_hops = len(source_path.edges) + len(target_path.edges)
@@ -899,7 +961,7 @@ class BasicPathTraversal:
                                    target_path: Path, 
                                    shared_node: str) -> str:
         """
-        Generate human-readable text describing the bidirectional connection.
+        Generate human-readable text describing the bidirectional connection
         """
         source_start = source_path.nodes[0].name if source_path.nodes else "Unknown"
         target_start = target_path.nodes[0].name if target_path.nodes else "Unknown" 
@@ -937,7 +999,7 @@ class BasicPathTraversal:
                               max_hops: int = 2,
                               top_k: int = 5) -> Dict[str, any]:
         """
-        Enhanced version of find_shared_connections using bidirectional search.
+        Enhanced version of find_shared_connections using bidirectional search
         """
         bidirectional_paths = self.find_bidirectional_paths(
             source_node_id, target_node_id, max_hops=max_hops*2, top_k=top_k*2

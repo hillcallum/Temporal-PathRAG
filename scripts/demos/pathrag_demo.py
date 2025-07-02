@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
 PathRAG Demo with LLM Integration
-Demonstrates complete PathRAG pipeline with fallback handling
 """
 
 import sys
@@ -17,7 +16,7 @@ if parent_dir not in sys.path:
 
 from src.llm import llm_manager
 from src.kg.path_traversal import BasicPathTraversal
-from data.expanded_toy_graph import ExpandedToyGraphBuilder
+from datasets.toy.expanded_toy_graph import ExpandedToyGraphBuilder
 
 # Configure logging
 logging.basicConfig(level=logging.WARNING)  # Reduce noise

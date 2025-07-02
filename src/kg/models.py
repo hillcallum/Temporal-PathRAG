@@ -1,5 +1,5 @@
 """
-PathRAG data models for representing nodes, edges, and paths in knowledge graphs.
+PathRAG data models for representing nodes, edges, and paths in knowledge graphs
 Following 'PathRAG: Pruning Graph-based Retrieval Augmented Generation with Relational Paths' 
 by B. Chen et al. (2025)
 """
@@ -9,10 +9,10 @@ from typing import List, Dict, Any, Optional
 import uuid
 
 @dataclass
-class PathRAGNode:
+class TemporalPathRAGNode:
     """
-    Node representation with identifier and textual chunk (tv).
-    Follows PathRAG paper's node representation for semantic content.
+    Node representation with identifier and textual chunk (tv)
+    Follows PathRAG paper's node representation for semantic content
     """
     id: str
     entity_type: str  # e.g., "Person", "Object", "Event"
@@ -34,10 +34,11 @@ class PathRAGNode:
             self.tv = f"{self.name}: {self.description}" if self.description else self.name
 
 @dataclass 
-class PathRAGEdge:
+class TemporalPathRAGEdge:
     """
-    Edge representation with relationship type and descriptive textual chunk (te).
-    Follows PathRAG paper's edge representation for semantic relationships.
+    Edge representation with relationship type and descriptive textual chunk (te)
+    Follows PathRAG paper's edge representation for semantic relationships
+    Enhanced with temporal information for temporal weighting
     """
     source_id: str
     target_id: str
@@ -50,6 +51,19 @@ class PathRAGEdge:
     flow_capacity: float = 1.0  # for future flow-based pruning
     properties: Dict[str, Any] = field(default_factory=dict)
     
+    # Temporal properties for enhanced scoring
+    timestamp: Optional[str] = None  # ISO format timestamp
+    temporal_weight: float = 1.0  # temporal relevance weight
+    temporal_metadata: Dict[str, Any] = field(default_factory=dict)
+    
+    def get_temporal_info(self) -> Dict[str, Any]:
+        """Extract temporal information for scoring"""
+        return {
+            'timestamp': self.timestamp,
+            'temporal_weight': self.temporal_weight,
+            'metadata': self.temporal_metadata
+        }
+    
     def __post_init__(self):
         # Create textual chunk if not provided
         if not self.te:
@@ -58,11 +72,11 @@ class PathRAGEdge:
 @dataclass
 class Path:
     """
-    Represents a path through the knowledge graph with PathRAG textual chunks.
-    Combines node textual chunks (tv) and edge textual chunks (te) for semantic reasoning.
+    Represents a path through the knowledge graph with PathRAG textual chunks
+    Combines node textual chunks (tv) and edge textual chunks (te) for semantic reasoning
     """
-    nodes: List[PathRAGNode] = field(default_factory=list)
-    edges: List[PathRAGEdge] = field(default_factory=list)
+    nodes: List[TemporalPathRAGNode] = field(default_factory=list)
+    edges: List[TemporalPathRAGEdge] = field(default_factory=list)
     score: float = 0.0
     metadata: Dict[str, Any] = field(default_factory=dict)
     path_text: str = ""  # Combined textual representation
@@ -72,12 +86,12 @@ class Path:
         if not self.path_text and self.nodes:
             self.path_text = self.generate_path_text()
     
-    def add_node(self, node: PathRAGNode):
+    def add_node(self, node: TemporalPathRAGNode):
         """Add a node to the path"""
         self.nodes.append(node)
         self.path_text = self.generate_path_text()  # Regenerate text
     
-    def add_edge(self, edge: PathRAGEdge):
+    def add_edge(self, edge: TemporalPathRAGEdge):
         """Add an edge to the path"""
         self.edges.append(edge)
         self.path_text = self.generate_path_text()  # Regenerate text
@@ -107,6 +121,27 @@ class Path:
                 text_parts.append(self.nodes[i + 1].tv)
         
         return "".join(text_parts)
+    
+    def get_temporal_info(self) -> Dict[str, Any]:
+        """Extract temporal information from path for temporal scoring"""
+        timestamps = []
+        temporal_edges = []
+        
+        for edge in self.edges:
+            if hasattr(edge, 'timestamp') and edge.timestamp:
+                timestamps.append(edge.timestamp)
+                temporal_edges.append({
+                    'source': edge.source_id,
+                    'target': edge.target_id,
+                    'relation': edge.relation_type,
+                    'timestamp': edge.timestamp
+                })
+        
+        return {
+            'timestamps': timestamps,
+            'temporal_edges': temporal_edges,
+            'temporal_density': len(timestamps) / max(len(self.edges), 1)
+        }
 
     def __str__(self) -> str:
         if not self.nodes:
@@ -118,24 +153,3 @@ class Path:
                 path_str += f" --[{edge.relation_type}]--> {self.nodes[i + 1].name}"
         
         return f"Path: {path_str} (score: {self.score:.3f})"
-
-# Additional entity types, purely for toy implementation, will remove in the future
-@dataclass
-class Person(PathRAGNode):
-    """Represents a person entity"""
-    birth_date: Optional[str] = None
-    nationality: Optional[str] = None
-
-    def __post_init__(self):
-        super().__post_init__()
-        self.entity_type = "Person"
-
-@dataclass
-class Event(PathRAGNode):
-    """Represents an event entity"""
-    date: Optional[str] = None
-    location: Optional[str] = None
-
-    def __post_init__(self):
-        super().__post_init__()
-        self.entity_type = "Event"

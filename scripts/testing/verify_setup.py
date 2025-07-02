@@ -69,7 +69,7 @@ def test_pathrag_environment():
     # Test PathRAG modules
     print("\nTesting PathRAG modules")
     try:
-        from src.kg.models import PathRAGNode, PathRAGEdge, Path
+        from src.kg.models import TemporalPathRAGNode, TemporalPathRAGEdge, Path
         from src.kg.path_traversal import BasicPathTraversal
         from data.toy_graph import ToyGraphBuilder
         print("PathRAG modules imported successfully")

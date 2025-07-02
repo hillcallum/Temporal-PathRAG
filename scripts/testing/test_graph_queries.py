@@ -118,7 +118,7 @@ def run_comprehensive_graph_queries():
     
     print("Edge distribution by dataset:")
     for dataset, count in dataset_edge_counts.items():
-        print(f"  {dataset}: {count:,} edges")
+        print(f"{dataset}: {count:,} edges")
     
     # 8. Path finding tests (inspired by PathRAG's path traversal)
     print("\n8. Path Finding Tests")
@@ -136,7 +136,7 @@ def run_comprehensive_graph_queries():
                         path = nx.shortest_path(tg_db.main_graph, source, target)
                         print(f"Shortest path from '{source}' to '{target}': {len(path)-1} hops")
                         if len(path) <= 4:  # Only show short paths
-                            print(f"  Path: {' -> '.join(path[:4])}")
+                            print(f"Path: {' -> '.join(path[:4])}")
                     except nx.NetworkXNoPath:
                         print(f"No path found from '{source}' to '{target}'")
                 else:
@@ -177,7 +177,7 @@ def run_comprehensive_graph_queries():
             
             print("Facts by decade:")
             for decade in sorted(decades.keys()):
-                print(f"  {decade}s: {decades[decade]:,} facts")
+                print(f"{decade}s: {decades[decade]:,} facts")
     
     # 10. Performance test - large query
     print("\n10. Performance Testing")
