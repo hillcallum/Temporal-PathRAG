@@ -1,0 +1,9 @@
+{
+  "nodes": 123832,
+  "edges": 700715,
+  "temporal_edges": 700715,
+  "datasets_loaded": [
+    "MultiTQ",
+    "TimeQuestions"
+  ]
+}

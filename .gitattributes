@@ -4,3 +4,4 @@ datasets/MultiTQ/prompt/*.json filter=lfs diff=lfs merge=lfs -text
 datasets/TimeQuestions/kg/*.txt filter=lfs diff=lfs merge=lfs -text
 datasets/TimeQuestions/questions/*.json filter=lfs diff=lfs merge=lfs -text
 datasets/TimeQuestions/prompt/*.json filter=lfs diff=lfs merge=lfs -text
+analysis_results/temporal_graph_db/*.pkl filter=lfs diff=lfs merge=lfs -text

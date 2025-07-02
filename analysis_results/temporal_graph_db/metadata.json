@@ -1,0 +1,11 @@
+{
+  "created": "2025-07-02T12:22:40.110303",
+  "datasets": [
+    "MultiTQ",
+    "TimeQuestions"
+  ],
+  "total_quadruplets": 701926,
+  "unique_entities": 123832,
+  "unique_relations": 1135,
+  "unique_timestamps": 5545
+}

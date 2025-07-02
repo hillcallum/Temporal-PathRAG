@@ -47,5 +47,4 @@ black>=23.0.0
 flake8>=6.0.0
 
 # Database Support
-neo4j==5.20.0
 pymongo>=4.4.0
