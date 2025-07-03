@@ -2,7 +2,7 @@
 """
 Temporal PathRAG - Main Implementation
 
-The most advanced implementation of Temporal PathRAG that integrates:
+The current implementation (as of 3rd July) of Temporal PathRAG that integrates:
 - Real temporal KGs (MultiTQ/TimeQuestions)
 - Temporal-aware path scoring with multiple decay modes
 - Enhanced reliability scores S'(P) combining structural & temporal components
@@ -16,7 +16,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 import networkx as nx
 
-from src.kg.path_traversal import BasicPathTraversal
+from src.kg.path_traversal import TemporalPathTraversal
 from src.kg.temporal_scoring import TemporalWeightingFunction, TemporalRelevanceMode
 from src.utils.device import setup_device_and_logging, optimise_for_pathrag
 from src.utils.dataset_loader import load_dataset
@@ -28,7 +28,7 @@ def load_temporal_knowledge_graph(dataset_name: str = "MultiTQ") -> nx.DiGraph:
     return load_dataset(dataset_name)
 
 
-def run_temporal_queries(traversal: BasicPathTraversal):
+def run_temporal_queries(traversal: TemporalPathTraversal):
     """Run sample temporal queries demonstrating the system capabilities"""
     print("\n" + "="*60)
     print("Temporal Query Demonstrations")
@@ -125,7 +125,7 @@ def analyse_temporal_scoring():
     print(f"\nAnalysis for query time {query_time}:")
 
 
-def validate_chronological_consistency(traversal: BasicPathTraversal):
+def validate_chronological_consistency(traversal: TemporalPathTraversal):
     """Validate chronological consistency of paths"""
     print("\n" + "="*60) 
     print("Chronological Consistency Validation")
@@ -182,7 +182,7 @@ def validate_chronological_consistency(traversal: BasicPathTraversal):
 
 def main(dataset_name: str = "MultiTQ", temporal_mode: str = "exponential_decay"):
     """Main Temporal PathRAG demonstration"""
-    from src.config import get_config
+    from src.utils import get_config
     
     print("Temporal PathRAG - Temporal-Aware Path Retrieval")
     print("="*70)
@@ -221,7 +221,7 @@ def main(dataset_name: str = "MultiTQ", temporal_mode: str = "exponential_decay"
     
     temporal_mode_enum = mode_map.get(temporal_mode, TemporalRelevanceMode.EXPONENTIAL_DECAY)
     
-    traversal = BasicPathTraversal(
+    traversal = TemporalPathTraversal(
         graph,
         device=device,
         temporal_mode=temporal_mode_enum
@@ -240,7 +240,7 @@ def main(dataset_name: str = "MultiTQ", temporal_mode: str = "exponential_decay"
     
     # Summary
     print("\n" + "="*60)
-    print("📊 System Summary")
+    print("System Summary")
     print("="*60)
     
     final_gpu_info = traversal.get_gpu_memory_usage()

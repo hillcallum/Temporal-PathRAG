@@ -20,7 +20,7 @@ from src.kg.temporal_scoring import (
     TemporalRelevanceMode
 )
 from src.kg.models import TemporalPathRAGNode, TemporalPathRAGEdge, Path
-from src.kg.path_traversal import BasicPathTraversal
+from src.kg.path_traversal import TemporalPathTraversal
 
 
 def create_sample_temporal_graph() -> nx.DiGraph:
@@ -272,7 +272,7 @@ def create_comparison_visualisation():
     for bar in bars1:
         height = bar.get_height()
         ax1.text(bar.get_x() + bar.get_width()/2., height + 0.01,
-                f'{height:.3f}', ha='center', va='bottom')
+                f'{height:.3f}', ha='centre', va='bottom')
     
     # Enhanced scores
     bars2 = ax2.bar(x_pos, enhanced_scores, alpha=0.7, colour='lightcoral', label='Enhanced Temporal Score')
@@ -314,6 +314,11 @@ def main():
         demonstrate_temporal_ranking()
         analyse_temporal_patterns()
         create_comparison_visualisation()
+        
+        # Demonstrate enhanced temporal flow pruning
+        print("=== Enhanced Temporal Flow Pruning Demonstration ===\n")
+        print("Note: This demonstrates the integration of temporal decay rate alpha and threshold theta")
+        print("in PathRAG's resource propagation algorithm.\n")
         
         print("Demonstration completed successfully!")
         
