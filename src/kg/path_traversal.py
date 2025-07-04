@@ -44,7 +44,7 @@ class TemporalPathTraversal:
         else:
             self.device = device
             
-        print(f"PathRAG using device: {self.device}")
+        print(f"Temporal PathRAG using device: {self.device}")
         
         # Initialise sentence transformer for semantic similarity (GPU-accelerated)
         self.init_sentence_transformer()
@@ -134,7 +134,7 @@ class TemporalPathTraversal:
             
             # Explore neighbours
             if current_node in self.graph:
-                for neighbour in self.graph.neighbours(current_node):
+                for neighbour in self.graph.neighbors(current_node):
                     new_path_nodes = path_nodes + [neighbour]
                     path_signature = tuple(new_path_nodes)
                     
@@ -203,7 +203,7 @@ class TemporalPathTraversal:
         neighbours = []
         
         if self.graph.has_node(node_id):
-            for neighbour in self.graph.neighbours(node_id):
+            for neighbour in self.graph.neighbors(node_id):
                 edge_data = self.graph.get_edge_data(node_id, neighbour, {})
                 neighbours.append((neighbour, edge_data))
         

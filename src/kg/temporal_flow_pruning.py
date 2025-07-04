@@ -59,7 +59,7 @@ class TemporalFlowPruning:
         - Adaptive pruning thresholds theta based on temporal context
         - Temporal flow capacity adjustments
         
-        Mathes:
+        Maths:
         Flow_temporal(P) = min(temporal_edge_capacity) * temporal_decay_factor(P)
         Where temporal_edge_capacity = base_capacity * temporal_weight(edge)
         """
@@ -135,7 +135,7 @@ class TemporalFlowPruning:
                 
                 # Preserve original capacity for restoration if needed
                 if not hasattr(edge, '_original_capacity'):
-                    edge.original_capacity = getattr(edge, 'flow_capacity', 1.0)
+                    edge._original_capacity = getattr(edge, 'flow_capacity', 1.0)
                 
                 if hasattr(edge, 'timestamp') and edge.timestamp:
                     # Calculate temporal weight with alpha parameter influence
@@ -148,12 +148,12 @@ class TemporalFlowPruning:
                     alpha_adjusted_weight = temporal_weight ** (1.0 + self.alpha)
                     
                     # Update edge capacity with temporal weighting
-                    edge.flow_capacity = edge.original_capacity * alpha_adjusted_weight
+                    edge.flow_capacity = edge._original_capacity * alpha_adjusted_weight
                     temporal_modifications += 1
                 else:
                     # For edges without timestamps, apply neutral capacity with alpha penalty
                     neutral_penalty = 1.0 - (self.alpha * 0.1)  # Small penalty for missing temporal data
-                    edge.flow_capacity = edge.original_capacity * max(0.1, neutral_penalty)
+                    edge.flow_capacity = edge._original_capacity * max(0.1, neutral_penalty)
         
         # Track modification statistics for validation
         modification_rate = temporal_modifications / max(total_edges, 1)
@@ -175,7 +175,7 @@ class TemporalFlowPruning:
         3. Enabling dynamic threshold adjustment based on temporal context
         
         Maths:
-        theta_adaptive = theta_base × (1 + alpha_influence * temporal_context_factor)
+        theta_adaptive = theta_base * (1 + alpha_influence * temporal_context_factor)
         
         Where:
         - alpha_influence = alpha * temporal_sensitivity_multiplier
@@ -291,20 +291,20 @@ class TemporalFlowPruning:
         This method implements the core part of temporal resource propagation by:
         1. Applying exponential decay based on temporal distance
         2. Using alpha parameter to control decay strength
-        3. Creating temporal-aware resource flow attenuation
+        3. Creating temporal-aware resource flow 
         
         Maths:
         Flow_decayed = base_flow * e^(-alpha * temporal_distance_factor) * temporal_coherence_bonus
         
         Where:
-        - alpha: Temporal decay rate parameter (configurable, validated)
+        - alpha: Temporal decay rate parameter 
         - temporal_distance_factor: Normalised temporal distance from query
         - temporal_coherence_bonus: Additional factor for chronologically coherent paths
         """
         # Calculate temporal distance factor
         temporal_info = path.get_temporal_info()
         if not temporal_info['timestamps']:
-            # Apply mild penalty for non-temporal paths when α is high
+            # Apply mild penalty for non-temporal paths when alpha is high
             non_temporal_penalty = 1.0 - (self.alpha * 0.15)
             return base_flow * max(0.1, non_temporal_penalty)
         
@@ -405,7 +405,7 @@ class TemporalFlowPruning:
         if not test_paths:
             return {'error': 'No test paths provided'}
         
-        # Test different α values to demonstrate interaction
+        # Test different alpha values to demonstrate interaction
         alpha_values = [0.05, 0.1, 0.2, 0.4]
         theta_values = [0.5, 1.0, 1.5, 2.0]
         
@@ -469,7 +469,7 @@ class TemporalFlowPruning:
                 for edge in path.edges:
                     total_edges += 1
                     if hasattr(edge, '_original_capacity'):
-                        if edge.flow_capacity != edge.original_capacity:
+                        if edge.flow_capacity != edge._original_capacity:
                             modified_edges += 1
                 
                 temporal_flow = self.calculate_temporal_path_flow(path, query_time)

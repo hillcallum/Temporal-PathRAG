@@ -1,7 +1,7 @@
 """
 Temporal scoring functions designed to improve the reliability scores of PathRAG's paths
 
-This module incorporates temporal weighting mechanisms that add temporal relevance into the structural flow of PathRAG:
+We incorporate temporal weighting that add temporal relevance into the structural flow of PathRAG:
     - Temporal decay factors to account for time-based relevance
     - Temporal alignment scores to ensure chronological consistency of paths
     - An enhanced reliability score S(P) that includes temporal dimensions
@@ -37,7 +37,7 @@ class TemporalPath:
     temporal_score: float = 0.0
     combined_score: float = 0.0
 
-
+@dataclass
 class TemporalWeightingFunction:
     """
     Core temporal weighting function that implements multiple temporal decay models, 
@@ -143,7 +143,7 @@ class TemporalWeightingFunction:
         S_chrono(P) = (1/|P|-1) * Sigma(sum of)[i=1 to |P|-1] indicator(t_i <= t_{i+1}) * w_i
         
         Where:
-        - P: temporal path with timestamps t_1, t_2, ..., t_n
+        - P: temporal path with timestamps t_1, t_2, t_n
         - indicator(t_i <= t_{i+1}): 1 if chronological order maintained, 0 otherwise
         - w_i: weight based on temporal gap between consecutive events
         
