@@ -1,0 +1,949 @@
+{
+  "test_summary": {
+    "total_queries": 10,
+    "success_rate": 0.6,
+    "avg_execution_time": 0.04368886947631836,
+    "avg_temporal_validity": 0.0,
+    "avg_non_redundancy": 0.5666666666666667,
+    "avg_reliability": 0.6048735312819761
+  },
+  "query_type_performance": {
+    "progressive": [
+      {
+        "query_config": {
+          "query_text": "Trace the evolution from \"darwin\" to \"dna\" and \"genetics\"",
+          "source_entities": [
+            "darwin"
+          ],
+          "target_entities": [
+            "dna",
+            "genetics"
+          ],
+          "temporal_constraints": {
+            "temporal_preference": "chronological"
+          },
+          "query_time": "1950-01-01",
+          "max_hops": 4,
+          "top_k": 10,
+          "expected_temporal_pattern": "progressive",
+          "description": "Tests long-term scientific evolution across multiple decades"
+        },
+        "execution_time": 0.15479779243469238,
+        "total_paths_discovered": 5,
+        "total_paths_after_pruning": 5,
+        "final_paths": 0,
+        "temporally_valid_paths": 0,
+        "non_redundant_paths_count": 0,
+        "average_reliability": 0.0,
+        "temporal_validation_results": [],
+        "non_redundant_paths": []
+      }
+    ],
+    "institutional_development": [
+      {
+        "query_config": {
+          "query_text": "How did \"cambridge\" contribute to \"computer_science\" and \"artificial_intelligence\" development?",
+          "source_entities": [
+            "cambridge"
+          ],
+          "target_entities": [
+            "computer_science",
+            "artificial_intelligence"
+          ],
+          "temporal_constraints": {
+            "temporal_preference": "institutional"
+          },
+          "query_time": "1960-01-01",
+          "max_hops": 3,
+          "top_k": 8,
+          "expected_temporal_pattern": "institutional_development",
+          "description": "Tests institutional influence on field development"
+        },
+        "execution_time": 0.04464006423950195,
+        "total_paths_discovered": 3,
+        "total_paths_after_pruning": 3,
+        "final_paths": 2,
+        "temporally_valid_paths": 0,
+        "non_redundant_paths_count": 2,
+        "average_reliability": 0.6064595685267231,
+        "temporal_validation_results": [
+          [
+            "Path: Cambridge University --[developed]--> Computer Science (score: 0.668)",
+            "TemporalReliabilityMetrics(temporal_consistency=np.float64(0.38453286178897156), chronological_coherence=1.0, source_credibility=np.float64(0.8416610943544733), cross_validation_score=0.5, temporal_pattern_strength=0.4, flow_reliability=np.float64(0.5132901608217937), semantic_coherence=np.float64(0.4666666666666666), overall_reliability=np.float64(0.6120447290159265), temporal_violations=[], credibility_factors={}, pattern_matches={})",
+            false,
+            "No timestamps within 365 days of query time"
+          ],
+          [
+            "Path: Cambridge University --[researched]--> Genetics --[led_to]--> DNA --[influences]--> Artificial Intelligence (score: 0.554)",
+            "TemporalReliabilityMetrics(temporal_consistency=np.float64(0.4534861407398398), chronological_coherence=np.float64(0.9249974331770423), source_credibility=np.float64(0.7440436362161849), cross_validation_score=0.5, temporal_pattern_strength=np.float64(0.39373352955268837), flow_reliability=np.float64(0.4902348782945463), semantic_coherence=np.float64(0.5499999999999999), overall_reliability=np.float64(0.6008744080375196), temporal_violations=[], credibility_factors={}, pattern_matches={})",
+            false,
+            "No timestamps within 365 days of query time"
+          ]
+        ],
+        "non_redundant_paths": [
+          [
+            "Path: Cambridge University --[developed]--> Computer Science (score: 0.668)",
+            "TemporalReliabilityMetrics(temporal_consistency=np.float64(0.38453286178897156), chronological_coherence=1.0, source_credibility=np.float64(0.8416610943544733), cross_validation_score=0.5, temporal_pattern_strength=0.4, flow_reliability=np.float64(0.5132901608217937), semantic_coherence=np.float64(0.4666666666666666), overall_reliability=np.float64(0.6120447290159265), temporal_violations=[], credibility_factors={}, pattern_matches={})"
+          ],
+          [
+            "Path: Cambridge University --[researched]--> Genetics --[led_to]--> DNA --[influences]--> Artificial Intelligence (score: 0.554)",
+            "TemporalReliabilityMetrics(temporal_consistency=np.float64(0.4534861407398398), chronological_coherence=np.float64(0.9249974331770423), source_credibility=np.float64(0.7440436362161849), cross_validation_score=0.5, temporal_pattern_strength=np.float64(0.39373352955268837), flow_reliability=np.float64(0.4902348782945463), semantic_coherence=np.float64(0.5499999999999999), overall_reliability=np.float64(0.6008744080375196), temporal_violations=[], credibility_factors={}, pattern_matches={})"
+          ]
+        ]
+      }
+    ],
+    "technological_enablement": [
+      {
+        "query_config": {
+          "query_text": "Find connections between \"microscope\" and \"dna\", \"watson\", \"crick\"",
+          "source_entities": [
+            "microscope"
+          ],
+          "target_entities": [
+            "dna",
+            "watson",
+            "crick"
+          ],
+          "temporal_constraints": {
+            "temporal_preference": "technological"
+          },
+          "query_time": "1955-01-01",
+          "max_hops": 5,
+          "top_k": 12,
+          "expected_temporal_pattern": "technological_enablement",
+          "description": "Tests how technology enables scientific breakthroughs"
+        },
+        "execution_time": 8.916854858398438e-05,
+        "total_paths_discovered": 0,
+        "total_paths_after_pruning": 0,
+        "final_paths": 0,
+        "temporally_valid_paths": 0,
+        "non_redundant_paths_count": 0,
+        "average_reliability": 0.0,
+        "temporal_validation_results": [],
+        "non_redundant_paths": []
+      }
+    ],
+    "crisis_acceleration": [
+      {
+        "query_config": {
+          "query_text": "How did \"ww2\" accelerate \"computer\" and \"artificial_intelligence\" and \"turing\" development?",
+          "source_entities": [
+            "ww2"
+          ],
+          "target_entities": [
+            "computer",
+            "artificial_intelligence",
+            "turing"
+          ],
+          "temporal_constraints": {
+            "temporal_preference": "wartime"
+          },
+          "query_time": "1945-01-01",
+          "max_hops": 3,
+          "top_k": 8,
+          "expected_temporal_pattern": "crisis_acceleration",
+          "description": "Tests how historical events accelerate scientific development"
+        },
+        "execution_time": 0.06159687042236328,
+        "total_paths_discovered": 5,
+        "total_paths_after_pruning": 5,
+        "final_paths": 3,
+        "temporally_valid_paths": 0,
+        "non_redundant_paths_count": 2,
+        "average_reliability": 0.628775757246544,
+        "temporal_validation_results": [
+          [
+            "Path: Computer --[led_to]--> Internet --[enabled]--> Artificial Intelligence (score: 0.568)",
+            "TemporalReliabilityMetrics(temporal_consistency=np.float64(0.6050184643084905), chronological_coherence=1.0, source_credibility=np.float64(0.727856434532835), cross_validation_score=0.5, temporal_pattern_strength=np.float64(0.06661799598466873), flow_reliability=np.float64(0.609153747523799), semantic_coherence=np.float64(0.6444444444444445), overall_reliability=np.float64(0.6352324778301169), temporal_violations=[], credibility_factors={}, pattern_matches={})",
+            false,
+            "No timestamps within 365 days of query time"
+          ],
+          [
+            "Path: Computer --[enabled]--> Artificial Intelligence (score: 0.689)",
+            "TemporalReliabilityMetrics(temporal_consistency=np.float64(0.46973384068660273), chronological_coherence=1.0, source_credibility=np.float64(0.7900477148500397), cross_validation_score=0.5, temporal_pattern_strength=0.4, flow_reliability=np.float64(0.5937047138271268), semantic_coherence=np.float64(0.4666666666666666), overall_reliability=np.float64(0.6336444221152027), temporal_violations=[], credibility_factors={}, pattern_matches={})",
+            false,
+            "No timestamps within 365 days of query time"
+          ],
+          [
+            "Path: World War II --[accelerated]--> Computer --[led_to]--> Internet --[enabled]--> Artificial Intelligence (score: 0.563)",
+            "TemporalReliabilityMetrics(temporal_consistency=np.float64(0.5460079558402635), chronological_coherence=np.float64(0.9170093784586707), source_credibility=np.float64(0.6589012896943915), cross_validation_score=0.5, temporal_pattern_strength=np.float64(0.39357488204112545), flow_reliability=np.float64(0.56853825484241), semantic_coherence=np.float64(0.5499999999999999), overall_reliability=np.float64(0.6174503717943123), temporal_violations=[], credibility_factors={}, pattern_matches={})",
+            false,
+            "No timestamps within 365 days of query time"
+          ]
+        ],
+        "non_redundant_paths": [
+          [
+            "Path: Computer --[led_to]--> Internet --[enabled]--> Artificial Intelligence (score: 0.568)",
+            "TemporalReliabilityMetrics(temporal_consistency=np.float64(0.6050184643084905), chronological_coherence=1.0, source_credibility=np.float64(0.727856434532835), cross_validation_score=0.5, temporal_pattern_strength=np.float64(0.06661799598466873), flow_reliability=np.float64(0.609153747523799), semantic_coherence=np.float64(0.6444444444444445), overall_reliability=np.float64(0.6352324778301169), temporal_violations=[], credibility_factors={}, pattern_matches={})"
+          ],
+          [
+            "Path: Computer --[enabled]--> Artificial Intelligence (score: 0.689)",
+            "TemporalReliabilityMetrics(temporal_consistency=np.float64(0.46973384068660273), chronological_coherence=1.0, source_credibility=np.float64(0.7900477148500397), cross_validation_score=0.5, temporal_pattern_strength=0.4, flow_reliability=np.float64(0.5937047138271268), semantic_coherence=np.float64(0.4666666666666666), overall_reliability=np.float64(0.6336444221152027), temporal_violations=[], credibility_factors={}, pattern_matches={})"
+          ]
+        ]
+      }
+    ],
+    "interdisciplinary_convergence": [
+      {
+        "query_config": {
+          "query_text": "Show how \"einstein\" and \"curie\" physics converged with \"dna\", \"genetics\", and \"watson\" biology",
+          "source_entities": [
+            "einstein",
+            "curie"
+          ],
+          "target_entities": [
+            "dna",
+            "genetics",
+            "watson"
+          ],
+          "temporal_constraints": {
+            "temporal_preference": "interdisciplinary"
+          },
+          "query_time": "1960-01-01",
+          "max_hops": 4,
+          "top_k": 10,
+          "expected_temporal_pattern": "interdisciplinary_convergence",
+          "description": "Tests convergence of different scientific disciplines"
+        },
+        "execution_time": 0.0544130802154541,
+        "total_paths_discovered": 4,
+        "total_paths_after_pruning": 4,
+        "final_paths": 1,
+        "temporally_valid_paths": 0,
+        "non_redundant_paths_count": 1,
+        "average_reliability": 0.6060260634884552,
+        "temporal_validation_results": [
+          [
+            "Path: Albert Einstein --[influenced]--> Alan Turing --[designed]--> Computer --[revolutionised]--> Genetics (score: 0.547)",
+            "TemporalReliabilityMetrics(temporal_consistency=np.float64(0.4654802248917507), chronological_coherence=np.float64(0.9250102669404516), source_credibility=np.float64(0.7441900517811425), cross_validation_score=0.5, temporal_pattern_strength=np.float64(0.4124914442162902), flow_reliability=np.float64(0.492763016886268), semantic_coherence=np.float64(0.5499999999999999), overall_reliability=np.float64(0.6060260634884552), temporal_violations=[], credibility_factors={}, pattern_matches={})",
+            false,
+            "No timestamps within 365 days of query time"
+          ]
+        ],
+        "non_redundant_paths": [
+          [
+            "Path: Albert Einstein --[influenced]--> Alan Turing --[designed]--> Computer --[revolutionised]--> Genetics (score: 0.547)",
+            "TemporalReliabilityMetrics(temporal_consistency=np.float64(0.4654802248917507), chronological_coherence=np.float64(0.9250102669404516), source_credibility=np.float64(0.7441900517811425), cross_validation_score=0.5, temporal_pattern_strength=np.float64(0.4124914442162902), flow_reliability=np.float64(0.492763016886268), semantic_coherence=np.float64(0.5499999999999999), overall_reliability=np.float64(0.6060260634884552), temporal_violations=[], credibility_factors={}, pattern_matches={})"
+          ]
+        ]
+      }
+    ],
+    "recognition_influence": [
+      {
+        "query_config": {
+          "query_text": "Find paths from \"curie\" and \"einstein\" Nobel Prize winners to \"watson\" and \"crick\" laureates",
+          "source_entities": [
+            "curie",
+            "einstein"
+          ],
+          "target_entities": [
+            "watson",
+            "crick"
+          ],
+          "temporal_constraints": {
+            "temporal_preference": "recognition"
+          },
+          "query_time": "1965-01-01",
+          "max_hops": 3,
+          "top_k": 8,
+          "expected_temporal_pattern": "recognition_influence",
+          "description": "Tests how early achievements influence later recognition"
+        },
+        "execution_time": 0.009804964065551758,
+        "total_paths_discovered": 0,
+        "total_paths_after_pruning": 0,
+        "final_paths": 0,
+        "temporally_valid_paths": 0,
+        "non_redundant_paths_count": 0,
+        "average_reliability": 0.0,
+        "temporal_validation_results": [],
+        "non_redundant_paths": []
+      }
+    ],
+    "knowledge_dissemination": [
+      {
+        "query_config": {
+          "query_text": "Trace how \"origin_of_species\" publishing evolved to \"nature_journal\" and \"dna\" genetics",
+          "source_entities": [
+            "origin_of_species"
+          ],
+          "target_entities": [
+            "nature_journal",
+            "dna"
+          ],
+          "temporal_constraints": {
+            "temporal_preference": "publication"
+          },
+          "query_time": "1970-01-01",
+          "max_hops": 4,
+          "top_k": 10,
+          "expected_temporal_pattern": "knowledge_dissemination",
+          "description": "Tests evolution of scientific communication"
+        },
+        "execution_time": 0.03490304946899414,
+        "total_paths_discovered": 2,
+        "total_paths_after_pruning": 2,
+        "final_paths": 1,
+        "temporally_valid_paths": 0,
+        "non_redundant_paths_count": 1,
+        "average_reliability": 0.6094786944138318,
+        "temporal_validation_results": [
+          [
+            "Path: Nature Journal --[published]--> DNA (score: 0.669)",
+            "TemporalReliabilityMetrics(temporal_consistency=np.float64(0.48556682643315996), chronological_coherence=1.0, source_credibility=np.float64(0.618384319211529), cross_validation_score=0.5, temporal_pattern_strength=0.4, flow_reliability=np.float64(0.5699600659047925), semantic_coherence=np.float64(0.4666666666666666), overall_reliability=np.float64(0.6094786944138318), temporal_violations=[], credibility_factors={}, pattern_matches={})",
+            false,
+            "No timestamps within 365 days of query time"
+          ]
+        ],
+        "non_redundant_paths": [
+          [
+            "Path: Nature Journal --[published]--> DNA (score: 0.669)",
+            "TemporalReliabilityMetrics(temporal_consistency=np.float64(0.48556682643315996), chronological_coherence=1.0, source_credibility=np.float64(0.618384319211529), cross_validation_score=0.5, temporal_pattern_strength=0.4, flow_reliability=np.float64(0.5699600659047925), semantic_coherence=np.float64(0.4666666666666666), overall_reliability=np.float64(0.6094786944138318), temporal_violations=[], credibility_factors={}, pattern_matches={})"
+          ]
+        ]
+      }
+    ],
+    "recent_convergence": [
+      {
+        "query_config": {
+          "query_text": "Connect \"dna\" discovery and \"watson\" to \"artificial_intelligence\" and \"computer\" rise",
+          "source_entities": [
+            "dna",
+            "watson"
+          ],
+          "target_entities": [
+            "artificial_intelligence",
+            "computer"
+          ],
+          "temporal_constraints": {
+            "temporal_preference": "recent"
+          },
+          "query_time": "1990-01-01",
+          "max_hops": 3,
+          "top_k": 8,
+          "expected_temporal_pattern": "recent_convergence",
+          "description": "Tests recent scientific convergence patterns"
+        },
+        "execution_time": 0.05815577507019043,
+        "total_paths_discovered": 4,
+        "total_paths_after_pruning": 4,
+        "final_paths": 2,
+        "temporally_valid_paths": 0,
+        "non_redundant_paths_count": 2,
+        "average_reliability": 0.6375037465979868,
+        "temporal_validation_results": [
+          [
+            "Path: DNA --[influences]--> Artificial Intelligence (score: 0.618)",
+            "TemporalReliabilityMetrics(temporal_consistency=np.float64(0.6341959770309641), chronological_coherence=1.0, source_credibility=np.float64(0.7100477148500397), cross_validation_score=0.5, temporal_pattern_strength=0.4, flow_reliability=np.float64(0.5651520615008906), semantic_coherence=np.float64(0.4666666666666666), overall_reliability=np.float64(0.6599046909686693), temporal_violations=[], credibility_factors={}, pattern_matches={})",
+            false,
+            "No timestamps within 365 days of query time"
+          ],
+          [
+            "Path: James Watson --[discovered_structure]--> DNA --[influences]--> Artificial Intelligence (score: 0.572)",
+            "TemporalReliabilityMetrics(temporal_consistency=np.float64(0.5567893692924707), chronological_coherence=1.0, source_credibility=np.float64(0.7272895581457257), cross_validation_score=0.5, temporal_pattern_strength=np.float64(0.07489483943777572), flow_reliability=np.float64(0.5765587557188357), semantic_coherence=np.float64(0.5333333333333333), overall_reliability=np.float64(0.6151028022273043), temporal_violations=[], credibility_factors={}, pattern_matches={})",
+            false,
+            "No timestamps within 365 days of query time"
+          ]
+        ],
+        "non_redundant_paths": [
+          [
+            "Path: DNA --[influences]--> Artificial Intelligence (score: 0.618)",
+            "TemporalReliabilityMetrics(temporal_consistency=np.float64(0.6341959770309641), chronological_coherence=1.0, source_credibility=np.float64(0.7100477148500397), cross_validation_score=0.5, temporal_pattern_strength=0.4, flow_reliability=np.float64(0.5651520615008906), semantic_coherence=np.float64(0.4666666666666666), overall_reliability=np.float64(0.6599046909686693), temporal_violations=[], credibility_factors={}, pattern_matches={})"
+          ],
+          [
+            "Path: James Watson --[discovered_structure]--> DNA --[influences]--> Artificial Intelligence (score: 0.572)",
+            "TemporalReliabilityMetrics(temporal_consistency=np.float64(0.5567893692924707), chronological_coherence=1.0, source_credibility=np.float64(0.7272895581457257), cross_validation_score=0.5, temporal_pattern_strength=np.float64(0.07489483943777572), flow_reliability=np.float64(0.5765587557188357), semantic_coherence=np.float64(0.5333333333333333), overall_reliability=np.float64(0.6151028022273043), temporal_violations=[], credibility_factors={}, pattern_matches={})"
+          ]
+        ]
+      }
+    ],
+    "generational_influence": [
+      {
+        "query_config": {
+          "query_text": "How did \"mendel\" and \"pasteur\" 19th century science influence \"hawking\" and \"turing\" 20th century breakthroughs?",
+          "source_entities": [
+            "mendel",
+            "pasteur"
+          ],
+          "target_entities": [
+            "hawking",
+            "turing"
+          ],
+          "temporal_constraints": {
+            "temporal_preference": "generational"
+          },
+          "query_time": "1980-01-01",
+          "max_hops": 5,
+          "top_k": 15,
+          "expected_temporal_pattern": "generational_influence",
+          "description": "Tests influence across different scientific generations"
+        },
+        "execution_time": 0.00010895729064941406,
+        "total_paths_discovered": 0,
+        "total_paths_after_pruning": 0,
+        "final_paths": 0,
+        "temporally_valid_paths": 0,
+        "non_redundant_paths_count": 0,
+        "average_reliability": 0.0,
+        "temporal_validation_results": [],
+        "non_redundant_paths": []
+      }
+    ],
+    "comprehensive_evolution": [
+      {
+        "query_config": {
+          "query_text": "Find the longest scientifically coherent path from \"evolution\" to \"artificial_intelligence\"",
+          "source_entities": [
+            "evolution"
+          ],
+          "target_entities": [
+            "artificial_intelligence"
+          ],
+          "temporal_constraints": {
+            "temporal_preference": "comprehensive"
+          },
+          "query_time": "2000-01-01",
+          "max_hops": 6,
+          "top_k": 20,
+          "expected_temporal_pattern": "comprehensive_evolution",
+          "description": "Tests complex multi-hop temporal reasoning"
+        },
+        "execution_time": 0.01837897300720215,
+        "total_paths_discovered": 1,
+        "total_paths_after_pruning": 1,
+        "final_paths": 1,
+        "temporally_valid_paths": 0,
+        "non_redundant_paths_count": 1,
+        "average_reliability": 0.6048735312819761,
+        "temporal_validation_results": [
+          [
+            "Path: Theory of Evolution --[influenced]--> Genetics --[led_to]--> DNA --[influences]--> Artificial Intelligence (score: 0.556)",
+            "TemporalReliabilityMetrics(temporal_consistency=np.float64(0.4534861407398398), chronological_coherence=np.float64(0.9249974331770423), source_credibility=np.float64(0.7707044578458945), cross_validation_score=0.5, temporal_pattern_strength=np.float64(0.39373352955268837), flow_reliability=np.float64(0.4902348782945463), semantic_coherence=np.float64(0.5499999999999999), overall_reliability=np.float64(0.6048735312819761), temporal_violations=[], credibility_factors={}, pattern_matches={})",
+            false,
+            "No timestamps within 365 days of query time"
+          ]
+        ],
+        "non_redundant_paths": [
+          [
+            "Path: Theory of Evolution --[influenced]--> Genetics --[led_to]--> DNA --[influences]--> Artificial Intelligence (score: 0.556)",
+            "TemporalReliabilityMetrics(temporal_consistency=np.float64(0.4534861407398398), chronological_coherence=np.float64(0.9249974331770423), source_credibility=np.float64(0.7707044578458945), cross_validation_score=0.5, temporal_pattern_strength=np.float64(0.39373352955268837), flow_reliability=np.float64(0.4902348782945463), semantic_coherence=np.float64(0.5499999999999999), overall_reliability=np.float64(0.6048735312819761), temporal_violations=[], credibility_factors={}, pattern_matches={})"
+          ]
+        ]
+      }
+    ]
+  },
+  "best_performing_queries": [
+    {
+      "query_config": {
+        "query_text": "Connect \"dna\" discovery and \"watson\" to \"artificial_intelligence\" and \"computer\" rise",
+        "source_entities": [
+          "dna",
+          "watson"
+        ],
+        "target_entities": [
+          "artificial_intelligence",
+          "computer"
+        ],
+        "temporal_constraints": {
+          "temporal_preference": "recent"
+        },
+        "query_time": "1990-01-01",
+        "max_hops": 3,
+        "top_k": 8,
+        "expected_temporal_pattern": "recent_convergence",
+        "description": "Tests recent scientific convergence patterns"
+      },
+      "execution_time": 0.05815577507019043,
+      "total_paths_discovered": 4,
+      "total_paths_after_pruning": 4,
+      "final_paths": 2,
+      "temporally_valid_paths": 0,
+      "non_redundant_paths_count": 2,
+      "average_reliability": 0.6375037465979868,
+      "temporal_validation_results": [
+        [
+          "Path: DNA --[influences]--> Artificial Intelligence (score: 0.618)",
+          "TemporalReliabilityMetrics(temporal_consistency=np.float64(0.6341959770309641), chronological_coherence=1.0, source_credibility=np.float64(0.7100477148500397), cross_validation_score=0.5, temporal_pattern_strength=0.4, flow_reliability=np.float64(0.5651520615008906), semantic_coherence=np.float64(0.4666666666666666), overall_reliability=np.float64(0.6599046909686693), temporal_violations=[], credibility_factors={}, pattern_matches={})",
+          false,
+          "No timestamps within 365 days of query time"
+        ],
+        [
+          "Path: James Watson --[discovered_structure]--> DNA --[influences]--> Artificial Intelligence (score: 0.572)",
+          "TemporalReliabilityMetrics(temporal_consistency=np.float64(0.5567893692924707), chronological_coherence=1.0, source_credibility=np.float64(0.7272895581457257), cross_validation_score=0.5, temporal_pattern_strength=np.float64(0.07489483943777572), flow_reliability=np.float64(0.5765587557188357), semantic_coherence=np.float64(0.5333333333333333), overall_reliability=np.float64(0.6151028022273043), temporal_violations=[], credibility_factors={}, pattern_matches={})",
+          false,
+          "No timestamps within 365 days of query time"
+        ]
+      ],
+      "non_redundant_paths": [
+        [
+          "Path: DNA --[influences]--> Artificial Intelligence (score: 0.618)",
+          "TemporalReliabilityMetrics(temporal_consistency=np.float64(0.6341959770309641), chronological_coherence=1.0, source_credibility=np.float64(0.7100477148500397), cross_validation_score=0.5, temporal_pattern_strength=0.4, flow_reliability=np.float64(0.5651520615008906), semantic_coherence=np.float64(0.4666666666666666), overall_reliability=np.float64(0.6599046909686693), temporal_violations=[], credibility_factors={}, pattern_matches={})"
+        ],
+        [
+          "Path: James Watson --[discovered_structure]--> DNA --[influences]--> Artificial Intelligence (score: 0.572)",
+          "TemporalReliabilityMetrics(temporal_consistency=np.float64(0.5567893692924707), chronological_coherence=1.0, source_credibility=np.float64(0.7272895581457257), cross_validation_score=0.5, temporal_pattern_strength=np.float64(0.07489483943777572), flow_reliability=np.float64(0.5765587557188357), semantic_coherence=np.float64(0.5333333333333333), overall_reliability=np.float64(0.6151028022273043), temporal_violations=[], credibility_factors={}, pattern_matches={})"
+        ]
+      ]
+    },
+    {
+      "query_config": {
+        "query_text": "How did \"ww2\" accelerate \"computer\" and \"artificial_intelligence\" and \"turing\" development?",
+        "source_entities": [
+          "ww2"
+        ],
+        "target_entities": [
+          "computer",
+          "artificial_intelligence",
+          "turing"
+        ],
+        "temporal_constraints": {
+          "temporal_preference": "wartime"
+        },
+        "query_time": "1945-01-01",
+        "max_hops": 3,
+        "top_k": 8,
+        "expected_temporal_pattern": "crisis_acceleration",
+        "description": "Tests how historical events accelerate scientific development"
+      },
+      "execution_time": 0.06159687042236328,
+      "total_paths_discovered": 5,
+      "total_paths_after_pruning": 5,
+      "final_paths": 3,
+      "temporally_valid_paths": 0,
+      "non_redundant_paths_count": 2,
+      "average_reliability": 0.628775757246544,
+      "temporal_validation_results": [
+        [
+          "Path: Computer --[led_to]--> Internet --[enabled]--> Artificial Intelligence (score: 0.568)",
+          "TemporalReliabilityMetrics(temporal_consistency=np.float64(0.6050184643084905), chronological_coherence=1.0, source_credibility=np.float64(0.727856434532835), cross_validation_score=0.5, temporal_pattern_strength=np.float64(0.06661799598466873), flow_reliability=np.float64(0.609153747523799), semantic_coherence=np.float64(0.6444444444444445), overall_reliability=np.float64(0.6352324778301169), temporal_violations=[], credibility_factors={}, pattern_matches={})",
+          false,
+          "No timestamps within 365 days of query time"
+        ],
+        [
+          "Path: Computer --[enabled]--> Artificial Intelligence (score: 0.689)",
+          "TemporalReliabilityMetrics(temporal_consistency=np.float64(0.46973384068660273), chronological_coherence=1.0, source_credibility=np.float64(0.7900477148500397), cross_validation_score=0.5, temporal_pattern_strength=0.4, flow_reliability=np.float64(0.5937047138271268), semantic_coherence=np.float64(0.4666666666666666), overall_reliability=np.float64(0.6336444221152027), temporal_violations=[], credibility_factors={}, pattern_matches={})",
+          false,
+          "No timestamps within 365 days of query time"
+        ],
+        [
+          "Path: World War II --[accelerated]--> Computer --[led_to]--> Internet --[enabled]--> Artificial Intelligence (score: 0.563)",
+          "TemporalReliabilityMetrics(temporal_consistency=np.float64(0.5460079558402635), chronological_coherence=np.float64(0.9170093784586707), source_credibility=np.float64(0.6589012896943915), cross_validation_score=0.5, temporal_pattern_strength=np.float64(0.39357488204112545), flow_reliability=np.float64(0.56853825484241), semantic_coherence=np.float64(0.5499999999999999), overall_reliability=np.float64(0.6174503717943123), temporal_violations=[], credibility_factors={}, pattern_matches={})",
+          false,
+          "No timestamps within 365 days of query time"
+        ]
+      ],
+      "non_redundant_paths": [
+        [
+          "Path: Computer --[led_to]--> Internet --[enabled]--> Artificial Intelligence (score: 0.568)",
+          "TemporalReliabilityMetrics(temporal_consistency=np.float64(0.6050184643084905), chronological_coherence=1.0, source_credibility=np.float64(0.727856434532835), cross_validation_score=0.5, temporal_pattern_strength=np.float64(0.06661799598466873), flow_reliability=np.float64(0.609153747523799), semantic_coherence=np.float64(0.6444444444444445), overall_reliability=np.float64(0.6352324778301169), temporal_violations=[], credibility_factors={}, pattern_matches={})"
+        ],
+        [
+          "Path: Computer --[enabled]--> Artificial Intelligence (score: 0.689)",
+          "TemporalReliabilityMetrics(temporal_consistency=np.float64(0.46973384068660273), chronological_coherence=1.0, source_credibility=np.float64(0.7900477148500397), cross_validation_score=0.5, temporal_pattern_strength=0.4, flow_reliability=np.float64(0.5937047138271268), semantic_coherence=np.float64(0.4666666666666666), overall_reliability=np.float64(0.6336444221152027), temporal_violations=[], credibility_factors={}, pattern_matches={})"
+        ]
+      ]
+    },
+    {
+      "query_config": {
+        "query_text": "Trace how \"origin_of_species\" publishing evolved to \"nature_journal\" and \"dna\" genetics",
+        "source_entities": [
+          "origin_of_species"
+        ],
+        "target_entities": [
+          "nature_journal",
+          "dna"
+        ],
+        "temporal_constraints": {
+          "temporal_preference": "publication"
+        },
+        "query_time": "1970-01-01",
+        "max_hops": 4,
+        "top_k": 10,
+        "expected_temporal_pattern": "knowledge_dissemination",
+        "description": "Tests evolution of scientific communication"
+      },
+      "execution_time": 0.03490304946899414,
+      "total_paths_discovered": 2,
+      "total_paths_after_pruning": 2,
+      "final_paths": 1,
+      "temporally_valid_paths": 0,
+      "non_redundant_paths_count": 1,
+      "average_reliability": 0.6094786944138318,
+      "temporal_validation_results": [
+        [
+          "Path: Nature Journal --[published]--> DNA (score: 0.669)",
+          "TemporalReliabilityMetrics(temporal_consistency=np.float64(0.48556682643315996), chronological_coherence=1.0, source_credibility=np.float64(0.618384319211529), cross_validation_score=0.5, temporal_pattern_strength=0.4, flow_reliability=np.float64(0.5699600659047925), semantic_coherence=np.float64(0.4666666666666666), overall_reliability=np.float64(0.6094786944138318), temporal_violations=[], credibility_factors={}, pattern_matches={})",
+          false,
+          "No timestamps within 365 days of query time"
+        ]
+      ],
+      "non_redundant_paths": [
+        [
+          "Path: Nature Journal --[published]--> DNA (score: 0.669)",
+          "TemporalReliabilityMetrics(temporal_consistency=np.float64(0.48556682643315996), chronological_coherence=1.0, source_credibility=np.float64(0.618384319211529), cross_validation_score=0.5, temporal_pattern_strength=0.4, flow_reliability=np.float64(0.5699600659047925), semantic_coherence=np.float64(0.4666666666666666), overall_reliability=np.float64(0.6094786944138318), temporal_violations=[], credibility_factors={}, pattern_matches={})"
+        ]
+      ]
+    }
+  ],
+  "challenging_queries": [
+    {
+      "query_config": {
+        "query_text": "Trace the evolution from \"darwin\" to \"dna\" and \"genetics\"",
+        "source_entities": [
+          "darwin"
+        ],
+        "target_entities": [
+          "dna",
+          "genetics"
+        ],
+        "temporal_constraints": {
+          "temporal_preference": "chronological"
+        },
+        "query_time": "1950-01-01",
+        "max_hops": 4,
+        "top_k": 10,
+        "expected_temporal_pattern": "progressive",
+        "description": "Tests long-term scientific evolution across multiple decades"
+      },
+      "execution_time": 0.15479779243469238,
+      "total_paths_discovered": 5,
+      "total_paths_after_pruning": 5,
+      "final_paths": 0,
+      "temporally_valid_paths": 0,
+      "non_redundant_paths_count": 0,
+      "average_reliability": 0.0,
+      "temporal_validation_results": [],
+      "non_redundant_paths": []
+    },
+    {
+      "query_config": {
+        "query_text": "Find connections between \"microscope\" and \"dna\", \"watson\", \"crick\"",
+        "source_entities": [
+          "microscope"
+        ],
+        "target_entities": [
+          "dna",
+          "watson",
+          "crick"
+        ],
+        "temporal_constraints": {
+          "temporal_preference": "technological"
+        },
+        "query_time": "1955-01-01",
+        "max_hops": 5,
+        "top_k": 12,
+        "expected_temporal_pattern": "technological_enablement",
+        "description": "Tests how technology enables scientific breakthroughs"
+      },
+      "execution_time": 8.916854858398438e-05,
+      "total_paths_discovered": 0,
+      "total_paths_after_pruning": 0,
+      "final_paths": 0,
+      "temporally_valid_paths": 0,
+      "non_redundant_paths_count": 0,
+      "average_reliability": 0.0,
+      "temporal_validation_results": [],
+      "non_redundant_paths": []
+    },
+    {
+      "query_config": {
+        "query_text": "Find paths from \"curie\" and \"einstein\" Nobel Prize winners to \"watson\" and \"crick\" laureates",
+        "source_entities": [
+          "curie",
+          "einstein"
+        ],
+        "target_entities": [
+          "watson",
+          "crick"
+        ],
+        "temporal_constraints": {
+          "temporal_preference": "recognition"
+        },
+        "query_time": "1965-01-01",
+        "max_hops": 3,
+        "top_k": 8,
+        "expected_temporal_pattern": "recognition_influence",
+        "description": "Tests how early achievements influence later recognition"
+      },
+      "execution_time": 0.009804964065551758,
+      "total_paths_discovered": 0,
+      "total_paths_after_pruning": 0,
+      "final_paths": 0,
+      "temporally_valid_paths": 0,
+      "non_redundant_paths_count": 0,
+      "average_reliability": 0.0,
+      "temporal_validation_results": [],
+      "non_redundant_paths": []
+    },
+    {
+      "query_config": {
+        "query_text": "How did \"mendel\" and \"pasteur\" 19th century science influence \"hawking\" and \"turing\" 20th century breakthroughs?",
+        "source_entities": [
+          "mendel",
+          "pasteur"
+        ],
+        "target_entities": [
+          "hawking",
+          "turing"
+        ],
+        "temporal_constraints": {
+          "temporal_preference": "generational"
+        },
+        "query_time": "1980-01-01",
+        "max_hops": 5,
+        "top_k": 15,
+        "expected_temporal_pattern": "generational_influence",
+        "description": "Tests influence across different scientific generations"
+      },
+      "execution_time": 0.00010895729064941406,
+      "total_paths_discovered": 0,
+      "total_paths_after_pruning": 0,
+      "final_paths": 0,
+      "temporally_valid_paths": 0,
+      "non_redundant_paths_count": 0,
+      "average_reliability": 0.0,
+      "temporal_validation_results": [],
+      "non_redundant_paths": []
+    }
+  ],
+  "temporal_issues": [
+    [
+      "Tests institutional influence on field development",
+      2
+    ],
+    [
+      "Tests how historical events accelerate scientific development",
+      3
+    ],
+    [
+      "Tests convergence of different scientific disciplines",
+      1
+    ],
+    [
+      "Tests evolution of scientific communication",
+      1
+    ],
+    [
+      "Tests recent scientific convergence patterns",
+      2
+    ],
+    [
+      "Tests complex multi-hop temporal reasoning",
+      1
+    ]
+  ],
+  "parameter_optimisation": [
+    [
+      {
+        "alpha": 0.05,
+        "theta": 0.5,
+        "execution_time": 0.15131807327270508,
+        "paths_found": 6,
+        "avg_reliability": 0.6077560288669357,
+        "success": true
+      },
+      {
+        "alpha": 0.05,
+        "theta": 1.0,
+        "execution_time": 0.1499021053314209,
+        "paths_found": 6,
+        "avg_reliability": 0.6077560288669357,
+        "success": true
+      },
+      {
+        "alpha": 0.05,
+        "theta": 1.5,
+        "execution_time": 0.16442108154296875,
+        "paths_found": 6,
+        "avg_reliability": 0.6077560288669357,
+        "success": true
+      },
+      {
+        "alpha": 0.05,
+        "theta": 2.0,
+        "execution_time": 0.14794492721557617,
+        "paths_found": 6,
+        "avg_reliability": 0.6077560288669357,
+        "success": true
+      },
+      {
+        "alpha": 0.1,
+        "theta": 0.5,
+        "execution_time": 0.1618974208831787,
+        "paths_found": 6,
+        "avg_reliability": 0.6038698342059835,
+        "success": true
+      },
+      {
+        "alpha": 0.1,
+        "theta": 1.0,
+        "execution_time": 0.14449405670166016,
+        "paths_found": 6,
+        "avg_reliability": 0.6038698342059835,
+        "success": true
+      },
+      {
+        "alpha": 0.1,
+        "theta": 1.5,
+        "execution_time": 0.1474599838256836,
+        "paths_found": 6,
+        "avg_reliability": 0.6038698342059835,
+        "success": true
+      },
+      {
+        "alpha": 0.1,
+        "theta": 2.0,
+        "execution_time": 0.13239598274230957,
+        "paths_found": 6,
+        "avg_reliability": 0.6038698342059835,
+        "success": true
+      },
+      {
+        "alpha": 0.15,
+        "theta": 0.5,
+        "execution_time": 0.14385509490966797,
+        "paths_found": 6,
+        "avg_reliability": 0.6026587112040531,
+        "success": true
+      },
+      {
+        "alpha": 0.15,
+        "theta": 1.0,
+        "execution_time": 0.1410379409790039,
+        "paths_found": 6,
+        "avg_reliability": 0.6026587112040531,
+        "success": true
+      },
+      {
+        "alpha": 0.15,
+        "theta": 1.5,
+        "execution_time": 0.17584609985351562,
+        "paths_found": 6,
+        "avg_reliability": 0.6026587112040531,
+        "success": true
+      },
+      {
+        "alpha": 0.15,
+        "theta": 2.0,
+        "execution_time": 0.15067219734191895,
+        "paths_found": 6,
+        "avg_reliability": 0.6026587112040531,
+        "success": true
+      },
+      {
+        "alpha": 0.2,
+        "theta": 0.5,
+        "execution_time": 0.14962291717529297,
+        "paths_found": 6,
+        "avg_reliability": 0.6023619284991231,
+        "success": true
+      },
+      {
+        "alpha": 0.2,
+        "theta": 1.0,
+        "execution_time": 0.14236783981323242,
+        "paths_found": 6,
+        "avg_reliability": 0.6023619284991231,
+        "success": true
+      },
+      {
+        "alpha": 0.2,
+        "theta": 1.5,
+        "execution_time": 0.14240002632141113,
+        "paths_found": 6,
+        "avg_reliability": 0.6023619284991231,
+        "success": true
+      },
+      {
+        "alpha": 0.2,
+        "theta": 2.0,
+        "execution_time": 0.1558089256286621,
+        "paths_found": 6,
+        "avg_reliability": 0.6023619284991231,
+        "success": true
+      },
+      {
+        "alpha": 0.3,
+        "theta": 0.5,
+        "execution_time": 0.15005087852478027,
+        "paths_found": 6,
+        "avg_reliability": 0.6022794779474953,
+        "success": true
+      },
+      {
+        "alpha": 0.3,
+        "theta": 1.0,
+        "execution_time": 0.13674092292785645,
+        "paths_found": 6,
+        "avg_reliability": 0.6022794779474953,
+        "success": true
+      },
+      {
+        "alpha": 0.3,
+        "theta": 1.5,
+        "execution_time": 0.14368081092834473,
+        "paths_found": 6,
+        "avg_reliability": 0.6022794779474953,
+        "success": true
+      },
+      {
+        "alpha": 0.3,
+        "theta": 2.0,
+        "execution_time": 0.1628859043121338,
+        "paths_found": 6,
+        "avg_reliability": 0.6022794779474953,
+        "success": true
+      }
+    ],
+    {
+      "0.05": {
+        "avg_reliability": 0.6077560288669357,
+        "avg_paths": 6.0,
+        "avg_time": 0.15339654684066772
+      },
+      "0.1": {
+        "avg_reliability": 0.6038698342059835,
+        "avg_paths": 6.0,
+        "avg_time": 0.146561861038208
+      },
+      "0.15": {
+        "avg_reliability": 0.6026587112040531,
+        "avg_paths": 6.0,
+        "avg_time": 0.1528528332710266
+      },
+      "0.2": {
+        "avg_reliability": 0.6023619284991231,
+        "avg_paths": 6.0,
+        "avg_time": 0.14754992723464966
+      },
+      "0.3": {
+        "avg_reliability": 0.6022794779474953,
+        "avg_paths": 6.0,
+        "avg_time": 0.1483396291732788
+      }
+    },
+    {
+      "0.5": {
+        "avg_reliability": 0.6037851961447182,
+        "avg_paths": 6.0,
+        "avg_time": 0.151348876953125
+      },
+      "1.0": {
+        "avg_reliability": 0.6037851961447182,
+        "avg_paths": 6.0,
+        "avg_time": 0.14290857315063477
+      },
+      "1.5": {
+        "avg_reliability": 0.6037851961447182,
+        "avg_paths": 6.0,
+        "avg_time": 0.15476160049438475
+      },
+      "2.0": {
+        "avg_reliability": 0.6037851961447182,
+        "avg_paths": 6.0,
+        "avg_time": 0.1499415874481201
+      }
+    }
+  ]
+}

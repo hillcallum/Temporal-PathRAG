@@ -252,8 +252,8 @@ class PathExplanation:
 class FlowPruningConfig:
     """Configuration for temporal flow pruning"""
     
-    alpha: float = 0.1  # Temporal decay rate
-    base_theta: float = 1.0  # Base pruning threshold
+    alpha: float = 0.01  # Temporal decay rate (optimized)
+    base_theta: float = 0.1  # Base pruning threshold (optimized)
     diversity_threshold: float = 0.7  # Diversity constraint
     reliability_threshold: float = 0.6  # Reliability threshold
     enable_cross_validation: bool = True

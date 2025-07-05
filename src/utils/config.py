@@ -89,7 +89,7 @@ class TemporalPathRAGConfig:
     def initialise_temporal_config(self) -> Dict[str, Any]:
         """Initialise temporal scoring configuration"""
         return {
-            "decay_rate": 0.1,
+            "decay_rate": 0.01,
             "temporal_window_days": 365,
             "chronological_weight": 0.3,
             "proximity_weight": 0.4,

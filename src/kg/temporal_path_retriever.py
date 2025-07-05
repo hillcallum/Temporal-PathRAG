@@ -39,8 +39,8 @@ class TemporalPathRetriever:
                  graph: nx.DiGraph,
                  temporal_weighting: TemporalWeightingFunction = None,
                  device: torch.device = None,
-                 alpha: float = 0.1,
-                 base_theta: float = 1.0,
+                 alpha: float = 0.01,
+                 base_theta: float = 0.1,
                  diversity_threshold: float = 0.7):
         """
         Initialise temporal path retriever

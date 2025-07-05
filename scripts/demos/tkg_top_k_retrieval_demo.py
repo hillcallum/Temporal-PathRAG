@@ -165,8 +165,8 @@ def flow_based_pruning():
     # Initialise temporal path retriever
     retriever = TemporalPathRetriever(
         graph=graph,
-        alpha=0.15,  # Moderate temporal decay
-        base_theta=1.2,  # Moderate pruning threshold
+        alpha=0.01,  # Optimal temporal decay
+        base_theta=0.1,  # Optimal pruning threshold
         diversity_threshold=0.7
     )
     
@@ -287,8 +287,8 @@ def top_k_retrieval():
     query_engine = TKGQueryEngine(
         graph=graph,
         graph_statistics=graph_stats,
-        alpha=0.12,  # Temporal decay rate
-        base_theta=1.1,  # Pruning threshold
+        alpha=0.01,  # Optimal temporal decay rate
+        base_theta=0.1,  # Optimal pruning threshold
         reliability_threshold=0.65,
         diversity_threshold=0.75
     )

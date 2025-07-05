@@ -202,8 +202,8 @@ class TKGQueryEngine:
     def __init__(self, 
                  graph: nx.DiGraph,
                  graph_statistics: Dict[str, Any] = None,
-                 alpha: float = 0.1,
-                 base_theta: float = 1.0,
+                 alpha: float = 0.01,
+                 base_theta: float = 0.1,
                  reliability_threshold: float = 0.6,
                  diversity_threshold: float = 0.7,
                  device: Optional[str] = None):

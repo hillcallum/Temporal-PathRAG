@@ -34,8 +34,8 @@ class TemporalPathTraversal:
         self.temporal_flow_pruning = TemporalFlowPruning(
             temporal_weighting=self.temporal_weighting,
             temporal_mode=temporal_mode,
-            alpha=0.1,  # Temporal decay rate alpha
-            base_theta=1.0  # Base pruning threshold theta
+            alpha=0.01,  # Temporal decay rate alpha (optimized)
+            base_theta=0.1  # Base pruning threshold theta (optimized)
         )
         
         # Setup device for GPU acceleration
