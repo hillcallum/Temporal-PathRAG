@@ -14,9 +14,9 @@ from datetime import datetime
 from src.kg.temporal_iterative_reasoner import TemporalIterativeReasoner
 from src.kg.tkg_query_engine import TKGQueryEngine
 from src.llm.llm_manager import LLMManager
-from src.utils.config import Config
-from src.utils.dataset_loader import DatasetLoader
-from src.utils.device import DeviceManager
+from src.utils.config import get_config
+from src.utils.device import get_device
+from src.llm.config import llm_config
 
 
 def load_sample_graph():
@@ -84,8 +84,8 @@ def run_iterative_reasoning_demo():
     print()
     
     # Load configuration
-    config = Config()
-    device_manager = DeviceManager()
+    config = get_config()
+    device = get_device()
     
     # Load sample graph
     graph = load_sample_graph()
@@ -93,14 +93,14 @@ def run_iterative_reasoning_demo():
     print()
     
     # Initialise LLM manager
-    llm_manager = LLMManager(config)
+    llm_manager = LLMManager(llm_config)
     
     # Initialise TKG Query Engine
     tkg_engine = TKGQueryEngine(
         graph=graph,
         alpha=0.01,
         base_theta=0.1,
-        device=device_manager.get_device()
+        device=device
     )
     
     # Initialise Iterative Reasoner
@@ -169,8 +169,7 @@ def test_query_decomposition():
     print()
     
     # Initialise LLM manager
-    config = Config()
-    llm_manager = LLMManager(config)
+    llm_manager = LLMManager(llm_config)
     
     from src.kg.temporal_iterative_reasoner import TemporalQueryDecomposer
     decomposer = TemporalQueryDecomposer(llm_manager)
@@ -209,8 +208,7 @@ def main():
     
     # Check if LLM is available
     try:
-        config = Config()
-        llm_manager = LLMManager(config)
+        llm_manager = LLMManager(llm_config)
         
         # Test basic LLM functionality
         test_response = llm_manager.generate_response("Hello, this is a test.")
