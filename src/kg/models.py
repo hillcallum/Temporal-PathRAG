@@ -3,7 +3,8 @@ PathRAG data models for representing nodes, edges, and paths in knowledge graphs
 Following 'PathRAG: Pruning Graph-based Retrieval Augmented Generation with Relational Paths' 
 by B. Chen et al. (2025)
 
-Enhanced with temporal query processing and result models for TKG operations.
+Enhanced with temporal query processing and result models for TKG operations
+Includes KG-IRAG iterative reasoning models for temporal multi-hop reasoning
 """
 
 from dataclasses import dataclass, field
@@ -252,8 +253,8 @@ class PathExplanation:
 class FlowPruningConfig:
     """Configuration for temporal flow pruning"""
     
-    alpha: float = 0.01  # Temporal decay rate (optimized)
-    base_theta: float = 0.1  # Base pruning threshold (optimized)
+    alpha: float = 0.01  # Temporal decay rate (optimised)
+    base_theta: float = 0.1  # Base pruning threshold (optimised)
     diversity_threshold: float = 0.7  # Diversity constraint
     reliability_threshold: float = 0.6  # Reliability threshold
     enable_cross_validation: bool = True
@@ -337,3 +338,32 @@ class GraphStatistics:
             
             frequency_score = min(frequency / self.max_relation_frequency, 1.0)
             return 0.3 + 0.4 * frequency_score
+
+
+# KG-IRAG ITERATIVE REASONING MODELS
+
+@dataclass
+class IterativeStep:
+    """Represents one step in the iterative reasoning process"""
+    
+    step_id: int
+    sub_query: str
+    temporal_constraints: Dict[str, Any]
+    retrieved_paths: List[Tuple[Path, TemporalReliabilityMetrics]]
+    reasoning_context: str
+    is_sufficient: bool = False
+    next_exploration_hints: List[str] = field(default_factory=list)
+    temporal_coverage: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class IterativeResult:
+    """Final result of iterative reasoning process"""
+    
+    original_query: str
+    final_answer: str
+    reasoning_steps: List[IterativeStep]
+    total_paths_retrieved: int
+    total_execution_time: float
+    convergence_reason: str  # 'sufficient_evidence', 'max_iterations', 'no_progress'
+    temporal_coverage: Dict[str, Any] = field(default_factory=dict)
