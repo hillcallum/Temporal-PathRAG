@@ -68,10 +68,10 @@ def run_temporal_queries(traversal: TemporalPathTraversal):
         
         # Find temporally-scored paths
         paths = traversal.find_paths(
-            source_node_id=query['source'],
-            target_node_id=query['target'],
-            max_hops=3,
-            top_k=3,
+            source_id=query['source'],
+            target_id=query['target'],
+            max_depth=3,
+            max_paths=3,
             query_time=query['query_time']
         )
         

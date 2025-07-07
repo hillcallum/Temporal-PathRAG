@@ -116,6 +116,105 @@ class TemporalGraphDatabase:
         
         return loaded_count
     
+    def load_dataset_from_structure(self, dataset_path: str):
+        """Load dataset from directory structure (MultiTQ/TimeQuestions format)"""
+        dataset_path = Path(dataset_path)
+        
+        # Look for knowledge graph file in typical locations
+        possible_kg_files = [
+            dataset_path / "kg" / "full.txt",
+            dataset_path / "full.txt", 
+            dataset_path / "kg" / "temporal_kg.txt"
+        ]
+        
+        kg_file = None
+        for path in possible_kg_files:
+            if path.exists():
+                kg_file = path
+                break
+                
+        if not kg_file:
+            raise FileNotFoundError(f"No knowledge graph file found in {dataset_path}")
+            
+        print(f"Loading temporal KG from {kg_file}")
+        
+        # Load quadruplets directly without temporary file to avoid disk space issues
+        dataset_name = dataset_path.name
+        
+        print(f"Loading quadruplets from {kg_file} for {dataset_name}")
+        
+        loaded_count = 0
+        skipped_count = 0
+        
+        with open(kg_file, 'r') as f:
+            for line_num, line in enumerate(f, 1):
+                line = line.strip()
+                if not line or line.startswith('#'):
+                    continue
+                    
+                parts = line.split('\t')
+                if len(parts) >= 4:
+                    subject, predicate, obj, timestamp = parts[:4]
+                elif len(parts) == 3:
+                    # Handle triplets by adding a default timestamp
+                    subject, predicate, obj = parts
+                    timestamp = "unknown"
+                else:
+                    skipped_count += 1
+                    continue
+                
+                # Add nodes if they don't exist
+                if not self.main_graph.has_node(subject):
+                    self.main_graph.add_node(subject, 
+                                           node_type="entity",
+                                           dataset=dataset_name,
+                                           first_seen=timestamp)
+                
+                if not self.main_graph.has_node(obj):
+                    self.main_graph.add_node(obj,
+                                           node_type="entity", 
+                                           dataset=dataset_name,
+                                           first_seen=timestamp)
+                
+                # Create unique edge key for temporal indexing
+                edge_key = f"{subject}-{predicate}-{obj}-{timestamp}"
+                
+                # Add temporal edge with comprehensive attributes
+                self.main_graph.add_edge(subject, obj,
+                                       key=edge_key,
+                                       relation=predicate,
+                                       timestamp=timestamp,
+                                       dataset=dataset_name,
+                                       edge_type="temporal")
+                
+                # Add to temporal index for efficient time-based queries
+                self.temporal_index[timestamp].add(edge_key)
+                
+                # Add to entity relationship graph (non-temporal)
+                if not self.entity_graph.has_edge(subject, obj):
+                    self.entity_graph.add_edge(subject, obj, 
+                                             relations=set([predicate]),
+                                             datasets=set([dataset_name]))
+                else:
+                    self.entity_graph[subject][obj]['relations'].add(predicate)
+                    self.entity_graph[subject][obj]['datasets'].add(dataset_name)
+                
+                loaded_count += 1
+                
+                if loaded_count % 50000 == 0:
+                    print(f"Loaded {loaded_count:,} quadruplets")
+        
+        # Update metadata
+        self.metadata["datasets"].append(dataset_name)
+        self.metadata["total_quadruplets"] += loaded_count
+        self.stats["datasets_loaded"].append(dataset_name)
+        
+        print(f"Successfully loaded {loaded_count:,} quadruplets from {dataset_name}")
+        if skipped_count > 0:
+            print(f"Skipped {skipped_count:,} invalid quadruplets")
+        
+        return loaded_count
+    
     def update_statistics(self):
         """Update graph statistics for verification"""
         self.stats["nodes"] = self.main_graph.number_of_nodes()
@@ -336,6 +435,22 @@ class TemporalGraphDatabase:
         except Exception as e:
             print(f"Error loading database: {e}")
             print("Starting with fresh database")
+    
+    def get_main_graph(self):
+        """Return the main temporal graph"""
+        return self.main_graph
+    
+    def get_statistics(self):
+        """Return current statistics"""
+        # Update statistics to include metadata
+        stats = self.stats.copy()
+        stats.update({
+            "total_quadruplets": self.metadata.get("total_quadruplets", 0),
+            "unique_entities": self.metadata.get("unique_entities", 0),
+            "unique_relations": self.metadata.get("unique_relations", 0),
+            "unique_timestamps": self.metadata.get("unique_timestamps", 0)
+        })
+        return stats
 
 
 def main():

@@ -14,7 +14,7 @@ class TemporalPathTraversal:
     GPU-accelerated Temporal PathRAG path traversal implementation
     """
     
-    def __init__(self, graph: nx.DiGraph, device: torch.device = None, 
+    def __init__(self, graph: nx.MultiDiGraph, device: torch.device = None, 
                  temporal_mode: TemporalRelevanceMode = TemporalRelevanceMode.EXPONENTIAL_DECAY):
         self.graph = graph
         self.path_cache: Dict[str, List[Path]] = {}
@@ -75,6 +75,47 @@ class TemporalPathTraversal:
         if self.device.type == 'cuda' and torch.cuda.is_available():
             torch.cuda.empty_cache()
             print("GPU memory cache cleared")
+    
+    def get_edge_data_for_multigraph(self, source_node: str, target_node: str) -> Dict:
+        """
+        Get edge data for MultiDiGraph, handling multiple edges between same nodes.
+        Returns the most recent edge data based on timestamp, or first edge if no timestamps.
+        """
+        if not self.graph.has_edge(source_node, target_node):
+            return {}
+        
+        # Get all edges between the two nodes
+        edge_dict = self.graph.get_edge_data(source_node, target_node)
+        
+        if not edge_dict:
+            return {}
+        
+        # If there's only one edge, return it directly
+        if len(edge_dict) == 1:
+            return list(edge_dict.values())[0]
+        
+        # If multiple edges, try to find the most recent one based on timestamp
+        best_edge = None
+        latest_timestamp = None
+        
+        for edge_key, edge_data in edge_dict.items():
+            if 'timestamp' in edge_data:
+                try:
+                    # Try to parse timestamp for comparison
+                    timestamp = edge_data['timestamp']
+                    if latest_timestamp is None or timestamp > latest_timestamp:
+                        latest_timestamp = timestamp
+                        best_edge = edge_data
+                except (ValueError, TypeError):
+                    # If timestamp parsing fails, continue with next edge
+                    continue
+        
+        # If we found a timestamped edge, return it
+        if best_edge is not None:
+            return best_edge
+        
+        # Otherwise, return the first edge (fallback)
+        return list(edge_dict.values())[0]
         
     def init_sentence_transformer(self):
         """Initialise sentence transformer for GPU-accelerated semantic similarity"""
@@ -141,8 +182,8 @@ class TemporalPathTraversal:
                     if path_signature not in visited_paths and neighbour not in path_nodes:
                         visited_paths.add(path_signature)
                         
-                        # Get edge data
-                        edge_data = self.graph.get_edge_data(current_node, neighbour, {})
+                        # Get edge data (handle MultiDiGraph with multiple edges)
+                        edge_data = self.get_edge_data_for_multigraph(current_node, neighbour)
                         new_path_edges = path_edges + [(current_node, neighbour, edge_data)]
                         
                         queue.append((neighbour, new_path_nodes, new_path_edges))
@@ -204,7 +245,7 @@ class TemporalPathTraversal:
         
         if self.graph.has_node(node_id):
             for neighbour in self.graph.neighbors(node_id):
-                edge_data = self.graph.get_edge_data(node_id, neighbour, {})
+                edge_data = self.get_edge_data_for_multigraph(node_id, neighbour)
                 neighbours.append((neighbour, edge_data))
         
         return neighbours
