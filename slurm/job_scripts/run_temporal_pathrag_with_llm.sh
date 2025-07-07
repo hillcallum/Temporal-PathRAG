@@ -208,6 +208,7 @@ try:
         # Try to authenticate with HuggingFace (for gated models)
         try:
             from huggingface_hub import login
+            log_progress("HuggingFace authentication skipped (no token)")
         except ImportError:
             log_progress("HuggingFace hub not available, continuing without auth")
         
