@@ -626,3 +626,44 @@ class TemporalPathTraversal:
         return self.temporal_flow_pruning.flow_based_pruning_with_temporal_weighting(
             paths, top_k, query_time
         )
+    
+    def explore_neighbourhood(self, 
+                           source_node_id: str,
+                           max_hops: int = 2,
+                           top_k: int = 10) -> List[Path]:
+        """
+        Explore neighbourhood around a source node (useful for open-ended queries)
+        """
+        paths = []
+        visited = set()
+        
+        # BFS exploration
+        queue = deque([(source_node_id, [source_node_id], [])])
+        
+        while queue and len(paths) < top_k * 2:
+            current_node, path_nodes, path_edges = queue.popleft()
+            
+            path_signature = tuple(path_nodes)
+            if path_signature in visited:
+                continue
+            visited.add(path_signature)
+            
+            # Create path if long enough
+            if len(path_nodes) > 1:
+                path = self.construct_path_from_traversal(path_nodes, path_edges)
+                if path:
+                    paths.append(path)
+            
+            # Continue exploration
+            if len(path_nodes) < max_hops + 1:
+                neighbours = self.get_neighbours(current_node)
+                
+                for neighbour_id, edge_data in neighbours:
+                    if neighbour_id not in path_nodes:  # Avoid cycles
+                        new_path_nodes = path_nodes + [neighbour_id]
+                        new_path_edges = path_edges + [(current_node, neighbour_id, edge_data)]
+                        queue.append((neighbour_id, new_path_nodes, new_path_edges))
+        
+        # Score and return top paths
+        scored_paths = self.score_paths(paths)
+        return scored_paths[:top_k]

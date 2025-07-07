@@ -42,7 +42,8 @@ class TemporalPathRAGConfig:
         if base_dir is None:
             # Auto-detect project root (assume we're in src/)
             current_file = Path(__file__).resolve()
-            self.base_dir = current_file.parent.parent
+            # Go up from src/utils/config.py -> src/utils -> src -> project_root
+            self.base_dir = current_file.parent.parent.parent
         else:
             self.base_dir = Path(base_dir)
         
@@ -182,13 +183,7 @@ _global_config: Optional[TemporalPathRAGConfig] = None
 
 def get_config(base_dir: Optional[str] = None) -> TemporalPathRAGConfig:
     """
-    Get the global configuration instance.
-    
-    Args:
-        base_dir: Base directory override. Only used on first call.
-        
-    Returns:
-        Global TemporalPathRAGConfig instance
+    Get the global configuration instance
     """
     global _global_config
     if _global_config is None:
@@ -197,6 +192,6 @@ def get_config(base_dir: Optional[str] = None) -> TemporalPathRAGConfig:
 
 
 def set_config(config: TemporalPathRAGConfig) -> None:
-    """Set a custom global configuration."""
+    """Set a custom global configuration"""
     global _global_config
     _global_config = config
