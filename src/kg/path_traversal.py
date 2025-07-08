@@ -173,19 +173,20 @@ class TemporalPathTraversal:
             if len(path_nodes) >= max_depth + 1:
                 continue
             
-            # Explore neighbours
+            # Explore neighbours with multi-temporal edge support
             if current_node in self.graph:
-                for neighbour in self.graph.neighbors(current_node):
+                # Get all temporal edges to find multi-temporal sequences
+                neighbours = self.get_all_neighbours_with_temporal_edges(current_node)
+                
+                for neighbour, edge_data in neighbours:
                     new_path_nodes = path_nodes + [neighbour]
-                    path_signature = tuple(new_path_nodes)
+                    # Include timestamp in path signature for multi-temporal paths
+                    path_signature = tuple(new_path_nodes + [edge_data.get('timestamp', '')])
                     
                     if path_signature not in visited_paths and neighbour not in path_nodes:
                         visited_paths.add(path_signature)
                         
-                        # Get edge data (handle MultiDiGraph with multiple edges)
-                        edge_data = self.get_edge_data_for_multigraph(current_node, neighbour)
                         new_path_edges = path_edges + [(current_node, neighbour, edge_data)]
-                        
                         queue.append((neighbour, new_path_nodes, new_path_edges))
         
         # Score and cache results
@@ -247,6 +248,22 @@ class TemporalPathTraversal:
             for neighbour in self.graph.neighbors(node_id):
                 edge_data = self.get_edge_data_for_multigraph(node_id, neighbour)
                 neighbours.append((neighbour, edge_data))
+        
+        return neighbours
+    
+    def get_all_neighbours_with_temporal_edges(self, node_id: str) -> List[Tuple[str, Dict]]:
+        """Get all neighbouring nodes with all their temporal edges (not just the most recent)"""
+        neighbours = []
+        
+        if self.graph.has_node(node_id):
+            for neighbour in self.graph.neighbors(node_id):
+                # Get all edges between these nodes, not just the most recent
+                edge_dict = self.graph.get_edge_data(node_id, neighbour)
+                
+                if edge_dict:
+                    # Add each edge as a separate neighbour entry for multi-temporal exploration
+                    for edge_data in edge_dict.values():
+                        neighbours.append((neighbour, edge_data))
         
         return neighbours
     
@@ -633,6 +650,7 @@ class TemporalPathTraversal:
                            top_k: int = 10) -> List[Path]:
         """
         Explore neighbourhood around a source node (useful for open-ended queries)
+        Now finds multi-temporal sequences by exploring all edges between nodes
         """
         paths = []
         visited = set()
@@ -640,10 +658,12 @@ class TemporalPathTraversal:
         # BFS exploration
         queue = deque([(source_node_id, [source_node_id], [])])
         
-        while queue and len(paths) < top_k * 2:
+        while queue and len(paths) < top_k * 3:  # Increased to account for more temporal paths - might need to change
             current_node, path_nodes, path_edges = queue.popleft()
             
-            path_signature = tuple(path_nodes)
+            # Create a more detailed path signature that includes edge timestamps
+            # This allows multiple temporal paths between the same nodes
+            path_signature = tuple(path_nodes + [edge[2].get('timestamp', '') for edge in path_edges])
             if path_signature in visited:
                 continue
             visited.add(path_signature)
@@ -656,7 +676,8 @@ class TemporalPathTraversal:
             
             # Continue exploration
             if len(path_nodes) < max_hops + 1:
-                neighbours = self.get_neighbours(current_node)
+                # Use the new method to get all temporal edges, not just the most recent
+                neighbours = self.get_all_neighbours_with_temporal_edges(current_node)
                 
                 for neighbour_id, edge_data in neighbours:
                     if neighbour_id not in path_nodes:  # Avoid cycles
