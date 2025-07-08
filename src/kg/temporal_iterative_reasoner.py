@@ -16,6 +16,7 @@ from datetime import datetime
 
 from .tkg_query_engine import TKGQueryEngine
 from .models import TemporalQuery, Path, QueryResult, TemporalReliabilityMetrics, IterativeStep, IterativeResult
+from .temporal_stopping_controller import TemporalStoppingController
 from ..llm.llm_manager import LLMManager
 
 
@@ -130,6 +131,15 @@ class TemporalIterativeReasoner:
         # Initialise query decomposer
         self.temporal_decomposer = TemporalQueryDecomposer(llm_manager)
         
+        # Initialise temporal stopping controller
+        self.temporal_stopping_controller = TemporalStoppingController(
+            llm_manager=llm_manager,
+            temporal_coverage_threshold=temporal_coverage_threshold,
+            chain_satisfaction_threshold=0.8,
+            constraint_fulfillment_threshold=0.85,
+            overload_prevention_threshold=0.9
+        )
+        
         # Track reasoning state
         self.reasoning_history = []
         self.accumulated_context = ""
@@ -194,13 +204,28 @@ class TemporalIterativeReasoner:
             accumulated_paths.extend(sub_query_result.paths)
             total_paths_retrieved += len(sub_query_result.paths)
             
-            # Evaluate sufficiency
-            step.is_sufficient, step.next_exploration_hints = self.evaluate_sufficiency(
-                query, step.reasoning_context, accumulated_paths
+            # Evaluate sufficiency using temporal stopping controller
+            temporal_query = TemporalQuery(query_text=query, query_type="complex")
+            stopping_decision = self.temporal_stopping_controller.should_stop(
+                temporal_query, accumulated_paths, step.reasoning_context, iteration, reasoning_steps
             )
             
-            # Calculate temporal coverage
-            step.temporal_coverage = self.calculate_temporal_coverage(accumulated_paths)
+            step.is_sufficient = stopping_decision.should_stop
+            step.next_exploration_hints = stopping_decision.next_exploration_hints
+            
+            # Update temporal coverage from stopping controller
+            step.temporal_coverage = {
+                "coverage_score": stopping_decision.temporal_coverage.coverage_score,
+                "temporal_span_days": stopping_decision.temporal_coverage.temporal_span_days,
+                "timestamp_count": stopping_decision.temporal_coverage.timestamp_count,
+                "chronological_continuity": stopping_decision.temporal_coverage.chronological_continuity,
+                "constraint_satisfaction": stopping_decision.temporal_coverage.constraint_satisfaction_score,
+                "stopping_criterion": stopping_decision.stopping_criterion,
+                "confidence": stopping_decision.confidence,
+                "reasoning": stopping_decision.reasoning
+            }
+            
+            # Temporal coverage already calculated by stopping controller above
             
             reasoning_steps.append(step)
             
@@ -209,9 +234,9 @@ class TemporalIterativeReasoner:
                 print(f"Sufficient: {step.is_sufficient}")
                 print(f"Temporal coverage: {step.temporal_coverage.get('coverage_score', 0):.2f}")
             
-            # Check convergence
-            if step.is_sufficient and step.temporal_coverage.get('coverage_score', 0) >= self.temporal_coverage_threshold:
-                convergence_reason = "sufficient_evidence"
+            # Check convergence using temporal stopping controller decision
+            if step.is_sufficient:
+                convergence_reason = step.temporal_coverage.get('stopping_criterion', 'sufficient_evidence')
                 break
             
             # Check if we're making progress

@@ -367,3 +367,45 @@ class IterativeResult:
     total_execution_time: float
     convergence_reason: str  # 'sufficient_evidence', 'max_iterations', 'no_progress'
     temporal_coverage: Dict[str, Any] = field(default_factory=dict)
+
+
+# TEMPORAL STOPPING CONTROLLER MODELS
+
+@dataclass
+class TemporalCoverageMetrics:
+    """Comprehensive temporal coverage assessment"""
+    
+    coverage_score: float = 0.0
+    temporal_span_days: int = 0
+    timestamp_count: int = 0
+    unique_timestamps: int = 0
+    temporal_density: float = 0.0
+    chronological_continuity: float = 0.0
+    temporal_distribution_score: float = 0.0
+    
+    # Temporal constraint satisfaction
+    constraint_satisfaction_score: float = 0.0
+    missing_temporal_constraints: List[str] = field(default_factory=list)
+    
+    # Temporal chain analysis
+    chain_completeness: float = 0.0
+    temporal_gaps: List[Dict[str, Any]] = field(default_factory=list)
+    causality_chain_score: float = 0.0
+
+
+@dataclass
+class TemporalStoppingDecision:
+    """Decision output from temporal stopping controller"""
+    
+    should_stop: bool
+    confidence: float
+    reasoning: str
+    stopping_criterion: str  # 'temporal_coverage', 'chain_satisfaction', 'constraint_fulfillment', 'overload_prevention'
+    
+    # Detailed temporal analysis
+    temporal_coverage: TemporalCoverageMetrics
+    next_exploration_hints: List[str] = field(default_factory=list)
+    
+    # Performance metrics
+    information_quality_score: float = 0.0
+    retrieval_efficiency_score: float = 0.0
