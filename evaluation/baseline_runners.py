@@ -1,5 +1,5 @@
 """
-Baseline system runners for comparison with Temporal PathRAG.
+Baseline system runners for comparison with Temporal PathRAG
 """
 
 import os
@@ -331,7 +331,7 @@ class PathRAGBaseline(BaselineRunner):
                 global_config={"embedding_cache_enabled": False}
             )
             
-            # Initialize PathRAG
+            # Initialise PathRAG
             pathrag = PathRAG(
                 working_dir=str(self.pathrag_dir / f"data_{dataset_name}"),
                 namespace=namespace,
@@ -485,7 +485,7 @@ class TemporalPathRAGBaseline(BaselineRunner):
         from src.kg.tkg_query_engine import TKGQueryEngine
         from src.kg.temporal_iterative_reasoner import TemporalIterativeReasoner
         
-        # Don't initialize query engine here - will be done when dataset is loaded
+        # Won't initialise query engine here - will be done when dataset is loaded
         self.query_engine = None
         self.reasoner = None
         
@@ -495,17 +495,19 @@ class TemporalPathRAGBaseline(BaselineRunner):
         start_time = time.time()
         
         # Load the appropriate dataset if not already loaded
-        if not hasattr(self, f'_{dataset_name}_loaded'):
+        # Use dataset name as key to check if we need to reload
+        if not hasattr(self, '_current_dataset') or self._current_dataset != dataset_name:
             from src.utils.dataset_loader import load_dataset
             from src.kg.tkg_query_engine import TKGQueryEngine
             from src.kg.temporal_iterative_reasoner import TemporalIterativeReasoner
             
-            graph = load_dataset(dataset_name)
+            # Load dataset with caching enabled
+            graph = load_dataset(dataset_name, use_cache=True)
             
-            # Initialize query engine with loaded graph
+            # Initialise query engine with loaded graph
             self.query_engine = TKGQueryEngine(graph)
             
-            # Initialize LLM manager
+            # Initialise LLM manager
             from src.llm.llm_manager import LLMManager
             llm_manager = LLMManager()
             
@@ -518,7 +520,7 @@ class TemporalPathRAGBaseline(BaselineRunner):
                 llm_manager=llm_manager,
                 **filtered_config
             )
-            setattr(self, f'_{dataset_name}_loaded', True)
+            self._current_dataset = dataset_name
             
         # Run temporal iterative reasoning
         result = self.reasoner.reason_iteratively(

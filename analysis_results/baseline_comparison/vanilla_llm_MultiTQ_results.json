@@ -1,7 +1,7 @@
 {
   "dataset": "MultiTQ",
   "split": "test",
-  "timestamp": "2025-07-10T18:23:42.301153",
+  "timestamp": "2025-07-10T19:04:52.756141",
   "overall_metrics": {
     "exact_match": 0.0,
     "f1_score": 0.0,
@@ -16,7 +16,7 @@
   },
   "efficiency_metrics": {
     "avg_retrieval_time": 0.0,
-    "avg_reasoning_time": 0.35085880756378174
+    "avg_reasoning_time": 0.4049426555633545
   },
   "breakdown": {
     "by_type": {
@@ -28,24 +28,9 @@
       "first_last": {
         "exact_match": 0.0,
         "f1_score": 0.0,
-        "count": 4
+        "count": 2
       },
       "before_last": {
-        "exact_match": 0.0,
-        "f1_score": 0.0,
-        "count": 1
-      },
-      "before_after": {
-        "exact_match": 0.0,
-        "f1_score": 0.0,
-        "count": 1
-      },
-      "equal_multi": {
-        "exact_match": 0.0,
-        "f1_score": 0.0,
-        "count": 1
-      },
-      "equal": {
         "exact_match": 0.0,
         "f1_score": 0.0,
         "count": 1
@@ -54,21 +39,17 @@
     "by_granularity": {
       "day": {
         "accuracy": 0.0,
-        "count": 6
+        "count": 4
       },
       "year": {
         "accuracy": 0.0,
-        "count": 2
-      },
-      "month": {
-        "accuracy": 0.0,
-        "count": 2
+        "count": 1
       }
     }
   },
   "error_analysis": {
-    "entity_error": 7,
-    "temporal_error": 3,
-    "missing_prediction": 54574
+    "entity_error": 3,
+    "temporal_error": 2,
+    "missing_prediction": 54579
   }
 }

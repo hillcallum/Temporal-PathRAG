@@ -1,7 +1,7 @@
 {
   "dataset": "MultiTQ",
   "split": "test",
-  "timestamp": "2025-07-10T18:41:39.964609",
+  "timestamp": "2025-07-10T19:06:23.965253",
   "overall_metrics": {
     "exact_match": 0.0,
     "f1_score": 0.0,
@@ -16,11 +16,21 @@
   },
   "efficiency_metrics": {
     "avg_retrieval_time": 0.0,
-    "avg_reasoning_time": 0.0
+    "avg_reasoning_time": 18.168005609512328
   },
   "breakdown": {
     "by_type": {
       "after_first": {
+        "exact_match": 0.0,
+        "f1_score": 0.0,
+        "count": 2
+      },
+      "first_last": {
+        "exact_match": 0.0,
+        "f1_score": 0.0,
+        "count": 2
+      },
+      "before_last": {
         "exact_match": 0.0,
         "f1_score": 0.0,
         "count": 1
@@ -29,12 +39,17 @@
     "by_granularity": {
       "day": {
         "accuracy": 0.0,
+        "count": 4
+      },
+      "year": {
+        "accuracy": 0.0,
         "count": 1
       }
     }
   },
   "error_analysis": {
-    "no_answer": 1,
-    "missing_prediction": 54583
+    "entity_error": 3,
+    "temporal_error": 2,
+    "missing_prediction": 54579
   }
 }
