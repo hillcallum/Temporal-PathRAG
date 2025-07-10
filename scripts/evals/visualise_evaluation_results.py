@@ -11,7 +11,7 @@ import seaborn as sns
 import pandas as pd
 import numpy as np
 
-sys.path.append(str(Path(__file__).parent.parent))
+sys.path.append(str(Path(__file__).parent.parent.parent))
 
 
 def load_results(results_dir: Path, dataset: str) -> dict:
@@ -73,7 +73,7 @@ def create_performance_comparison_plot(results: dict, dataset: str, output_dir: 
     for i, baseline in enumerate(df['Baseline']):
         if 'temporal_pathrag' in baseline.lower():
             for bars in [bars1, bars2, bars3]:
-                bars[i].set_edgecolour('red')
+                bars[i].set_edgecolor('red')
                 bars[i].set_linewidth(2)
     
     # Customise plot
@@ -121,10 +121,10 @@ def create_efficiency_plot(results: dict, dataset: str, output_dir: Path):
     
     # Create scatter plot
     for i, row in df.iterrows():
-        colour = 'red' if 'temporal_pathrag' in row['Baseline'].lower() else 'blue'
+        color = 'red' if 'temporal_pathrag' in row['Baseline'].lower() else 'blue'
         size = 150 if 'temporal_pathrag' in row['Baseline'].lower() else 100
         ax.scatter(row['Total Time (s)'], row['Exact Match'], 
-                  s=size, c=colour, alpha=0.7, edgecolours='black')
+                  s=size, c=color, alpha=0.7, edgecolors='black')
         ax.annotate(row['Baseline'], 
                    (row['Total Time (s)'], row['Exact Match']),
                    xytext=(5, 5), textcoords='offset points', fontsize=8)
@@ -136,8 +136,8 @@ def create_efficiency_plot(results: dict, dataset: str, output_dir: Path):
     ax.grid(True, alpha=0.3)
     
     # Add ideal region (high accuracy, low time)
-    ax.axhline(y=0.7, colour='green', linestyle='--', alpha=0.3, label='Good accuracy threshold')
-    ax.axvline(x=1.0, colour='orange', linestyle='--', alpha=0.3, label='Fast response threshold')
+    ax.axhline(y=0.7, color='green', linestyle='--', alpha=0.3, label='Good accuracy threshold')
+    ax.axvline(x=1.0, color='orange', linestyle='--', alpha=0.3, label='Fast response threshold')
     ax.legend()
     
     plt.tight_layout()
@@ -185,7 +185,7 @@ def create_breakdown_heatmap(results: dict, dataset: str, output_dir: Path):
     for i, baseline in enumerate(df.index):
         if 'temporal_pathrag' in baseline.lower():
             ax.add_patch(plt.Rectangle((0, i), df.shape[1], 1, 
-                                     fill=False, edgecolour='red', lw=3))
+                                     fill=False, edgecolor='red', lw=3))
     
     # Customise plot
     ax.set_title(f'Performance Breakdown by Question Type on {dataset}')
@@ -279,7 +279,7 @@ def main():
     parser.add_argument(
         "--output_dir",
         type=Path,
-        help="Output directory for visualisations (default: same as results)"
+        help="Output directory for visualisations"
     )
     
     args = parser.parse_args()

@@ -126,8 +126,8 @@ class TemporalQABenchmark(ABC):
             return self.compute_exact_match(predicted, gold)
             
         # For temporal answers, allow some flexibility based on granularity
-        pred_dates = self._extract_dates(predicted)
-        gold_dates = self._extract_dates(gold)
+        pred_dates = self.extract_dates(predicted)
+        gold_dates = self.extract_dates(gold)
         
         if not pred_dates or not gold_dates:
             return 0.0

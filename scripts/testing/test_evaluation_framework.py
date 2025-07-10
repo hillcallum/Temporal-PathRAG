@@ -66,11 +66,16 @@ def test_metrics_computation():
     print("=" * 60)
     
     try:
+        # Load full benchmark
+        full_benchmark = MultiTQBenchmark()
+        
+        # Create a smaller benchmark with only 5 questions for testing
         benchmark = MultiTQBenchmark()
+        benchmark.questions = full_benchmark.questions[:5]
         
         # Create mock predictions
         predictions = []
-        for i, question in enumerate(benchmark.questions[:5]):
+        for i, question in enumerate(benchmark.questions):
             # Create perfect prediction for first 3, wrong for last 2
             if i < 3:
                 pred_answers = question.answers

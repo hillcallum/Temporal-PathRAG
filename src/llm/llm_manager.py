@@ -80,11 +80,11 @@ class LLMManager:
         logger.error("No working LLM clients available")
         self.active_client = None
     
-    def generate_response(self, 
-                         prompt: str,
-                         max_tokens: Optional[int] = None,
-                         temperature: Optional[float] = None,
-                         fallback: bool = True) -> str:
+    def generate(self, 
+                prompt: str,
+                max_tokens: Optional[int] = None,
+                temperature: Optional[float] = None,
+                fallback: bool = True) -> str:
         """
         Generate response with automatic fallback
         """
@@ -237,6 +237,33 @@ class LLMManager:
         except Exception as e:
             logger.error(f"Failed to switch to client {client_name}: {e}")
             return False
+    
+    def get_current_model(self) -> str:
+        """Get the current active model name"""
+        if not self.active_client:
+            return "none"
+        
+        # Get model name from the active client
+        client_type = type(self.active_client).__name__
+        
+        # Try to get specific model name from client if available
+        if hasattr(self.active_client, 'model_name'):
+            return self.active_client.model_name
+        elif hasattr(self.active_client, 'config'):
+            # For OpenAI client
+            if hasattr(self.active_client.config, 'openai_model'):
+                return self.active_client.config.openai_model
+            # For Local LLM client
+            elif hasattr(self.active_client.config, 'local_llm_model'):
+                return self.active_client.config.local_llm_model
+        
+        # Fallback based on client type
+        if 'openai' in client_type.lower():
+            return 'gpt-3.5-turbo'
+        elif 'local' in client_type.lower():
+            return 'local-llm'
+        else:
+            return client_type
 
 # Global LLM manager instance
 llm_manager = LLMManager()

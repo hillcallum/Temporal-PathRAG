@@ -1,0 +1,372 @@
+[
+  {
+    "configuration": {
+      "use_temporal_weighting": true,
+      "use_temporal_pruning": true,
+      "use_temporal_stopping": true,
+      "use_iterative_reasoning": true,
+      "use_dynamic_depth": true,
+      "use_reliability_scoring": true,
+      "use_path_ordering": true,
+      "use_time_ordering": true,
+      "use_context_compression": true
+    },
+    "component_states": {
+      "temporal_weighting": true,
+      "temporal_flow_pruning": true,
+      "temporal_stopping": true,
+      "iterative_reasoning": true,
+      "dynamic_depth": true,
+      "path_reliability": true,
+      "path_ordering": true,
+      "time_ordered_context": true,
+      "context_compression": true
+    },
+    "metrics": {
+      "exact_match": 0.0,
+      "f1_score": 0.0,
+      "temporal_accuracy": 0.0,
+      "entity_accuracy": 0.0,
+      "avg_retrieval_time": 0.0,
+      "avg_reasoning_time": 0.0
+    },
+    "runtime": 7.720966,
+    "metadata": {
+      "num_questions": 5,
+      "timestamp": "2025-07-10T18:33:09.904862"
+    }
+  },
+  {
+    "configuration": {
+      "use_temporal_weighting": false,
+      "use_temporal_pruning": true,
+      "use_temporal_stopping": true,
+      "use_iterative_reasoning": true,
+      "use_dynamic_depth": true,
+      "use_reliability_scoring": true,
+      "use_path_ordering": true,
+      "use_time_ordering": true,
+      "use_context_compression": true
+    },
+    "component_states": {
+      "temporal_weighting": false,
+      "temporal_flow_pruning": true,
+      "temporal_stopping": true,
+      "iterative_reasoning": true,
+      "dynamic_depth": true,
+      "path_reliability": true,
+      "path_ordering": true,
+      "time_ordered_context": true,
+      "context_compression": true
+    },
+    "metrics": {
+      "exact_match": 0.0,
+      "f1_score": 0.0,
+      "temporal_accuracy": 0.0,
+      "entity_accuracy": 0.0,
+      "avg_retrieval_time": 0.0,
+      "avg_reasoning_time": 0.0
+    },
+    "runtime": 8.003643,
+    "metadata": {
+      "num_questions": 5,
+      "timestamp": "2025-07-10T18:33:17.939226"
+    }
+  },
+  {
+    "configuration": {
+      "use_temporal_weighting": true,
+      "use_temporal_pruning": false,
+      "use_temporal_stopping": true,
+      "use_iterative_reasoning": true,
+      "use_dynamic_depth": true,
+      "use_reliability_scoring": true,
+      "use_path_ordering": true,
+      "use_time_ordering": true,
+      "use_context_compression": true
+    },
+    "component_states": {
+      "temporal_weighting": true,
+      "temporal_flow_pruning": false,
+      "temporal_stopping": true,
+      "iterative_reasoning": true,
+      "dynamic_depth": true,
+      "path_reliability": true,
+      "path_ordering": true,
+      "time_ordered_context": true,
+      "context_compression": true
+    },
+    "metrics": {
+      "exact_match": 0.0,
+      "f1_score": 0.0,
+      "temporal_accuracy": 0.0,
+      "entity_accuracy": 0.0,
+      "avg_retrieval_time": 0.0,
+      "avg_reasoning_time": 0.0
+    },
+    "runtime": 8.311027,
+    "metadata": {
+      "num_questions": 5,
+      "timestamp": "2025-07-10T18:33:26.273979"
+    }
+  },
+  {
+    "configuration": {
+      "use_temporal_weighting": true,
+      "use_temporal_pruning": true,
+      "use_temporal_stopping": false,
+      "use_iterative_reasoning": true,
+      "use_dynamic_depth": true,
+      "use_reliability_scoring": true,
+      "use_path_ordering": true,
+      "use_time_ordering": true,
+      "use_context_compression": true
+    },
+    "component_states": {
+      "temporal_weighting": true,
+      "temporal_flow_pruning": true,
+      "temporal_stopping": false,
+      "iterative_reasoning": true,
+      "dynamic_depth": true,
+      "path_reliability": true,
+      "path_ordering": true,
+      "time_ordered_context": true,
+      "context_compression": true
+    },
+    "metrics": {
+      "exact_match": 0.0,
+      "f1_score": 0.0,
+      "temporal_accuracy": 0.0,
+      "entity_accuracy": 0.0,
+      "avg_retrieval_time": 0.0,
+      "avg_reasoning_time": 0.0
+    },
+    "runtime": 9.692694,
+    "metadata": {
+      "num_questions": 5,
+      "timestamp": "2025-07-10T18:33:35.997399"
+    }
+  },
+  {
+    "configuration": {
+      "use_temporal_weighting": true,
+      "use_temporal_pruning": true,
+      "use_temporal_stopping": true,
+      "use_iterative_reasoning": false,
+      "use_dynamic_depth": true,
+      "use_reliability_scoring": true,
+      "use_path_ordering": true,
+      "use_time_ordering": true,
+      "use_context_compression": true
+    },
+    "component_states": {
+      "temporal_weighting": true,
+      "temporal_flow_pruning": true,
+      "temporal_stopping": true,
+      "iterative_reasoning": false,
+      "dynamic_depth": true,
+      "path_reliability": true,
+      "path_ordering": true,
+      "time_ordered_context": true,
+      "context_compression": true
+    },
+    "metrics": {
+      "exact_match": 0.0,
+      "f1_score": 0.0,
+      "temporal_accuracy": 0.0,
+      "entity_accuracy": 0.0,
+      "avg_retrieval_time": 0.0,
+      "avg_reasoning_time": 0.0
+    },
+    "runtime": 7.262663,
+    "metadata": {
+      "num_questions": 5,
+      "timestamp": "2025-07-10T18:33:43.276903"
+    }
+  },
+  {
+    "configuration": {
+      "use_temporal_weighting": true,
+      "use_temporal_pruning": true,
+      "use_temporal_stopping": true,
+      "use_iterative_reasoning": true,
+      "use_dynamic_depth": false,
+      "use_reliability_scoring": true,
+      "use_path_ordering": true,
+      "use_time_ordering": true,
+      "use_context_compression": true
+    },
+    "component_states": {
+      "temporal_weighting": true,
+      "temporal_flow_pruning": true,
+      "temporal_stopping": true,
+      "iterative_reasoning": true,
+      "dynamic_depth": false,
+      "path_reliability": true,
+      "path_ordering": true,
+      "time_ordered_context": true,
+      "context_compression": true
+    },
+    "metrics": {
+      "exact_match": 0.0,
+      "f1_score": 0.0,
+      "temporal_accuracy": 0.0,
+      "entity_accuracy": 0.0,
+      "avg_retrieval_time": 0.0,
+      "avg_reasoning_time": 0.0
+    },
+    "runtime": 7.561923,
+    "metadata": {
+      "num_questions": 5,
+      "timestamp": "2025-07-10T18:33:50.864253"
+    }
+  },
+  {
+    "configuration": {
+      "use_temporal_weighting": true,
+      "use_temporal_pruning": true,
+      "use_temporal_stopping": true,
+      "use_iterative_reasoning": true,
+      "use_dynamic_depth": true,
+      "use_reliability_scoring": false,
+      "use_path_ordering": true,
+      "use_time_ordering": true,
+      "use_context_compression": true
+    },
+    "component_states": {
+      "temporal_weighting": true,
+      "temporal_flow_pruning": true,
+      "temporal_stopping": true,
+      "iterative_reasoning": true,
+      "dynamic_depth": true,
+      "path_reliability": false,
+      "path_ordering": true,
+      "time_ordered_context": true,
+      "context_compression": true
+    },
+    "metrics": {
+      "exact_match": 0.0,
+      "f1_score": 0.0,
+      "temporal_accuracy": 0.0,
+      "entity_accuracy": 0.0,
+      "avg_retrieval_time": 0.0,
+      "avg_reasoning_time": 0.0
+    },
+    "runtime": 6.954272,
+    "metadata": {
+      "num_questions": 5,
+      "timestamp": "2025-07-10T18:33:57.851388"
+    }
+  },
+  {
+    "configuration": {
+      "use_temporal_weighting": true,
+      "use_temporal_pruning": true,
+      "use_temporal_stopping": true,
+      "use_iterative_reasoning": true,
+      "use_dynamic_depth": true,
+      "use_reliability_scoring": true,
+      "use_path_ordering": false,
+      "use_time_ordering": true,
+      "use_context_compression": true
+    },
+    "component_states": {
+      "temporal_weighting": true,
+      "temporal_flow_pruning": true,
+      "temporal_stopping": true,
+      "iterative_reasoning": true,
+      "dynamic_depth": true,
+      "path_reliability": true,
+      "path_ordering": false,
+      "time_ordered_context": true,
+      "context_compression": true
+    },
+    "metrics": {
+      "exact_match": 0.0,
+      "f1_score": 0.0,
+      "temporal_accuracy": 0.0,
+      "entity_accuracy": 0.0,
+      "avg_retrieval_time": 0.0,
+      "avg_reasoning_time": 0.0
+    },
+    "runtime": 7.483523,
+    "metadata": {
+      "num_questions": 5,
+      "timestamp": "2025-07-10T18:34:05.365245"
+    }
+  },
+  {
+    "configuration": {
+      "use_temporal_weighting": true,
+      "use_temporal_pruning": true,
+      "use_temporal_stopping": true,
+      "use_iterative_reasoning": true,
+      "use_dynamic_depth": true,
+      "use_reliability_scoring": true,
+      "use_path_ordering": true,
+      "use_time_ordering": false,
+      "use_context_compression": true
+    },
+    "component_states": {
+      "temporal_weighting": true,
+      "temporal_flow_pruning": true,
+      "temporal_stopping": true,
+      "iterative_reasoning": true,
+      "dynamic_depth": true,
+      "path_reliability": true,
+      "path_ordering": true,
+      "time_ordered_context": false,
+      "context_compression": true
+    },
+    "metrics": {
+      "exact_match": 0.0,
+      "f1_score": 0.0,
+      "temporal_accuracy": 0.0,
+      "entity_accuracy": 0.0,
+      "avg_retrieval_time": 0.0,
+      "avg_reasoning_time": 0.0
+    },
+    "runtime": 7.129233,
+    "metadata": {
+      "num_questions": 5,
+      "timestamp": "2025-07-10T18:34:12.523914"
+    }
+  },
+  {
+    "configuration": {
+      "use_temporal_weighting": true,
+      "use_temporal_pruning": true,
+      "use_temporal_stopping": true,
+      "use_iterative_reasoning": true,
+      "use_dynamic_depth": true,
+      "use_reliability_scoring": true,
+      "use_path_ordering": true,
+      "use_time_ordering": true,
+      "use_context_compression": false
+    },
+    "component_states": {
+      "temporal_weighting": true,
+      "temporal_flow_pruning": true,
+      "temporal_stopping": true,
+      "iterative_reasoning": true,
+      "dynamic_depth": true,
+      "path_reliability": true,
+      "path_ordering": true,
+      "time_ordered_context": true,
+      "context_compression": false
+    },
+    "metrics": {
+      "exact_match": 0.0,
+      "f1_score": 0.0,
+      "temporal_accuracy": 0.0,
+      "entity_accuracy": 0.0,
+      "avg_retrieval_time": 0.0,
+      "avg_reasoning_time": 0.0
+    },
+    "runtime": 7.9627,
+    "metadata": {
+      "num_questions": 5,
+      "timestamp": "2025-07-10T18:34:20.517004"
+    }
+  }
+]

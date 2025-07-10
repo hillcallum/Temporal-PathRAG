@@ -1,0 +1,16 @@
+{
+  "dataset": "MultiTQ",
+  "baselines": [
+    "temporal_pathrag"
+  ],
+  "num_questions": 1,
+  "results": {
+    "temporal_pathrag": {
+      "exact_match": 0.0,
+      "f1_score": 0.0,
+      "temporal_accuracy": 0.0,
+      "avg_time": 0.0,
+      "error": null
+    }
+  }
+}

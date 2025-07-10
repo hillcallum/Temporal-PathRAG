@@ -1,0 +1,117 @@
+{
+  "dataset": "MultiTQ",
+  "num_experiments": 10,
+  "timestamp": "2025-07-10T18:34:20.518031",
+  "component_importance": {
+    "temporal_weighting": {
+      "exact_match_drop": 0.0,
+      "f1_drop": 0.0,
+      "temporal_accuracy_drop": 0.0,
+      "relative_importance": 0
+    },
+    "temporal_flow_pruning": {
+      "exact_match_drop": 0.0,
+      "f1_drop": 0.0,
+      "temporal_accuracy_drop": 0.0,
+      "relative_importance": 0
+    },
+    "temporal_stopping": {
+      "exact_match_drop": 0.0,
+      "f1_drop": 0.0,
+      "temporal_accuracy_drop": 0.0,
+      "relative_importance": 0
+    },
+    "iterative_reasoning": {
+      "exact_match_drop": 0.0,
+      "f1_drop": 0.0,
+      "temporal_accuracy_drop": 0.0,
+      "relative_importance": 0
+    },
+    "dynamic_depth": {
+      "exact_match_drop": 0.0,
+      "f1_drop": 0.0,
+      "temporal_accuracy_drop": 0.0,
+      "relative_importance": 0
+    },
+    "path_reliability": {
+      "exact_match_drop": 0.0,
+      "f1_drop": 0.0,
+      "temporal_accuracy_drop": 0.0,
+      "relative_importance": 0
+    },
+    "path_ordering": {
+      "exact_match_drop": 0.0,
+      "f1_drop": 0.0,
+      "temporal_accuracy_drop": 0.0,
+      "relative_importance": 0
+    },
+    "time_ordered_context": {
+      "exact_match_drop": 0.0,
+      "f1_drop": 0.0,
+      "temporal_accuracy_drop": 0.0,
+      "relative_importance": 0
+    },
+    "context_compression": {
+      "exact_match_drop": 0.0,
+      "f1_drop": 0.0,
+      "temporal_accuracy_drop": 0.0,
+      "relative_importance": 0
+    }
+  },
+  "category_importance": {
+    "temporal": {
+      "total_importance": 0.0,
+      "avg_importance": 0.0,
+      "components": [
+        "temporal_weighting",
+        "temporal_flow_pruning",
+        "temporal_stopping"
+      ]
+    },
+    "context": {
+      "total_importance": 0.0,
+      "avg_importance": 0.0,
+      "components": [
+        "time_ordered_context",
+        "context_compression"
+      ]
+    },
+    "path": {
+      "total_importance": 0.0,
+      "avg_importance": 0.0,
+      "components": [
+        "path_reliability",
+        "path_ordering"
+      ]
+    },
+    "iterative": {
+      "total_importance": 0.0,
+      "avg_importance": 0.0,
+      "components": [
+        "iterative_reasoning",
+        "dynamic_depth"
+      ]
+    }
+  },
+  "interaction_effects": {},
+  "performance_summary": {
+    "exact_match": {
+      "mean": 0.0,
+      "std": 0.0,
+      "min": 0.0,
+      "max": 0.0
+    },
+    "f1_score": {
+      "mean": 0.0,
+      "std": 0.0,
+      "min": 0.0,
+      "max": 0.0
+    },
+    "temporal_accuracy": {
+      "mean": 0.0,
+      "std": 0.0,
+      "min": 0.0,
+      "max": 0.0
+    }
+  }
+}

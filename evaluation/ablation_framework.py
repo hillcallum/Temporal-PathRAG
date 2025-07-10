@@ -428,8 +428,8 @@ class AblationStudy:
             }
             
             for ax, (metric_name, values) in zip(axes, metrics_data.items()):
-                ax.hist(values, bins=20, alpha=0.7, edgecolour='black')
-                ax.axvline(np.mean(values), colour='red', linestyle='--', 
+                ax.hist(values, bins=20, alpha=0.7, edgecolor='black')
+                ax.axvline(np.mean(values), color='red', linestyle='--', 
                           label=f'Mean: {np.mean(values):.3f}')
                 ax.set_xlabel(metric_name)
                 ax.set_ylabel('Frequency')

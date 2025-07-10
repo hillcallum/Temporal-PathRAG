@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Run comprehensive evaluation of Temporal PathRAG against all baselines
+Run evaluation of Temporal PathRAG against all baselines
 
 This script evaluates Temporal PathRAG against:
 1. Primary Temporal QA Baseline: TimeR4
@@ -12,7 +12,7 @@ This script evaluates Temporal PathRAG against:
 import argparse
 import sys
 from pathlib import Path
-sys.path.append(str(Path(__file__).parent.parent))
+sys.path.append(str(Path(__file__).parent.parent.parent))
 
 from evaluation import run_baseline_comparison
 from evaluation.ablation_framework import run_ablation

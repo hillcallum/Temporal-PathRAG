@@ -63,7 +63,7 @@ class TemporalQueryDecomposer:
         
 
         try:
-            response = self.llm_manager.generate_response(decomposition_prompt)
+            response = self.llm_manager.generate(decomposition_prompt)
             
             # Extract JSON from response
             start_idx = response.find('[')
@@ -205,7 +205,7 @@ class TemporalIterativeReasoner:
             total_paths_retrieved += len(sub_query_result.paths)
             
             # Evaluate sufficiency using temporal stopping controller
-            temporal_query = TemporalQuery(query_text=query, query_type="complex")
+            temporal_query = TemporalQuery(query_text=query)
             stopping_decision = self.temporal_stopping_controller.should_stop(
                 temporal_query, accumulated_paths, step.reasoning_context, iteration, reasoning_steps
             )
@@ -343,7 +343,7 @@ class TemporalIterativeReasoner:
         """
         
         try:
-            response = self.llm_manager.generate_response(evaluation_prompt)
+            response = self.llm_manager.generate(evaluation_prompt)
             
             # Extract JSON from response
             start_idx = response.find('{')
@@ -450,7 +450,7 @@ class TemporalIterativeReasoner:
         """
         
         try:
-            final_answer = self.llm_manager.generate_response(answer_prompt)
+            final_answer = self.llm_manager.generate(answer_prompt)
             return final_answer.strip()
             
         except Exception as e:
