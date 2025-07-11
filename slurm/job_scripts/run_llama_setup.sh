@@ -4,13 +4,13 @@
 #SBATCH --time=4:00:00
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=8
-#SBATCH --mem=48G
+#SBATCH --mem=32G
 #SBATCH --output=/vol/bitbucket/%u/temporal_pathrag_logs/llama_setup_%j.out
 #SBATCH --error=/vol/bitbucket/%u/temporal_pathrag_logs/llama_setup_%j.err
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=cih124
 
-echo "=== LLaMA 3.2 Setup on Imperial GPU Cluster ==="
+echo "LLaMA 3.2 Setup on Imperial GPU Cluster"
 echo "Job ID: $SLURM_JOB_ID"
 echo "Node: $SLURM_NODELIST"
 echo "Time: $(date)"
@@ -43,7 +43,7 @@ echo "Python packages: $PYTHONUSERBASE"
 echo ""
 
 # Install packages with progress monitoring
-echo "=== Installing Required Packages ==="
+echo "Installing Required Packages"
 pip install --user --break-system-packages --upgrade pip
 
 # Install with checkpointing - install one at a time to catch failures
@@ -76,7 +76,7 @@ install_with_checkpoint "bitsandbytes"
 install_with_checkpoint "ollama"
 
 echo ""
-echo "=== Testing Package Installation ==="
+echo "Testing Package Installation"
 python3 -c "
 import sys
 sys.path.insert(0, '/vol/bitbucket/${USER}/python_packages/lib/python3.12/site-packages')
@@ -113,7 +113,7 @@ if [ $? -ne 0 ]; then
 fi
 
 echo ""
-echo "=== Setting up LLaMA 3.2 ==="
+echo "Setting up LLaMA 3.2"
 
 # Create LLaMA setup script
 cat > /tmp/llama_setup.py << 'EOF'
@@ -125,7 +125,6 @@ import sys
 def setup_llama_model():
     print("Setting up LLaMA model")
     
-    # Use a reasonable model - LLaMA 3.2 1B or 3B for testing
     model_name = "meta-llama/Llama-3.2-1B-Instruct"
     
     print(f"Model: {model_name}")
@@ -219,7 +218,7 @@ python3 /tmp/llama_setup.py
 LLAMA_EXIT_CODE=$?
 
 echo ""
-echo "=== Setting up Ollama Alternative ==="
+echo "Setting up Ollama Alternative"
 
 # Start ollama service in background
 echo "Starting Ollama service"
@@ -227,7 +226,7 @@ ollama serve &
 OLLAMA_PID=$!
 sleep 10
 
-# Pull a small model
+# Pull model
 echo "Pulling Llama 3.2 1B model via Ollama"
 ollama pull llama3.2:1b
 
@@ -239,7 +238,7 @@ echo "What is machine learning?" | ollama run llama3.2:1b
 kill $OLLAMA_PID 2>/dev/null || true
 
 echo ""
-echo "=== Setup Summary ==="
+echo "Setup Summary"
 echo "Job ID: $SLURM_JOB_ID"
 echo "Completion time: $(date)"
 
@@ -251,10 +250,4 @@ else
 fi
 
 echo ""
-echo "=== Next Steps ==="
-echo "1. Check the model info file: cat /vol/bitbucket/${USER}/llama_model_info.json"
-echo "2. Use the interactive script for testing: slurm/debug_scripts/interactive_llm_setup.sh"
-echo "3. Run your main application with: sbatch slurm/job_scripts/run_temporal_pathrag_with_llm.sh"
-
-echo ""
-echo "=== Job Complete ==="
+echo "Job Complete"

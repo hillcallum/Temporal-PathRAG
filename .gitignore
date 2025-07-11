@@ -33,3 +33,13 @@ raw_datasets/
 
 # TimeR4 datasets cloned from Git repo 
 timeR4_datasets/
+
+# Ollama models 
+ollama_models/
+.ollama/
+
+# Cluster-specific
+/vol/
+cluster_logs/
+*.slurm
+slurm-*.out

@@ -24,9 +24,9 @@ class LLMConfig:
     
     # Local LLM Configuration
     local_llm_enabled: bool = os.getenv('LOCAL_LLM_ENABLED', 'false').lower() == 'true'
-    local_llm_model: str = os.getenv('LOCAL_LLM_MODEL', 'llama2-7b-chat')
+    local_llm_model: str = os.getenv('LOCAL_LLM_MODEL', 'llama3.2:3b')  # Default Ollama model
     local_llm_host: str = os.getenv('LOCAL_LLM_HOST', 'localhost')
-    local_llm_port: int = int(os.getenv('LOCAL_LLM_PORT', '8000'))
+    local_llm_port: int = int(os.getenv('LOCAL_LLM_PORT', '11434'))  # Default Ollama port
     
     # PathRAG Configuration
     pathrag_max_hops: int = int(os.getenv('PATHRAG_MAX_HOPS', '3'))

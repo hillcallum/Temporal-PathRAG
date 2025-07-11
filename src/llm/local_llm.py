@@ -1,5 +1,5 @@
 """
-Local LLM Client for PathRAG (e.g., LLaMA2-Chat-7B)
+Local LLM Client for PathRAG
 """
 
 import requests
@@ -70,26 +70,35 @@ class LocalLLMClient:
     def call_ollama_api(self, prompt: str, max_tokens: int, temperature: float) -> str:
         """Call Ollama API"""
         try:
+            # Check if model is available
+            self.ensure_ollama_model_available()
+            
             payload = {
                 "model": self.config.local_llm_model,
                 "prompt": prompt,
                 "stream": False,  # Disable streaming for simpler response handling
                 "options": {
                     "num_predict": max_tokens,
-                    "temperature": temperature
+                    "temperature": temperature,
+                    "top_k": 40,
+                    "top_p": 0.9,
+                    "seed": 42  # For reproducibility
                 }
             }
             
             response = requests.post(
                 f"{self.base_url}/api/generate",
                 json=payload,
-                timeout=30
+                timeout=60  # Increased timeout for larger models
             )
             response.raise_for_status()
             
             result = response.json()
             return result.get('response', '').strip()
             
+        except requests.exceptions.Timeout:
+            logger.error("Ollama API timeout - model may be loading or response is slow")
+            raise
         except Exception as e:
             logger.error(f"Ollama API error: {e}")
             raise
@@ -128,10 +137,10 @@ class LocalLLMClient:
         # Use a simpler prompt format for local LLMs
         prompt = f"""Question: {question}
 
-Context from knowledge graph:
-{context}
+        Context from knowledge graph:
+        {context}
 
-Answer based only on the provided context:"""
+        Answer based only on the provided context:"""
 
         return self.generate_response(prompt)
     
@@ -155,63 +164,48 @@ Answer based only on the provided context:"""
         
         return "\n".join(formatted_paths)
     
+    def ensure_ollama_model_available(self):
+        """Ensure the Ollama model is available locally"""
+        try:
+            # Check if model exists
+            response = requests.get(f"{self.base_url}/api/tags")
+            if response.status_code == 200:
+                models = response.json().get('models', [])
+                model_names = [m['name'] for m in models]
+                
+                if self.config.local_llm_model not in model_names:
+                    logger.warning(f"Model {self.config.local_llm_model} not found locally - "
+                                 f"Available models: {model_names}")
+                    logger.info(f"To download: ollama pull {self.config.local_llm_model}")
+        except Exception as e:
+            logger.debug(f"Could not check Ollama models: {e}")
+    
+    def list_available_models(self) -> List[str]:
+        """List available Ollama models"""
+        try:
+            response = requests.get(f"{self.base_url}/api/tags")
+            if response.status_code == 200:
+                models = response.json().get('models', [])
+                return [m['name'] for m in models]
+        except Exception:
+            pass
+        return []
+    
     def test_connection(self) -> bool:
         """Test local LLM connection"""
         try:
-            response = self.generate_response("Hello", max_tokens=10)
-            logger.info("Local LLM connection successful")
-            return True
+            # For Ollama, check if service is running
+            if self.config.local_llm_port == 11434 or "ollama" in self.config.local_llm_model.lower():
+                response = requests.get(f"{self.base_url}/api/tags", timeout=5)
+                if response.status_code == 200:
+                    available_models = self.list_available_models()
+                    logger.info(f"Ollama connection successful. Available models: {available_models}")
+                    return True
+            else:
+                # For other services, try a simple generation
+                response = self.generate_response("Hello", max_tokens=10)
+                logger.info("Local LLM connection successful")
+                return True
         except Exception as e:
             logger.error(f"Local LLM connection failed: {e}")
             return False
-    
-    @staticmethod
-    def setup_ollama_instructions() -> str:
-        """Return instructions for setting up Ollama"""
-        return """
-To set up Ollama for local LLM inference:
-
-1. Install Ollama:
-   curl -fsSL https://ollama.ai/install.sh | sh
-
-2. Download a model (e.g., LLaMA2):
-   ollama pull llama2:7b-chat
-
-3. Start the server:
-   ollama serve
-
-4. Update your .env file:
-   LOCAL_LLM_ENABLED=true
-   LOCAL_LLM_MODEL=llama2:7b-chat
-   LOCAL_LLM_HOST=localhost
-   LOCAL_LLM_PORT=11434
-
-5. Test the connection:
-   python -c "from src.llm import LocalLLMClient; client = LocalLLMClient(); print(client.test_connection())"
-"""
-    
-    @staticmethod
-    def setup_textgen_instructions() -> str:
-        """Return instructions for setting up text-generation-webui"""
-        return """
-To set up text-generation-webui for local LLM inference:
-
-1. Clone the repository:
-   git clone https://github.com/oobabooga/text-generation-webui.git
-   cd text-generation-webui
-
-2. Install dependencies:
-   pip install -r requirements.txt
-
-3. Download a model (e.g., LLaMA2-7B-Chat):
-   python download-model.py microsoft/DialoGPT-medium
-
-4. Start with API mode:
-   python server.py --api --listen
-
-5. Update your .env file:
-   LOCAL_LLM_ENABLED=true
-   LOCAL_LLM_MODEL=llama2-7b-chat
-   LOCAL_LLM_HOST=localhost
-   LOCAL_LLM_PORT=5000
-"""
