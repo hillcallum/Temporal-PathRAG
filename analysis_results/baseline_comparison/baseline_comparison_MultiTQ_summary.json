@@ -1,15 +1,15 @@
 {
   "dataset": "MultiTQ",
   "baselines": [
-    "temporal_pathrag"
+    "vanilla_llm"
   ],
-  "num_questions": 5,
+  "num_questions": 2,
   "results": {
-    "temporal_pathrag": {
+    "vanilla_llm": {
       "exact_match": 0.0,
       "f1_score": 0.0,
       "temporal_accuracy": 0.0,
-      "avg_time": 18.168005609512328,
+      "avg_time": 0.25374042987823486,
       "error": null
     }
   }
