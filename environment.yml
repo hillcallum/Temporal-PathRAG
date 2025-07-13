@@ -38,6 +38,11 @@ dependencies:
       - langchain-core>=0.1.0
       - llama-index>=0.10.0
       
+      # Training Libraries
+      - accelerate>=0.24.0
+      - bitsandbytes>=0.41.0
+      - peft>=0.6.0
+      
       # NLP Libraries
       - nltk>=3.8
       - spacy>=3.7.0
@@ -64,6 +69,10 @@ dependencies:
       
       # Memory and Performance
       - psutil
+      - gputil
+      
+      # Training Support
+      - wandb
       
       # Additional utilities
       - click
