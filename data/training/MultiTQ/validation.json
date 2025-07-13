@@ -1,0 +1,17 @@
+[
+  {
+    "anchor": {
+      "subject": "Police_(Australia)",
+      "relation": "Make_an_appeal_or_request",
+      "object": "Citizen_(Australia)",
+      "timestamp": "2009-09-15"
+    },
+    "example_type": "contrastive_positive",
+    "positive": {
+      "subject": "Police_(Australia)",
+      "relation": "Accuse",
+      "object": "Citizen_(Australia)",
+      "timestamp": "2005-12-17"
+    }
+  }
+]

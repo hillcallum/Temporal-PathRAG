@@ -1,0 +1,137 @@
+[
+  {
+    "anchor": {
+      "subject": "Government_(Nigeria)",
+      "relation": "Consult",
+      "object": "Head_of_Government_(Nigeria)",
+      "timestamp": "2013-08-21"
+    },
+    "example_type": "quadruplet",
+    "positive": {
+      "subject": "Head_of_Government_(Nigeria)",
+      "relation": "Consult",
+      "object": "Government_(Nigeria)",
+      "timestamp": "2014-12-15"
+    },
+    "negative": {
+      "subject": "Ireland",
+      "relation": "Consult",
+      "object": "Mark_Durkan",
+      "timestamp": "2008-05-02"
+    }
+  },
+  {
+    "anchor": {
+      "subject": "Wang_Yi",
+      "relation": "Make_statement",
+      "object": "China",
+      "timestamp": "2013-07-02"
+    },
+    "example_type": "quadruplet",
+    "positive": {
+      "subject": "Police_(Philippines)",
+      "relation": "Make_statement",
+      "object": "City_Mayor_(Philippines)",
+      "timestamp": "2010-03-24"
+    },
+    "negative": {
+      "subject": "Extremist_(Yemen)",
+      "relation": "Use_conventional_military_force",
+      "object": "Armed_Gang_(Al_Qaeda)",
+      "timestamp": "2014-08-31"
+    }
+  },
+  {
+    "anchor": {
+      "subject": "Men_(Kenya)",
+      "relation": "Make_pessimistic_comment",
+      "object": "Police_(Kenya)",
+      "timestamp": "2005-05-22"
+    },
+    "example_type": "quadruplet",
+    "positive": {
+      "subject": "Mahmoud_Ahmadinejad",
+      "relation": "Make_pessimistic_comment",
+      "object": "Iran",
+      "timestamp": "2006-08-12"
+    },
+    "negative": {
+      "subject": "Ministry_(Nigeria)",
+      "relation": "Praise_or_endorse",
+      "object": "Umaru_Musa_Yar'Adua",
+      "timestamp": "2008-11-04"
+    }
+  },
+  {
+    "anchor": {
+      "subject": "Boris_Vyacheslavovich_Gryzlov",
+      "relation": "Praise_or_endorse",
+      "object": "China",
+      "timestamp": "2007-07-02"
+    },
+    "example_type": "quadruplet",
+    "positive": {
+      "subject": "China",
+      "relation": "Host_a_visit",
+      "object": "Henry_M._Paulson",
+      "timestamp": "2007-03-04"
+    },
+    "negative": {
+      "subject": "Lawyer/Attorney_(United_States)",
+      "relation": "Reject",
+      "object": "Men_(India)",
+      "timestamp": "2015-04-13"
+    }
+  },
+  {
+    "anchor": {
+      "subject": "Guy_Scott",
+      "relation": "Make_statement",
+      "object": "Michael_Sata",
+      "timestamp": "2014-09-19"
+    },
+    "example_type": "quadruplet",
+    "positive": {
+      "subject": "Thailand",
+      "relation": "Make_a_visit",
+      "object": "Malaysia",
+      "timestamp": "2006-07-22"
+    },
+    "negative": {
+      "subject": "Lawyer/Attorney_(South_Korea)",
+      "relation": "Make_an_appeal_or_request",
+      "object": "Lee_Myung_Bak",
+      "timestamp": "2008-03-04"
+    }
+  },
+  {
+    "anchor": {
+      "subject": "Citizen_(Nigeria)",
+      "relation": "Make_an_appeal_or_request",
+      "object": "Olu\u1e63\u1eb9gun_\u1eccbasanj\u1ecd",
+      "timestamp": "2006-04-25"
+    },
+    "example_type": "contrastive_negative",
+    "negative": {
+      "subject": "Armed_Gang_(Thailand)",
+      "relation": "Use_unconventional_violence",
+      "object": "Citizen_(Thailand)",
+      "timestamp": "2005-01-18"
+    }
+  },
+  {
+    "anchor": {
+      "subject": "National_Democratic_Party",
+      "relation": "Rally_opposition_against",
+      "object": "[MASK]",
+      "timestamp": "2011-07-14"
+    },
+    "example_type": "reconstruction_entity",
+    "positive": {
+      "subject": "National_Democratic_Party",
+      "relation": "Rally_opposition_against",
+      "object": "Protester_(Egypt)",
+      "timestamp": "2011-07-14"
+    }
+  }
+]

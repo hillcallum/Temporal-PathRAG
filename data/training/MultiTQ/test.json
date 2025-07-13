@@ -1,0 +1,17 @@
+[
+  {
+    "anchor": {
+      "subject": "Head_of_Government_(Brazil)",
+      "relation": "[MASK]",
+      "object": "Middle_East",
+      "timestamp": "2006-04-26"
+    },
+    "example_type": "reconstruction_relation",
+    "positive": {
+      "subject": "Head_of_Government_(Brazil)",
+      "relation": "Make_a_visit",
+      "object": "Middle_East",
+      "timestamp": "2006-04-26"
+    }
+  }
+]
