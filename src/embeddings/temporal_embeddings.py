@@ -16,8 +16,8 @@ from tqdm import tqdm
 @dataclass
 class TemporalEmbeddingConfig:
     """Configuration for temporal embeddings"""
-    model_name: str = "all-MiniLM-L6-v2"  
-    embedding_dim: int = 384  # Dimension of all-MiniLM-L6-v2
+    model_name: str = "Qwen/Qwen3-Embedding-0.6B"  # Qwen embedding model designed for text embeddings
+    embedding_dim: int = 1024  # Dimension of Qwen3-Embedding-0.6B
     cache_dir: Path = Path.home() / ".temporal_pathrag_cache" / "embeddings"
     batch_size: int = 512
     use_gpu: bool = True

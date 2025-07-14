@@ -156,7 +156,7 @@ class TemporalGraphDatabase:
                 if len(parts) >= 4:
                     subject, predicate, obj, timestamp = parts[:4]
                 elif len(parts) == 3:
-                    # Handle triplets by adding a default timestamp
+                    # Handle quadruplets with timestamp
                     subject, predicate, obj = parts
                     timestamp = "unknown"
                 else:

@@ -28,6 +28,7 @@ from .models import (
 from .temporal_scoring import TemporalWeightingFunction, TemporalPathRanker, TemporalPath, TemporalRelevanceMode
 from .temporal_flow_pruning import TemporalFlowPruning
 from .path_traversal import TemporalPathTraversal
+from .updated_temporal_scoring import UpdatedTemporalScorer
 
 
 class TemporalPathRetriever:
@@ -41,9 +42,19 @@ class TemporalPathRetriever:
                  device: torch.device = None,
                  alpha: float = 0.01,
                  base_theta: float = 0.1,
-                 diversity_threshold: float = 0.7):
+                 diversity_threshold: float = 0.7,
+                 updated_scorer: Optional[UpdatedTemporalScorer] = None):
         """
         Initialise temporal path retriever
+        
+        Args:
+            graph: The temporal knowledge graph
+            temporal_weighting: Temporal weighting function
+            device: Computation device
+            alpha: Temporal decay rate
+            base_theta: Base pruning threshold
+            diversity_threshold: Diversity threshold for path selection
+            updated_scorer: Optional updated temporal scorer
         """
         self.graph = graph
         self.device = device or torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -79,6 +90,9 @@ class TemporalPathRetriever:
         # Initialise temporal path ranker
         self.temporal_ranker = TemporalPathRanker(self.temporal_weighting)
         
+        # Store updated scorer if provided
+        self.updated_scorer = updated_scorer
+        
         # Performance tracking
         self.retrieval_stats = {
             'total_queries': 0,
@@ -88,6 +102,8 @@ class TemporalPathRetriever:
         }
         
         print(f"TemporalPathRetriever initialised on device: {self.device}")
+        if self.updated_scorer:
+            print("Using updated temporal scoring in path retriever")
     
     def get_edge_data_for_multigraph(self, source_node: str, target_node: str) -> Dict:
         """
@@ -340,37 +356,57 @@ class TemporalPathRetriever:
         if verbose:
             print(f"Scoring {len(paths)} paths for temporal reliability")
         
-        for path in paths:
-            # Convert to TemporalPath for enhanced scoring
-            temporal_path = self.convert_to_temporal_path(path, query.query_time)
+        # Use updated scorer if available
+        if self.updated_scorer is not None:
+            # Prepare query context
+            query_context = {
+                'query_text': query.query_text,
+                'temporal_constraints': query.temporal_constraints
+            }
             
-            # Component 1: Enhanced temporal reliability score
-            temporal_reliability = self.temporal_weighting.enhanced_reliability_score(
-                temporal_path, query.query_time, path.score
+            # Batch score all paths
+            scores_and_components = self.updated_scorer.batch_score_paths(
+                paths, query.query_time, query_context
             )
             
-            # Component 2: Flow-based score (bottleneck principle)
-            flow_score = self.calculate_flow_score(path, query.query_time)
-            
-            # Component 3: Semantic relevance to query
-            semantic_score = self.calculate_semantic_relevance(path, query)
-            
-            # Component 4: Temporal consistency score
-            consistency_score = self.calculate_temporal_consistency(path, query)
-            
-            # Component 5: Query-specific temporal pattern matching
-            pattern_score = self.calculate_pattern_matching_score(path, query)
-            
-            # Combined reliability score with learned weights
-            reliability_score = (
-                0.35 * temporal_reliability +
-                0.25 * flow_score +
-                0.15 * semantic_score +
-                0.15 * consistency_score +
-                0.10 * pattern_score
-            )
-            
-            scored_paths.append((path, reliability_score))
+            for path, (score, components) in zip(paths, scores_and_components):
+                scored_paths.append((path, score))
+                
+            if verbose:
+                print(f"Used updated scoring for {len(paths)} paths")
+        else:
+            # Fall back to original scoring
+            for path in paths:
+                # Convert to TemporalPath for updated scoring
+                temporal_path = self.convert_to_temporal_path(path, query.query_time)
+                
+                # Component 1: Updated temporal reliability score
+                temporal_reliability = self.temporal_weighting.updated_reliability_score(
+                    temporal_path, query.query_time, path.score
+                )
+                
+                # Component 2: Flow-based score (bottleneck principle)
+                flow_score = self.calculate_flow_score(path, query.query_time)
+                
+                # Component 3: Semantic relevance to query
+                semantic_score = self.calculate_semantic_relevance(path, query)
+                
+                # Component 4: Temporal consistency score
+                consistency_score = self.calculate_temporal_consistency(path, query)
+                
+                # Component 5: Query-specific temporal pattern matching
+                pattern_score = self.calculate_pattern_matching_score(path, query)
+                
+                # Combined reliability score with learned weights
+                reliability_score = (
+                    0.35 * temporal_reliability +
+                    0.25 * flow_score +
+                    0.15 * semantic_score +
+                    0.15 * consistency_score +
+                    0.10 * pattern_score
+                )
+                
+                scored_paths.append((path, reliability_score))
         
         return scored_paths
     
@@ -559,7 +595,7 @@ class TemporalPathRetriever:
             return None
     
     def convert_to_temporal_path(self, path: Path, query_time: str) -> TemporalPath:
-        """Convert Path to TemporalPath for enhanced scoring"""
+        """Convert Path to TemporalPath for updated scoring"""
         timestamps = []
         edges_with_timestamps = []
         

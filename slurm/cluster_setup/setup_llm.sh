@@ -11,8 +11,7 @@ LOCAL_LOGS_DIR="/Users/hillcallum/Temporal_PathRAG/logs"
 # Use clean project name in bitbucket 
 CLUSTER_PROJECT_PATH="/vol/bitbucket/$CLUSTER_USER/${PROJECT_NAME}"
 
-echo "=== LLM Setup (LLaMA 3.2) on Imperial GPU Cluster ==="
-echo "===================================================="
+echo "LLM Setup (LLaMA 3.2) on Imperial GPU Cluster"
 
 SCRIPT_NAME="run_llama_setup.sh"
 JOB_PREFIX="llama_setup"
@@ -52,7 +51,7 @@ ssh "$CLUSTER_USER@$CLUSTER_HOST" "
 # Sync repository including datasets
 echo "Syncing repository to cluster"
 
-# Use rsync with better exclusions for complete sync
+# Use rsync for complete sync
 echo "Performing full repository sync"
 rsync -avz --size-only \
     --exclude='venv/' \
@@ -88,9 +87,7 @@ echo "3. Initial job status:"
 ssh "$CLUSTER_USER@$CLUSTER_HOST" "squeue --job=$JOB_ID"
 
 echo ""
-echo "================================================"
 echo "LLM Setup Job $JOB_ID is running on the cluster"
-echo "================================================"
 
 # 4. Monitoring with real-time updates
 read -p "Monitor job with real-time updates? (y/n): " monitor_choice
@@ -99,7 +96,6 @@ if [[ $monitor_choice =~ ^[Yy]$ ]]; then
     echo ""
     echo "Monitoring job $JOB_ID with real-time updates"
     echo "(Ctrl+C to stop monitoring - job continues running)"
-    echo "======================================================================"
     
     # Function to get job status
     get_job_status() {
@@ -126,9 +122,9 @@ if [[ $monitor_choice =~ ^[Yy]$ ]]; then
             
             # Show recent output every 2 minutes
             if [ $(($(date +%s) % 120)) -eq 0 ]; then
-                echo "--- Recent output ---"
+                echo "Recent output"
                 get_recent_output
-                echo "--- End recent output ---"
+                echo "End recent output"
             fi
             
             sleep 30  # Check every 30 seconds
@@ -168,7 +164,7 @@ if [[ $monitor_choice =~ ^[Yy]$ ]]; then
     echo ""
     
     # Show summary
-    echo "=== Job Summary ==="
+    echo "Job Summary"
     echo "Job ID: $JOB_ID"
     echo "Script: $SCRIPT_NAME"
     echo "Final Status: ${STATUS:-COMPLETED}"
@@ -178,13 +174,13 @@ if [[ $monitor_choice =~ ^[Yy]$ ]]; then
     # Show output summary
     OUTPUT_FILE="$JOB_LOG_DIR/${JOB_PREFIX}_${JOB_ID}.out"
     if [ -f "$OUTPUT_FILE" ]; then
-        echo "=== Output Summary ==="
+        echo "Output Summary"
         echo "Last 20 lines of output:"
         tail -n 20 "$OUTPUT_FILE"
         echo ""
         
         # Look for key indicators
-        echo "=== Key Indicators ==="
+        echo "Key Indicators"
         grep -E "(Yes|No|Error|Success|Fail)" "$OUTPUT_FILE" | tail -10 || echo "No key indicators found"
     fi
     
@@ -197,12 +193,6 @@ else
     echo "scp $CLUSTER_USER@$CLUSTER_HOST:/home/$CLUSTER_USER/temporal_pathrag_logs/${JOB_PREFIX}_*.out ./logs/"
     echo "scp $CLUSTER_USER@$CLUSTER_HOST:/home/$CLUSTER_USER/temporal_pathrag_logs/${JOB_PREFIX}_*.err ./logs/"
 fi
-
-echo ""
-echo "=== Next Steps ==="
-echo "1. Check if LLM setup completed successfully"
-echo "2. If successful, run: ./slurm/cluster_setup/run_temporal_pathrag.sh"
-echo "3. If failed, use: ./slurm/cluster_setup/interactive_debug.sh"
 
 echo ""
 echo "Done"

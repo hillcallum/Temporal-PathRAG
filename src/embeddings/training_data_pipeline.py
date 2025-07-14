@@ -72,15 +72,14 @@ class TemporalEmbeddingDataPipeline:
         quadruplets = []
         
         for source, target, data in self.graph.edges(data=True):
-            if 'relation' in data and 'timestamps' in data:
-                for timestamp in data['timestamps']:
-                    quadruplet = TemporalQuadruplet(
-                        subject=source,
-                        relation=data['relation'],
-                        object=target,
-                        timestamp=str(timestamp)
-                    )
-                    quadruplets.append(quadruplet)
+            if 'relation' in data and 'timestamp' in data:
+                quadruplet = TemporalQuadruplet(
+                    subject=source,
+                    relation=data['relation'],
+                    object=target,
+                    timestamp=str(data['timestamp'])
+                )
+                quadruplets.append(quadruplet)
         
         print(f"Extracted {len(quadruplets)} temporal quadruplets from graph")
         return quadruplets

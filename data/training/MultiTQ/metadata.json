@@ -5,8 +5,8 @@
   "num_timestamps": 4017,
   "num_quadruplets": 461329,
   "splits": {
-    "train": 7,
-    "validation": 1,
-    "test": 1
+    "train": 16000,
+    "validation": 2000,
+    "test": 2000
   }
 }

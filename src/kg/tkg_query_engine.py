@@ -15,6 +15,7 @@ import networkx as nx
 from .temporal_path_retriever import TemporalPathRetriever
 from .temporal_reliability_scorer import TemporalReliabilityScorer
 from .temporal_scoring import TemporalWeightingFunction
+from .updated_temporal_scoring import UpdatedTemporalScorer, create_updated_temporal_scorer
 from .models import (
     Path, TemporalQuery, TemporalReliabilityMetrics, QueryResult, 
     PathExplanation, GraphStatistics
@@ -206,13 +207,29 @@ class TKGQueryEngine:
                  base_theta: float = 0.1,
                  reliability_threshold: float = 0.6,
                  diversity_threshold: float = 0.7,
-                 device: Optional[str] = None):
+                 device: Optional[str] = None,
+                 use_updated_scoring: bool = True,
+                 embedding_integration: Optional[Any] = None,
+                 temporal_adapter_path: Optional[str] = None):
         """
         Initialise TKG Query Engine
+        
+        Args:
+            graph: The temporal knowledge graph
+            graph_statistics: Pre-computed graph statistics
+            alpha: Temporal decay rate
+            base_theta: Base pruning threshold
+            reliability_threshold: Reliability threshold for filtering
+            diversity_threshold: Diversity threshold for path selection
+            device: Device for computation (CPU/GPU)
+            use_updated_scoring: Whether to use updated temporal scoring
+            embedding_integration: Optional embedding integration instance
+            temporal_adapter_path: Path to pre-trained temporal adapter
         """
 
         self.graph = graph
         self.graph_statistics = graph_statistics or {}
+        self.use_updated_scoring = use_updated_scoring
         
         # Initialise query processor
         self.query_processor = TemporalQueryProcessor()
@@ -226,6 +243,22 @@ class TKGQueryEngine:
             consistency_weight=0.3
         )
         
+        # Initialise updated temporal scorer if requested
+        self.updated_scorer = None
+        if self.use_updated_scoring:
+            try:
+                from .updated_temporal_scoring import UpdatedTemporalScorer
+                self.updated_scorer = UpdatedTemporalScorer(
+                    graph=self.graph,
+                    temporal_weighting=self.temporal_weighting,
+                    embedding_integration=embedding_integration,
+                    temporal_adapter_path=temporal_adapter_path
+                )
+                print("Updated temporal scoring enabled")
+            except Exception as e:
+                print(f"Failed to initialise updated scorer: {e}")
+                self.use_updated_scoring = False
+        
         # Initialise path retriever
         self.path_retriever = TemporalPathRetriever(
             graph=graph,
@@ -233,7 +266,8 @@ class TKGQueryEngine:
             device=device,
             alpha=alpha,
             base_theta=base_theta,
-            diversity_threshold=diversity_threshold
+            diversity_threshold=diversity_threshold,
+            updated_scorer=self.updated_scorer if use_updated_scoring else None
         )
         
         # Initialise reliability scorer
@@ -245,6 +279,8 @@ class TKGQueryEngine:
         )
         
         print(f"TKGQueryEngine initialised with {len(graph.nodes())} nodes, {len(graph.edges())} edges")
+        if use_updated_scoring:
+            print("Updated temporal scoring enabled")
     
     def query(self, 
               query_text: str,
@@ -284,15 +320,32 @@ class TKGQueryEngine:
             'temporal_constraints': temporal_query.temporal_constraints
         }
         
-        reliability_scored_paths = self.reliability_scorer.rank_paths_by_reliability(
-            paths_only, temporal_query.query_time, query_context
-        )
+        # Use updated scoring if available
+        if self.use_updated_scoring and self.updated_scorer is not None:
+            # Apply updated temporal scoring
+            reliability_scored_paths = self.updated_scorer.batch_score_paths(
+                paths_only, 
+                temporal_query.query_time,
+                query_context
+            )
+        else:
+            # Fall back to standard reliability scoring
+            reliability_scored_paths = self.reliability_scorer.rank_paths_by_reliability(
+                paths_only, temporal_query.query_time, query_context
+            )
         
         # Stage 4: Filter by reliability threshold
         if enable_reliability_filtering:
-            final_paths = self.reliability_scorer.filter_reliable_paths(
-                paths_only, temporal_query.query_time, query_context
-            )
+            if self.use_updated_scoring and self.updated_scorer is not None:
+                # Filter based on updated scores (simple threshold)
+                final_paths = [
+                    (path, score) for path, score in reliability_scored_paths
+                    if score >= self.reliability_threshold
+                ]
+            else:
+                final_paths = self.reliability_scorer.filter_reliable_paths(
+                    paths_only, temporal_query.query_time, query_context
+                )
         else:
             final_paths = reliability_scored_paths
         
