@@ -39,6 +39,10 @@ sync_to_cluster() {
         --exclude='*.pkl' \
         --exclude='*.pth' \
         --exclude='*.bin' \
+        --exclude='timeR4_datasets/' \
+        --exclude='raw_datasets/' \
+        --exclude='logs/*.log' \
+        --exclude='test_results/' \
         . ${CLUSTER_USER}@${CLUSTER_HOST}:${BASE_DIR}/
     
     echo "Code sync completed"
