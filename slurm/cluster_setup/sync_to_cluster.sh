@@ -55,8 +55,12 @@ ssh ${CLUSTER_USER}@${CLUSTER_HOST} "mkdir -p ${BASE_DIR}"
 # Change to bitbucket directory before operations
 ssh ${CLUSTER_USER}@${CLUSTER_HOST} "cd /vol/bitbucket/${CLUSTER_USER}"
 
+# Get project root directory (two levels up from this script)
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+
 # Sync code (excluding large files and caches)
-echo "Syncing code"
+echo "Syncing code from $PROJECT_ROOT"
+cd "$PROJECT_ROOT"
 rsync -avz --progress \
     --exclude='*.pyc' \
     --exclude='__pycache__' \
