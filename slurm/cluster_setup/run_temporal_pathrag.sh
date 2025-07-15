@@ -11,8 +11,8 @@ LOCAL_LOGS_DIR="/Users/hillcallum/Temporal_PathRAG/logs"
 # Use clean project name in bitbucket 
 CLUSTER_PROJECT_PATH="/vol/bitbucket/$CLUSTER_USER/${PROJECT_NAME}"
 
-echo "=== Temporal PathRAG with LLM Execution ==="
-echo "==========================================="
+echo "Temporal PathRAG with LLM Execution"
+echo ""
 
 SCRIPT_NAME="run_temporal_pathrag_with_llm.sh"
 JOB_PREFIX="temporal_pathrag_llm"
@@ -87,9 +87,8 @@ echo "3. Initial job status:"
 ssh "$CLUSTER_USER@$CLUSTER_HOST" "squeue --job=$JOB_ID"
 
 echo ""
-echo "================================================"
 echo "Temporal PathRAG Job $JOB_ID is running on the cluster"
-echo "================================================"
+echo ""
 
 # 4. Enhanced monitoring with real-time updates
 read -p "Monitor job with real-time updates? (y/n): " monitor_choice
@@ -98,7 +97,6 @@ if [[ $monitor_choice =~ ^[Yy]$ ]]; then
     echo ""
     echo "Monitoring job $JOB_ID with real-time updates"
     echo "(Ctrl+C to stop monitoring - job continues running)"
-    echo "======================================================================"
     
     # Function to get job status
     get_job_status() {
@@ -167,7 +165,7 @@ if [[ $monitor_choice =~ ^[Yy]$ ]]; then
     echo ""
     
     # Show summary
-    echo "=== Job Summary ==="
+    echo "Job Summar"
     echo "Job ID: $JOB_ID"
     echo "Script: $SCRIPT_NAME"
     echo "Final Status: ${STATUS:-COMPLETED}"
@@ -177,13 +175,13 @@ if [[ $monitor_choice =~ ^[Yy]$ ]]; then
     # Show output summary
     OUTPUT_FILE="$JOB_LOG_DIR/${JOB_PREFIX}_${JOB_ID}.out"
     if [ -f "$OUTPUT_FILE" ]; then
-        echo "=== Output Summary ==="
+        echo "Output Summary"
         echo "Last 20 lines of output:"
         tail -n 20 "$OUTPUT_FILE"
         echo ""
         
         # Look for key indicators
-        echo "=== Key Indicators ==="
+        echo "Key Indicators"
         grep -E "(Yes|No|Error|Sucess|Faol)" "$OUTPUT_FILE" | tail -10 || echo "No key indicators found"
     fi
     
@@ -191,7 +189,7 @@ if [[ $monitor_choice =~ ^[Yy]$ ]]; then
     ERROR_FILE="$JOB_LOG_DIR/${JOB_PREFIX}_${JOB_ID}.err"
     if [ -f "$ERROR_FILE" ] && [ -s "$ERROR_FILE" ]; then
         echo ""
-        echo "=== Error Summary ==="
+        echo "Error Summary"
         echo "Errors found in error log:"
         tail -n 10 "$ERROR_FILE"
     fi
@@ -207,7 +205,7 @@ else
 fi
 
 echo ""
-echo "=== Next Steps ==="
+echo "Next Steps"
 echo "1. Review the output logs for your results"
 echo "2. Check checkpoints for progress tracking"
 echo "3. Use interactive_debug.sh for debugging if needed"

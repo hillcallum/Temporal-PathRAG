@@ -59,3 +59,7 @@ EOF
 
 echo ""
 echo "Submission complete"
+echo ""
+echo "To download results after training completes:"
+echo "  ./download_results.sh --best                    # Download global best model"
+echo "  ./download_results.sh --job <JOB_ID>           # Download specific job results"

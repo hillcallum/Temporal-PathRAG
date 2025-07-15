@@ -1,0 +1,7 @@
+{
+  "val_loss": 0.2339122226834297,
+  "global_step": 1000,
+  "job_id": "182642",
+  "timestamp": "2025-07-15 14:33:48",
+  "checkpoint_path": "/vol/bitbucket/cih124/temporal_embeddings/runs/job_182642/checkpoints/checkpoint_step_1000.pt"
+}
