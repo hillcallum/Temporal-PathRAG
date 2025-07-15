@@ -23,15 +23,12 @@ from torch.optim.lr_scheduler import OneCycleLR
 from torch.amp import GradScaler, autocast
 import numpy as np
 from tqdm import tqdm
-from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+from transformers import AutoModelForCausalLM, AutoTokenizer
 from peft import LoraConfig, get_peft_model, TaskType
 
 # Imports for monitoring
-try:
-    import wandb
-    WANDB_AVAILABLE = True
-except ImportError:
-    WANDB_AVAILABLE = False
+# Disable wandb completely
+WANDB_AVAILABLE = False
     
 try:
     import psutil
@@ -84,15 +81,17 @@ class TrainingConfig:
     data_dir: str = "./data/training"
     output_dir: str = "./models"
     checkpoint_dir: str = "./checkpoints"
+    best_model_dir: str = None
+    job_id: str = None
     
     # Logging
     log_every: int = 100
     save_every: int = 1000
     eval_every: int = 500
     
-    # Wandb
+    # Wandb - disabled
     use_wandb: bool = False
-    wandb_project: str = "temporal-pathrag"
+    wandb_project: str = "temporal-pathrag"  # Not used
     
     def to_dict(self) -> dict:
         return asdict(self)
@@ -241,22 +240,33 @@ class TemporalEmbeddingModel(nn.Module):
         super().__init__()
         self.config = config
         
-        # Load pre-trained LLaMA model with quantization
-        quantization_config = BitsAndBytesConfig(
-            load_in_4bit=True,
-            bnb_4bit_compute_dtype=torch.float16,
-            bnb_4bit_use_double_quant=True,
-            bnb_4bit_quant_type="nf4"
-        )
-        
+        # Always use GPU - fail if not available
+        if not torch.cuda.is_available():
+            raise RuntimeError("CUDA is not available - this model requires a GPU")
+            
         self.tokenizer = AutoTokenizer.from_pretrained(config.model_name)
         self.tokenizer.pad_token = self.tokenizer.eos_token
         
+        # Try to use quantization if BitsAndBytes is available
+        quantization_config = None
+        try:
+            from transformers import BitsAndBytesConfig
+            quantization_config = BitsAndBytesConfig(
+                load_in_4bit=True,
+                bnb_4bit_compute_dtype=torch.float16,
+                bnb_4bit_use_double_quant=True,
+                bnb_4bit_quant_type="nf4"
+            )
+            logger.info("Using 4-bit quantization with BitsAndBytes")
+        except ImportError:
+            logger.warning("BitsAndBytes not available - loading model without quantization")
+            logger.warning("This will use more GPU memory")
+            
         self.encoder = AutoModelForCausalLM.from_pretrained(
             config.model_name,
-            quantization_config=quantization_config if torch.cuda.is_available() else None,
-            device_map="auto" if torch.cuda.is_available() else None,
-            torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32
+            quantization_config=quantization_config,
+            device_map="auto",
+            torch_dtype=torch.float16
         )
         
         # Apply LoRA if enabled
@@ -278,12 +288,15 @@ class TemporalEmbeddingModel(nn.Module):
             logger.info(f"Applied LoRA with r={config.lora_r}, alpha={config.lora_alpha}")
             self.encoder.print_trainable_parameters()
         
+        # Get device from encoder
+        self.device = next(self.encoder.parameters()).device
+        
         # Temporal attention layer
         self.temporal_attention = TemporalAttentionLayer(
             hidden_dim=config.embedding_dim,
             num_heads=8,
             dropout=0.1
-        )
+        ).to(self.device)
         
         # Temporal encoding layer (after attention)
         self.temporal_encoder = nn.Sequential(
@@ -291,14 +304,14 @@ class TemporalEmbeddingModel(nn.Module):
             nn.ReLU(),
             nn.Dropout(0.1),
             nn.Linear(config.embedding_dim, config.embedding_dim)
-        )
+        ).to(self.device)
         
         # Optional projection head for training (can be removed after training)
         self.projection = nn.Sequential(
             nn.Linear(config.embedding_dim, config.embedding_dim),
             nn.ReLU(),
             nn.Linear(config.embedding_dim, config.embedding_dim)
-        )
+        ).to(self.device)
         
         # Initialise temporal encoder
         self.init_temporal_encoder()
@@ -330,7 +343,7 @@ class TemporalEmbeddingModel(nn.Module):
             embeddings = hidden_states.mean(dim=1)
             
         if normalise:
-            embeddings = F.normalise(embeddings, p=2, dim=1)
+            embeddings = F.normalize(embeddings, p=2, dim=1)
             
         return embeddings
     
@@ -365,7 +378,7 @@ class TemporalEmbeddingModel(nn.Module):
             embeddings = self.projection(embeddings)
             
         # Normalise
-        embeddings = F.normalise(embeddings, p=2, dim=-1)
+        embeddings = F.normalize(embeddings, p=2, dim=-1)
         
         return embeddings
     
@@ -434,22 +447,21 @@ class TemporalQuadrupletLoss(nn.Module):
         Compute quadruplet loss
         """
         if use_hard_negatives:
-            # Concatenate all embeddings for hard negative mining
-            all_embeddings = torch.cat([anchor_embeddings, positive_embeddings, negative_embeddings], dim=0)
-            
-            # Create labels (0 for anchors, 1 for positives, 2 for negatives)
+            # For quadruplet loss, we already have designated positive and negative samples
+            # Hard negative mining in this context means finding the hardest negatives from the negative set
             batch_size = anchor_embeddings.size(0)
-            labels = torch.cat([
-                torch.zeros(batch_size),
-                torch.ones(batch_size),
-                torch.ones(batch_size) * 2
-            ]).to(anchor_embeddings.device).long()
             
-            # Perform hard negative mining
-            pos_dist, neg_dist = self.batch_hard_negative_mining(all_embeddings[:batch_size], labels)
+            # Compute distances between anchors and all negatives
+            anchor_neg_distances = torch.cdist(anchor_embeddings, negative_embeddings, p=2)
             
-            # Compute quadruplet loss
-            loss = F.relu(pos_dist - neg_dist + self.margin)
+            # Find hardest (closest) negative for each anchor
+            hardest_neg_dist, _ = anchor_neg_distances.min(dim=1)
+            
+            # Use regular positive distance
+            pos_dist = F.pairwise_distance(anchor_embeddings, positive_embeddings, p=2)
+            
+            # Compute quadruplet loss with hard negatives
+            loss = F.relu(pos_dist - hardest_neg_dist + self.margin)
         else:
             # Standard quadruplet loss
             pos_dist = F.pairwise_distance(anchor_embeddings, positive_embeddings, p=2)
@@ -464,7 +476,13 @@ class TemporalEmbeddingTrainer:
     
     def __init__(self, config: TrainingConfig):
         self.config = config
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        
+        # Enforce GPU usage
+        if not torch.cuda.is_available():
+            raise RuntimeError("CUDA is not available - this training script requires a GPU")
+        
+        self.device = torch.device("cuda")
+        logger.info(f"Using GPU: {torch.cuda.get_device_name(0)}")
         
         # Create directories
         Path(config.output_dir).mkdir(parents=True, exist_ok=True)
@@ -487,20 +505,16 @@ class TemporalEmbeddingTrainer:
             weight_decay=config.weight_decay
         )
         
-        # Mixed precision training
-        self.scaler = torch.amp.GradScaler('cuda') if config.mixed_precision and torch.cuda.is_available() else None
+        # Mixed precision training - always use CUDA
+        self.scaler = torch.amp.GradScaler('cuda') if config.mixed_precision else None
         
         # Training state
         self.global_step = 0
         self.best_val_loss = float('inf')
         
-        # Initialise wandb if requested
-        if config.use_wandb and WANDB_AVAILABLE:
-            wandb.init(
-                project=config.wandb_project,
-                name=f"temporal_embeddings_{time.strftime('%Y%m%d_%H%M%S')}",
-                config=config.to_dict()
-            )
+        # Skip wandb initialisation completely
+        if config.use_wandb:
+            logger.warning("WandB requested but disabled in this version")
             
     def timestamp_to_index(self, timestamp: str) -> int:
         """Convert timestamp to temporal index (0-999)"""
@@ -555,6 +569,9 @@ class TemporalEmbeddingTrainer:
         """Single training step"""
         self.model.train()
         
+        # Ensure model is on GPU
+        self.model = self.model.to(self.device)
+        
         # Prepare batch
         anchor_texts, positive_texts, negative_texts, temporal_indices = self.prepare_batch(batch)
         
@@ -573,9 +590,9 @@ class TemporalEmbeddingTrainer:
                     use_hard_negatives=random.random() < self.config.hard_negative_ratio
                 )
         else:
-            anchor_emb = self.model(anchor_texts)
-            positive_emb = self.model(positive_texts)
-            negative_emb = self.model(negative_texts)
+            anchor_emb = self.model(anchor_texts, temporal_indices=temporal_indices)
+            positive_emb = self.model(positive_texts, temporal_indices=temporal_indices)
+            negative_emb = self.model(negative_texts, temporal_indices=temporal_indices)
             
             loss = self.criterion(
                 anchor_emb, positive_emb, negative_emb,
@@ -645,7 +662,8 @@ class TemporalEmbeddingTrainer:
             'optimiser_state_dict': self.optimiser.state_dict(),
             'config': self.config.to_dict(),
             'global_step': self.global_step,
-            'metrics': metrics
+            'metrics': metrics,
+            'job_id': getattr(self.config, 'job_id', None)
         }
         
         if self.scaler:
@@ -658,9 +676,33 @@ class TemporalEmbeddingTrainer:
         
         # Save best model
         if is_best:
+            # Save to output dir
             best_path = Path(self.config.output_dir) / "best_model.pt"
             torch.save(checkpoint, best_path)
             logger.info(f"Saved best model to {best_path}")
+            
+            # Also save to global best model dir if specified
+            if hasattr(self.config, 'best_model_dir') and self.config.best_model_dir:
+                best_model_dir = Path(self.config.best_model_dir)
+                best_model_dir.mkdir(parents=True, exist_ok=True)
+                
+                # Save model
+                global_best_path = best_model_dir / "best_model.pt"
+                torch.save(checkpoint, global_best_path)
+                
+                # Save info file
+                info_path = best_model_dir / "best_model_info.json"
+                info = {
+                    'val_loss': float(metrics.get('val_loss', 0)),
+                    'global_step': self.global_step,
+                    'job_id': getattr(self.config, 'job_id', None),
+                    'timestamp': time.strftime('%Y-%m-%d %H:%M:%S'),
+                    'checkpoint_path': str(checkpoint_path)
+                }
+                with open(info_path, 'w') as f:
+                    json.dump(info, f, indent=2)
+                
+                logger.info(f"Updated global best model in {best_model_dir}")
             
     def load_checkpoint(self, checkpoint_path: str):
         """Load model checkpoint"""
@@ -748,14 +790,15 @@ class TemporalEmbeddingTrainer:
                         'step': self.global_step
                     }
                     
-                    if self.config.use_wandb and WANDB_AVAILABLE:
-                        wandb.log(log_metrics, step=self.global_step)
+                    # WandB disabled - skip logging
                         
-                    # Log GPU memory if available
+                    # Log GPU memory and utilisation if available
                     if MONITORING_AVAILABLE and torch.cuda.is_available():
                         gpu = GPUtil.getGPUs()[0]
                         log_metrics['gpu_memory_used'] = gpu.memoryUsed
                         log_metrics['gpu_memory_percent'] = gpu.memoryUtil * 100
+                        log_metrics['gpu_utilization'] = gpu.load * 100
+                        logger.info(f"GPU: Util={gpu.load*100:.1f}% | Mem={gpu.memoryUsed:.0f}MB ({gpu.memoryUtil*100:.1f}%)")
                         
                 # Validation
                 if val_dataset and self.global_step % self.config.eval_every == 0:
@@ -764,8 +807,7 @@ class TemporalEmbeddingTrainer:
                     logger.info(f"Step {self.global_step} - Validation loss: {val_metrics['val_loss']:.4f}, "
                                f"Margin: {val_metrics['val_margin']:.4f}")
                     
-                    if self.config.use_wandb and WANDB_AVAILABLE:
-                        wandb.log(val_metrics, step=self.global_step)
+                    # WandB disabled - skip logging
                         
                     # Save best model
                     if val_metrics['val_loss'] < self.best_val_loss:
@@ -791,6 +833,11 @@ class TemporalEmbeddingTrainer:
 
 def main():
     """Main training script"""
+    # Set cache directories to avoid home directory quota issues
+    import os
+    if 'TRITON_CACHE_DIR' in os.environ:
+        os.environ['TRITON_CACHE_PATH'] = os.environ['TRITON_CACHE_DIR']
+    
     parser = argparse.ArgumentParser(description="Train temporal embeddings")
     
     # Data arguments
@@ -827,6 +874,8 @@ def main():
     
     # Checkpointing
     parser.add_argument("--checkpoint_dir", type=str, required=True, help="Checkpoint directory")
+    parser.add_argument("--best_model_dir", type=str, default=None, help="Directory to save best model")
+    parser.add_argument("--job_id", type=str, default=None, help="SLURM job ID for tracking")
     parser.add_argument("--save_every", type=int, default=1000, help="Save checkpoint every N steps")
     parser.add_argument("--eval_every", type=int, default=500, help="Evaluate every N steps")
     parser.add_argument("--log_every", type=int, default=100, help="Log every N steps")
@@ -860,6 +909,8 @@ def main():
         data_dir=args.data_dir,
         output_dir=args.output_dir,
         checkpoint_dir=args.checkpoint_dir,
+        best_model_dir=args.best_model_dir,
+        job_id=args.job_id,
         log_every=args.log_every,
         save_every=args.save_every,
         eval_every=args.eval_every,
@@ -872,12 +923,15 @@ def main():
     for key, value in config.to_dict().items():
         logger.info(f"{key}: {value}")
         
-    # Check GPU
+    # Check GPU - enforce GPU usage
     if torch.cuda.is_available():
         logger.info(f"Using GPU: {torch.cuda.get_device_name(0)}")
         logger.info(f"GPU Memory: {torch.cuda.get_device_properties(0).total_memory / 1e9:.1f} GB")
+        logger.info(f"CUDA Version: {torch.version.cuda}")
     else:
-        logger.warning("No GPU available, training on CPU")
+        logger.error("No GPU available - this training script requires a GPU")
+        logger.error("Please run on a machine with CUDA-capable GPU")
+        return
         
     # Load datasets
     data_path = Path(args.data_dir) / args.dataset

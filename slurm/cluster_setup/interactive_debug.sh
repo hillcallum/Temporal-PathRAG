@@ -7,9 +7,6 @@ CLUSTER_USER="cih124"
 PROJECT_NAME="Temporal_PathRAG"
 LOCAL_PROJECT_PATH="/Users/hillcallum/Temporal_PathRAG"
 
-echo "=== Debugging ==="
-echo "===================================="
-
 echo "Starting interactive debugging session"
 echo "This will sync code and then start an interactive session"
 
