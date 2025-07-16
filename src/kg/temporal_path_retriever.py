@@ -101,6 +101,13 @@ class TemporalPathRetriever:
             'avg_paths_after_pruning': 0
         }
         
+        # Track last query results
+        self.last_query_stats = {
+            'paths_discovered': 0,
+            'paths_after_pruning': 0,
+            'final_paths': 0
+        }
+        
         print(f"TemporalPathRetriever initialised on device: {self.device}")
         if self.updated_scorer:
             print("Using updated temporal scoring in path retriever")
@@ -169,6 +176,9 @@ class TemporalPathRetriever:
         # Stage 1: Temporal path discovery
         candidate_paths = self.discover_temporal_paths(query, verbose)
         
+        # Track discovered paths
+        self.last_query_stats['paths_discovered'] = len(candidate_paths)
+        
         if verbose:
             print(f"Discovered {len(candidate_paths)} candidate paths")
         
@@ -179,6 +189,9 @@ class TemporalPathRetriever:
             )
         else:
             pruned_paths = candidate_paths
+            
+        # Track pruned paths
+        self.last_query_stats['paths_after_pruning'] = len(pruned_paths)
             
         if verbose:
             print(f"After flow pruning: {len(pruned_paths)} paths")
@@ -191,6 +204,9 @@ class TemporalPathRetriever:
             final_paths = self.select_diverse_top_k(scored_paths, query.top_k, verbose)
         else:
             final_paths = sorted(scored_paths, key=lambda x: x[1], reverse=True)[:query.top_k]
+        
+        # Track final paths
+        self.last_query_stats['final_paths'] = len(final_paths)
         
         # Update performance statistics
         retrieval_time = time.time() - start_time
@@ -231,8 +247,10 @@ class TemporalPathRetriever:
                 all_paths.extend(neighbourhood_paths)
         
         # Strategy 3: Temporal pattern-based discovery
-        pattern_paths = self.discover_by_temporal_patterns(query)
-        all_paths.extend(pattern_paths)
+        # Only use this strategy if we don't have specific source/target entities
+        if not (query.source_entities and query.target_entities):
+            pattern_paths = self.discover_by_temporal_patterns(query)
+            all_paths.extend(pattern_paths)
         
         # Remove duplicates while preserving order
         unique_paths = []
@@ -242,7 +260,14 @@ class TemporalPathRetriever:
             signature = self.get_path_signature(path)
             if signature not in seen_signatures:
                 seen_signatures.add(signature)
-                unique_paths.append(path)
+                # If we have specific source/target entities, only keep valid paths
+                if query.source_entities and query.target_entities:
+                    if (path.nodes and 
+                        path.nodes[0].id in query.source_entities and 
+                        path.nodes[-1].id in query.target_entities):
+                        unique_paths.append(path)
+                else:
+                    unique_paths.append(path)
         
         return unique_paths
     
@@ -381,7 +406,7 @@ class TemporalPathRetriever:
                 temporal_path = self.convert_to_temporal_path(path, query.query_time)
                 
                 # Component 1: Updated temporal reliability score
-                temporal_reliability = self.temporal_weighting.updated_reliability_score(
+                temporal_reliability = self.temporal_weighting.enhanced_reliability_score(
                     temporal_path, query.query_time, path.score
                 )
                 
@@ -420,8 +445,11 @@ class TemporalPathRetriever:
         if not scored_paths:
             return []
         
-        # Sort by score
-        sorted_paths = sorted(scored_paths, key=lambda x: x[1], reverse=True)
+        # Sort by score - ensure valid scores
+        valid_scored_paths = [(p, s) for p, s in scored_paths if isinstance(s, (int, float))]
+        if not valid_scored_paths:
+            return []
+        sorted_paths = sorted(valid_scored_paths, key=lambda x: x[1], reverse=True)
         selected_paths = []
         
         for path, score in sorted_paths:

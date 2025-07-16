@@ -284,6 +284,12 @@ class TKGQueryEngine:
     
     def query(self, 
               query_text: str,
+              source_entities: Optional[List[str]] = None,
+              target_entities: Optional[List[str]] = None,
+              temporal_constraints: Optional[Dict] = None,
+              query_time: Optional[str] = None,
+              max_hops: Optional[int] = None,
+              top_k: Optional[int] = None,
               enable_flow_pruning: bool = True,
               enable_reliability_filtering: bool = True,
               enable_diversity: bool = True,
@@ -296,8 +302,22 @@ class TKGQueryEngine:
         if verbose:
             print(f"Processing query: {query_text}")
         
-        # Stage 1: Process natural language query
-        temporal_query = self.query_processor.process_query(query_text)
+        # Stage 1: Process natural language query or use provided parameters
+        if source_entities is not None or target_entities is not None:
+            # Use provided entities directly
+            from .models import TemporalQuery
+            temporal_query = TemporalQuery(
+                query_text=query_text,
+                source_entities=source_entities or [],
+                target_entities=target_entities or [],
+                temporal_constraints=temporal_constraints or {},
+                query_time=query_time or datetime.now().strftime('%Y-%m-%d'),
+                max_hops=max_hops or 4,
+                top_k=top_k or 10
+            )
+        else:
+            # Extract from query text
+            temporal_query = self.query_processor.process_query(query_text)
         
         if verbose:
             print(f"Extracted entities: {temporal_query.source_entities + temporal_query.target_entities}")
@@ -311,7 +331,10 @@ class TKGQueryEngine:
             verbose=verbose
         )
         
-        total_paths_discovered = len(retrieved_paths)
+        # Get actual discovery stats from retriever
+        retriever_stats = self.path_retriever.last_query_stats
+        total_paths_discovered = retriever_stats.get('paths_discovered', len(retrieved_paths))
+        total_paths_after_pruning = retriever_stats.get('paths_after_pruning', len(retrieved_paths))
         
         # Stage 3: Apply advanced reliability scoring
         paths_only = [path for path, _ in retrieved_paths]
@@ -361,7 +384,7 @@ class TKGQueryEngine:
             paths=final_paths,
             execution_time=execution_time,
             total_paths_discovered=total_paths_discovered,
-            total_paths_after_pruning=len(paths_only),
+            total_paths_after_pruning=total_paths_after_pruning,
             query_metadata={
                 'temporal_query': temporal_query,
                 'query_context': query_context,
