@@ -21,6 +21,7 @@ from .temporal_qa_benchmarks import (
 )
 from src.utils.config import get_config
 from src.llm.llm_manager import LLMManager
+from src.evaluation.answer_extractor import extract_answers_from_response
 
 
 class BaselineRunner(ABC):
@@ -100,9 +101,12 @@ class VanillaLLMBaseline(BaselineRunner):
         
         # Parse response into answer list
         if response:
-            # Simple parsing - split by common delimiters
-            answers = [ans.strip() for ans in response.replace('\n', ',').split(',')]
-            answers = [ans for ans in answers if ans]  # Remove empty strings
+            # Use answer extractor to get specific entities/dates
+            answers = extract_answers_from_response(
+                response,
+                answer_type=question.answer_type if hasattr(question, 'answer_type') else 'auto',
+                question=question.question
+            )
         else:
             answers = []
             
@@ -141,8 +145,12 @@ class DirectLLMBaseline(BaselineRunner):
         
         # Parse response
         if response:
-            answers = [ans.strip() for ans in response.replace('\n', ',').split(',')]
-            answers = [ans for ans in answers if ans]
+            # Use answer extractor to get specific entities/dates
+            answers = extract_answers_from_response(
+                response,
+                answer_type=question.answer_type if hasattr(question, 'answer_type') else 'auto',
+                question=question.question
+            )
         else:
             answers = []
             
@@ -194,8 +202,12 @@ class VanillaRAGBaseline(BaselineRunner):
         
         # Parse response
         if response:
-            answers = [ans.strip() for ans in response.replace('\n', ',').split(',')]
-            answers = [ans for ans in answers if ans]
+            # Use answer extractor to get specific entities/dates
+            answers = extract_answers_from_response(
+                response,
+                answer_type=question.answer_type if hasattr(question, 'answer_type') else 'auto',
+                question=question.question
+            )
         else:
             answers = []
             
@@ -264,8 +276,12 @@ class HyDEBaseline(BaselineRunner):
         
         # Parse response
         if response:
-            answers = [ans.strip() for ans in response.replace('\n', ',').split(',')]
-            answers = [ans for ans in answers if ans]
+            # Use answer extractor to get specific entities/dates
+            answers = extract_answers_from_response(
+                response,
+                answer_type=question.answer_type if hasattr(question, 'answer_type') else 'auto',
+                question=question.question
+            )
         else:
             answers = []
             
@@ -352,8 +368,12 @@ class PathRAGBaseline(BaselineRunner):
             # Parse answer from result
             reasoning_time = 0.1  # PathRAG combines retrieval and answering
             if result:
-                # PathRAG returns response directly
-                answers = [result.strip()]
+                # PathRAG returns response directly - extract entities/dates
+                answers = extract_answers_from_response(
+                    result,
+                    answer_type=question.answer_type if hasattr(question, 'answer_type') else 'auto',
+                    question=question.question
+                )
             else:
                 answers = []
                 
@@ -450,7 +470,12 @@ class TimeR4Baseline(BaselineRunner):
             
             # Parse answer
             if answer:
-                answers = [answer.strip()]
+                # Extract specific entities/dates from answer
+                answers = extract_answers_from_response(
+                    answer,
+                    answer_type=question.answer_type if hasattr(question, 'answer_type') else 'auto',
+                    question=question.question
+                )
             else:
                 answers = []
                 
@@ -497,12 +522,12 @@ class TemporalPathRAGBaseline(BaselineRunner):
         # Load the appropriate dataset if not already loaded
         # Use dataset name as key to check if we need to reload
         if not hasattr(self, '_current_dataset') or self._current_dataset != dataset_name:
-            from src.utils.dataset_loader import load_dataset
+            from src.kg.updated_tkg_loader import load_enhanced_dataset
             from src.kg.tkg_query_engine import TKGQueryEngine
             from src.kg.temporal_iterative_reasoner import TemporalIterativeReasoner
             
-            # Load dataset with caching enabled
-            graph = load_dataset(dataset_name, use_cache=True)
+            # Load dataset with enhancements and caching enabled
+            graph = load_enhanced_dataset(dataset_name, use_cache=True)
             
             # Initialise query engine with loaded graph
             self.query_engine = TKGQueryEngine(graph)
@@ -520,6 +545,11 @@ class TemporalPathRAGBaseline(BaselineRunner):
                 llm_manager=llm_manager,
                 **filtered_config
             )
+            
+            # Integrate enhanced query decomposer
+            from src.kg.updated_query_decomposer import integrate_with_reasoner
+            integrate_with_reasoner(self.reasoner)
+            
             self._current_dataset = dataset_name
             
         # Run temporal iterative reasoning
@@ -534,9 +564,19 @@ class TemporalPathRAGBaseline(BaselineRunner):
         # The final answer is a string, we need to extract the actual answer
         answers = []
         if result.final_answer:
-            # Simple extraction - look for answers in the text
-            # This might need refinement based on actual output format
-            answers = [result.final_answer.strip()]
+            # Debug - print the actual final answer
+            print(f"\nDebug - Final answer from reasoner: {result.final_answer[:200]}")
+            
+            # Use improved answer extractor to get specific entities/dates from the response
+            from src.evaluation.answer_extractor import AnswerExtractor
+            extractor = AnswerExtractor()
+            answers = extractor.extract_answers_from_response(
+                result.final_answer,
+                question=question.question,
+                answer_type=question.answer_type if hasattr(question, 'answer_type') else 'auto'
+            )
+            
+            print(f"Debug - Extracted answers: {answers}")
         
         # Calculate retrieval and reasoning time
         retrieval_time = 0.0
@@ -569,7 +609,7 @@ class TemporalPathRAGBaseline(BaselineRunner):
 
 def create_baseline_runner(baseline_name: str, **kwargs) -> BaselineRunner:
     """
-    Factory function to create baseline runners
+    Function to create baseline runners
     """
     baseline_map = {
         'vanilla': VanillaLLMBaseline,
@@ -621,9 +661,7 @@ def run_baseline_comparison(dataset_name: str,
     results = {}
     
     for baseline_name in baselines:
-        print(f"\n{'='*60}")
         print(f"Running {baseline_name} baseline on {dataset_name}")
-        print(f"{'='*60}")
         
         try:
             # Create baseline runner

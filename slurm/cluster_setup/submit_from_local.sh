@@ -44,7 +44,7 @@ echo "Step 1: Syncing code to cluster"
 "$SCRIPT_DIR/sync_to_cluster.sh" $CLEAN_FLAG
 
 if [ $? -ne 0 ]; then
-    echo "ERROR: Failed to sync code to cluster"
+    echo "ERROR: Failed tnoo sync code to cluster"
     exit 1
 fi
 

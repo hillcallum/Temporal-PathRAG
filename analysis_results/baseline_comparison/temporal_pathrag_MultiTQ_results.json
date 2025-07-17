@@ -1,7 +1,7 @@
 {
   "dataset": "MultiTQ",
   "split": "test",
-  "timestamp": "2025-07-10T19:06:23.965253",
+  "timestamp": "2025-07-16T11:55:54.209340",
   "overall_metrics": {
     "exact_match": 0.0,
     "f1_score": 0.0,
@@ -16,7 +16,7 @@
   },
   "efficiency_metrics": {
     "avg_retrieval_time": 0.0,
-    "avg_reasoning_time": 18.168005609512328
+    "avg_reasoning_time": 0.0
   },
   "breakdown": {
     "by_type": {
@@ -48,8 +48,7 @@
     }
   },
   "error_analysis": {
-    "entity_error": 3,
-    "temporal_error": 2,
+    "no_answer": 5,
     "missing_prediction": 54579
   }
 }

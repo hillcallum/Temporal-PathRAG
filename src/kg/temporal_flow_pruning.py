@@ -25,8 +25,8 @@ class TemporalFlowPruning:
     def __init__(self, 
                  temporal_weighting: TemporalWeightingFunction,
                  temporal_mode: TemporalRelevanceMode = TemporalRelevanceMode.EXPONENTIAL_DECAY,
-                 alpha: float = 0.01,  # Temporal decay rate (optimized)
-                 base_theta: float = 0.1):  # Base pruning threshold (optimized)
+                 alpha: float = 0.01,  # Temporal decay rate (optimised)
+                 base_theta: float = 0.1):  # Base pruning threshold (optimised)
         """
         Initialise temporal flow pruning system with parameter validation
         """

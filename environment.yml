@@ -46,6 +46,8 @@ dependencies:
       # NLP Libraries
       - nltk>=3.8
       - spacy>=3.7.0
+      - rapidfuzz>=3.0.0
+      - fuzzywuzzy>=0.18.0
       
       # Development Tools
       - black>=23.0.0

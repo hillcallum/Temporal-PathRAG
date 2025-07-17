@@ -28,6 +28,9 @@ scipy>=1.10.0
 sentence-transformers>=2.2.0
 nltk>=3.8
 spacy>=3.7.0
+rapidfuzz>=3.0.0
+fuzzywuzzy>=0.18.0
+python-Levenshtein>=0.21.0  
 
 # Utilities and Development
 tqdm>=4.65.0
