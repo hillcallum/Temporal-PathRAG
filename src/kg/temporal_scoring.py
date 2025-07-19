@@ -315,7 +315,7 @@ class TemporalWeightingFunction:
         score with temporal dimensions
         
         Mathematical Formulation:
-        S'(P) = α * S_PathRAG(P) + beta * S_temporal(P)
+        S'(P) = alpha * S_PathRAG(P) + beta * S_temporal(P)
         
         Where:
         S_temporal(P) = w1 * S_chrono(P) + w2 * S_prox(P) + w3 * S_consist(P)

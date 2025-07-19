@@ -94,7 +94,7 @@ class TemporalFlowPruning:
                 # Calculate temporal flow with resource propagation
                 temporal_flow = self.calculate_temporal_path_flow(path, query_time)
                 
-                # Apply temporal decay rate α in flow propagation
+                # Apply temporal decay rate (alpha) in flow propagation
                 decayed_flow = self.apply_temporal_decay_propagation(temporal_flow, path, query_time)
                 
                 # Check if path passes adaptive threshold

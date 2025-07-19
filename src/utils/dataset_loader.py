@@ -57,7 +57,9 @@ def load_dataset(dataset_name: str, config_override: Optional[Dict[str, Any]] = 
         return dataset_cache[cache_key]
     
     # Check disk cache
-    cache_dir = Path.home() / ".temporal_pathrag_cache" / "datasets"
+    import os
+    cache_base = os.environ.get('TEMPORAL_PATHRAG_CACHE', str(Path.home() / ".temporal_pathrag_cache"))
+    cache_dir = Path(cache_base) / "datasets"
     cache_dir.mkdir(parents=True, exist_ok=True)
     cache_file = cache_dir / f"{cache_key}_graph.pkl"
     

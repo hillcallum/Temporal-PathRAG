@@ -28,7 +28,7 @@ from .models import (
 from .temporal_scoring import TemporalWeightingFunction, TemporalPathRanker, TemporalPath, TemporalRelevanceMode
 from .temporal_flow_pruning import TemporalFlowPruning
 from .path_traversal import TemporalPathTraversal
-from .updated_temporal_scoring import UpdatedTemporalScorer
+from .embedding_temporal_scorer import UpdatedTemporalScorer
 
 
 class TemporalPathRetriever:

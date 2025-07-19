@@ -15,7 +15,7 @@ import networkx as nx
 from .temporal_path_retriever import TemporalPathRetriever
 from .temporal_reliability_scorer import TemporalReliabilityScorer
 from .temporal_scoring import TemporalWeightingFunction
-from .updated_temporal_scoring import UpdatedTemporalScorer, create_updated_temporal_scorer
+from .embedding_temporal_scorer import UpdatedTemporalScorer, create_updated_temporal_scorer
 from .models import (
     Path, TemporalQuery, TemporalReliabilityMetrics, QueryResult, 
     PathExplanation, GraphStatistics
@@ -247,7 +247,7 @@ class TKGQueryEngine:
         self.updated_scorer = None
         if self.use_updated_scoring:
             try:
-                from .updated_temporal_scoring import UpdatedTemporalScorer
+                from .embedding_temporal_scorer import UpdatedTemporalScorer
                 self.updated_scorer = UpdatedTemporalScorer(
                     graph=self.graph,
                     temporal_weighting=self.temporal_weighting,

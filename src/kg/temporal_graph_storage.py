@@ -472,7 +472,6 @@ def main():
         quadruplets_file = f"analysis_results/temporal_kg_analysis/{dataset}_quadruplets.json"
         
         if Path(quadruplets_file).exists():
-            print(f"\n{'='*60}")
             print(f"Loading {dataset} dataset")
             
             tg_db.load_temporal_quadruplets(quadruplets_file, dataset)
@@ -487,12 +486,10 @@ def main():
             print("Please run dataset_parser.py first to generate quadruplets")
     
     # Final statistics and sample queries
-    print(f"\n{'='*60}")
     print("Final Temporal Graph Database Statistics")
     tg_db.update_statistics()
     
     # Sample queries to demonstrate functionality
-    print(f"\n{'='*60}")
     print("Sample Temporal Queries")
     
     # Query facts from a specific year
@@ -519,7 +516,6 @@ def main():
     # Save database
     tg_db.save_database()
     
-    print(f"\n{'='*60}")
     print("Temporal Graph Database Creation Complete")
     print(f"Database saved to: {tg_db.db_path}")
     print(f"Total nodes: {tg_db.stats['nodes']:,}")

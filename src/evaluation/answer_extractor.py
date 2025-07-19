@@ -70,7 +70,7 @@ class AnswerExtractor:
             return []
         
         # Check if this is a "no answer" response
-        if self._is_no_answer_response(text):
+        if self.is_no_answer_response(text):
             logger.debug("Detected 'no answer found' response")
             return []
         

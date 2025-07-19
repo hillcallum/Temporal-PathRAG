@@ -6,7 +6,7 @@ import networkx as nx
 from typing import Dict, Any, Optional
 import logging
 from .entity_resolution import enhance_graph_with_textual_representations, EntityResolver
-from ..utils.dataset_loader import load_dataset as original_load_dataset
+from src.utils.dataset_loader import load_dataset as original_load_dataset
 
 logger = logging.getLogger(__name__)
 
