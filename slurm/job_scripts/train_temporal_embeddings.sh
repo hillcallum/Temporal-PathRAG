@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=train_temporal_embeddings
 #SBATCH --partition=gpgpuC
-#SBATCH --time=4-00:00:00
+#SBATCH --time=4-00:00:00  # 96 hours max to prevent timeout
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=6
 #SBATCH --mem=48G
