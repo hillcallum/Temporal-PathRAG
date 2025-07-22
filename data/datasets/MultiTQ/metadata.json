@@ -1,0 +1,10 @@
+{
+  "dataset_type": "MultiTQ",
+  "format": "TimeR4_compatible",
+  "description": "MultiTQ dataset processed for temporal knowledge graph",
+  "structure": {
+    "kg/": "Knowledge graph files",
+    "questions/": "Question datasets for evaluation",
+    "prompt/": "Prompt files (if available)"
+  }
+}

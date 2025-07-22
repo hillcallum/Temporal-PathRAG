@@ -1,8 +1,11 @@
-datasets/MultiTQ/kg/*.txt filter=lfs diff=lfs merge=lfs -text
-datasets/MultiTQ/questions/*.json filter=lfs diff=lfs merge=lfs -text
-datasets/MultiTQ/prompt/*.json filter=lfs diff=lfs merge=lfs -text
-datasets/TimeQuestions/kg/*.txt filter=lfs diff=lfs merge=lfs -text
-datasets/TimeQuestions/questions/*.json filter=lfs diff=lfs merge=lfs -text
-datasets/TimeQuestions/prompt/*.json filter=lfs diff=lfs merge=lfs -text
+data/datasets/MultiTQ/kg/*.txt filter=lfs diff=lfs merge=lfs -text
+data/datasets/MultiTQ/questions/*.json filter=lfs diff=lfs merge=lfs -text
+data/datasets/MultiTQ/prompt/*.json filter=lfs diff=lfs merge=lfs -text
+data/datasets/MultiTQ/kg/tkbc_processed_data/*.pickle filter=lfs diff=lfs merge=lfs -text
+data/datasets/TimeQuestions/kg/*.txt filter=lfs diff=lfs merge=lfs -text
+data/datasets/TimeQuestions/questions/*.json filter=lfs diff=lfs merge=lfs -text
+data/datasets/TimeQuestions/questions/*.pickle filter=lfs diff=lfs merge=lfs -text
+data/datasets/TimeQuestions/prompt/*.json filter=lfs diff=lfs merge=lfs -text
+data/datasets/TimeQuestions/kg/tkbc_processed_data/**/*.pickle filter=lfs diff=lfs merge=lfs -text
 analysis_results/temporal_graph_db/*.pkl filter=lfs diff=lfs merge=lfs -text
 data/training/combined/*.json filter=lfs diff=lfs merge=lfs -text
