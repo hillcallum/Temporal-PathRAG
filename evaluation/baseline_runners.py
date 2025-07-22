@@ -21,7 +21,7 @@ from .temporal_qa_benchmarks import (
 )
 from src.utils.config import get_config
 from src.llm.llm_manager import LLMManager
-from src.evaluation.answer_extractor import extract_answers_from_response
+from src.evaluation.answer_extractor import AnswerExtractor
 
 
 class BaselineRunner(ABC):
@@ -102,7 +102,8 @@ class VanillaLLMBaseline(BaselineRunner):
         # Parse response into answer list
         if response:
             # Use answer extractor to get specific entities/dates
-            answers = extract_answers_from_response(
+            extractor = AnswerExtractor()
+            answers = extractor.extract_answers_from_response(
                 response,
                 answer_type=question.answer_type if hasattr(question, 'answer_type') else 'auto',
                 question=question.question
@@ -146,7 +147,8 @@ class DirectLLMBaseline(BaselineRunner):
         # Parse response
         if response:
             # Use answer extractor to get specific entities/dates
-            answers = extract_answers_from_response(
+            extractor = AnswerExtractor()
+            answers = extractor.extract_answers_from_response(
                 response,
                 answer_type=question.answer_type if hasattr(question, 'answer_type') else 'auto',
                 question=question.question
@@ -203,7 +205,8 @@ class VanillaRAGBaseline(BaselineRunner):
         # Parse response
         if response:
             # Use answer extractor to get specific entities/dates
-            answers = extract_answers_from_response(
+            extractor = AnswerExtractor()
+            answers = extractor.extract_answers_from_response(
                 response,
                 answer_type=question.answer_type if hasattr(question, 'answer_type') else 'auto',
                 question=question.question
@@ -277,7 +280,8 @@ class HyDEBaseline(BaselineRunner):
         # Parse response
         if response:
             # Use answer extractor to get specific entities/dates
-            answers = extract_answers_from_response(
+            extractor = AnswerExtractor()
+            answers = extractor.extract_answers_from_response(
                 response,
                 answer_type=question.answer_type if hasattr(question, 'answer_type') else 'auto',
                 question=question.question
@@ -369,7 +373,8 @@ class PathRAGBaseline(BaselineRunner):
             reasoning_time = 0.1  # PathRAG combines retrieval and answering
             if result:
                 # PathRAG returns response directly - extract entities/dates
-                answers = extract_answers_from_response(
+                extractor = AnswerExtractor()
+                answers = extractor.extract_answers_from_response(
                     result,
                     answer_type=question.answer_type if hasattr(question, 'answer_type') else 'auto',
                     question=question.question
@@ -471,7 +476,8 @@ class TimeR4Baseline(BaselineRunner):
             # Parse answer
             if answer:
                 # Extract specific entities/dates from answer
-                answers = extract_answers_from_response(
+                extractor = AnswerExtractor()
+                answers = extractor.extract_answers_from_response(
                     answer,
                     answer_type=question.answer_type if hasattr(question, 'answer_type') else 'auto',
                     question=question.question
@@ -568,7 +574,6 @@ class TemporalPathRAGBaseline(BaselineRunner):
             print(f"\nDebug - Final answer from reasoner: {result.final_answer[:200]}")
             
             # Use improved answer extractor to get specific entities/dates from the response
-            from src.evaluation.answer_extractor import AnswerExtractor
             extractor = AnswerExtractor()
             answers = extractor.extract_answers_from_response(
                 result.final_answer,

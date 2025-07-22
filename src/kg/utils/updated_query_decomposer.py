@@ -6,7 +6,7 @@ import re
 import json
 from typing import List, Dict, Any, Tuple, Optional
 import networkx as nx
-from .utils.entity_resolution import EntityResolver
+from .entity_resolution import EntityResolver
 import logging
 
 logger = logging.getLogger(__name__)

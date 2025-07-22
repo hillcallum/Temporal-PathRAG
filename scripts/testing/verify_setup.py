@@ -69,7 +69,7 @@ def test_pathrag_environment():
     try:
         from src.kg.models import TemporalPathRAGNode, TemporalPathRAGEdge, Path
         from scripts.version_history.basic_path_traversal import BasicPathTraversal
-        from data.toy_graph import ToyGraphBuilder
+        from data.datasets.toy.expanded_toy_graph import ExpandedToyGraphBuilder as ToyGraphBuilder
         print("PathRAG modules imported successfully")
         
         # Create toy graph

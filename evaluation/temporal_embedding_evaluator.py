@@ -19,7 +19,7 @@ from sklearn.metrics import precision_recall_curve, roc_curve, auc
 from src.kg.retrieval.temporal_embedding_retriever import TemporalEmbeddingRetriever
 from src.kg.retrieval.enhanced_temporal_pathrag import EnhancedTemporalPathRAG
 from src.kg.scoring.updated_temporal_scoring import UpdatedTemporalScorer
-from .baseline_runners import run_temporal_pathrag_baseline
+from .baseline_runners import TemporalPathRAGBaseline
 from .temporal_qa_benchmarks import MultiTQBenchmark, TimeQuestionsBenchmark
 
 logger = logging.getLogger(__name__)
@@ -79,7 +79,7 @@ class TemporalEmbeddingEvaluator:
             raise ValueError(f"Unknown dataset: {dataset}")
         
         # Load test data
-        test_data = benchmark.load_test_data()[:num_samples]
+        test_data = benchmark.questions[:num_samples]
         
         results = {
             'dataset': dataset,
@@ -143,7 +143,7 @@ class TemporalEmbeddingEvaluator:
             raise ValueError(f"Unknown dataset: {dataset}")
             
         # Load test data
-        test_data = benchmark.load_test_data()[:num_samples]
+        test_data = benchmark.questions[:num_samples]
         
         results = {
             'dataset': dataset,
@@ -226,12 +226,14 @@ class TemporalEmbeddingEvaluator:
         }
         
         # Evaluate baseline
-        baseline_results = run_temporal_pathrag_baseline(
-            benchmark=benchmark,
-            num_samples=num_samples,
-            llm_client=llm_client
-        )
-        results['qa_metrics']['baseline'] = baseline_results
+        baseline_runner = TemporalPathRAGBaseline()
+        baseline_predictions = []
+        for question in test_data:
+            pred = baseline_runner.predict(question, benchmark.dataset_type.value)
+            baseline_predictions.append(pred)
+        
+        baseline_metrics = benchmark.evaluate(baseline_predictions)
+        results['qa_metrics']['baseline'] = baseline_metrics
         
         # Evaluate with embeddings
         if self.enhanced_pathrag:
@@ -416,7 +418,7 @@ class TemporalEmbeddingEvaluator:
         """
         Run evaluation with enhanced PathRAG
         """
-        test_data = benchmark.load_test_data()[:num_samples]
+        test_data = benchmark.questions[:num_samples]
         predictions = []
         ground_truths = []
         

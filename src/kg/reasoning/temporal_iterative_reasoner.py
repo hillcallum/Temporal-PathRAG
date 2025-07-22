@@ -232,11 +232,12 @@ class TemporalIterativeReasoner:
             if verbose:
                 print(f"Retrieved {len(sub_query_result.paths)} paths")
                 print(f"Sufficient: {step.is_sufficient}")
-                print(f"Temporal coverage: {step.temporal_coverage.get('coverage_score', 0):.2f}")
+                coverage_score = step.temporal_coverage.get('coverage_score', 0) if hasattr(step, 'temporal_coverage') and step.temporal_coverage else 0
+                print(f"Temporal coverage: {coverage_score:.2f}")
             
             # Check convergence using temporal stopping controller decision
             if step.is_sufficient:
-                convergence_reason = step.temporal_coverage.get('stopping_criterion', 'sufficient_evidence')
+                convergence_reason = step.temporal_coverage.get('stopping_criterion', 'sufficient_evidence') if hasattr(step, 'temporal_coverage') and step.temporal_coverage else 'sufficient_evidence'
                 break
             
             # Check if we're making progress
@@ -385,8 +386,11 @@ class TemporalIterativeReasoner:
         # Extract timestamps
         all_timestamps = []
         for path, _ in accumulated_paths:
-            path_timestamps = path.get_temporal_info()["timestamps"]
-            all_timestamps.extend(path_timestamps)
+            if hasattr(path, 'get_temporal_info'):
+                temporal_info = path.get_temporal_info()
+                if temporal_info and isinstance(temporal_info, dict):
+                    path_timestamps = temporal_info.get("timestamps", [])
+                    all_timestamps.extend(path_timestamps)
         
         if not all_timestamps:
             return {"coverage_score": 0.0, "temporal_span": 0, "timestamp_count": 0}

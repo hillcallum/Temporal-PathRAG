@@ -11,6 +11,7 @@ import re
 from typing import List, Dict, Any, Optional, Tuple, Set
 import networkx as nx
 import logging
+from .graph_utils import safe_get_edge_data
 
 # Try to import fuzzy matching library
 try:
@@ -267,7 +268,7 @@ class EntityResolver:
         if entity_id not in self.graph.nodes:
             return {"found": False}
         
-        node_data = self.graph.nodes[entity_id]
+        node_data = self.graph.nodes.get(entity_id, {})
         neighbours = list(self.graph.neighbors(entity_id))
         in_neighbours = list(self.graph.predecessors(entity_id))
         
@@ -290,7 +291,7 @@ def enhance_graph_with_textual_representations(graph: nx.DiGraph) -> nx.DiGraph:
     
     # Enhance nodes
     for node_id in graph.nodes:
-        node_data = graph.nodes[node_id]
+        node_data = graph.nodes.get(node_id, {})
         
         # Skip if already has tv
         if 'tv' in node_data:
@@ -298,7 +299,8 @@ def enhance_graph_with_textual_representations(graph: nx.DiGraph) -> nx.DiGraph:
         
         # Generate textual representation
         tv = generate_node_textual_value(node_id, node_data)
-        graph.nodes[node_id]['tv'] = tv
+        if node_id in graph.nodes:
+            graph.nodes[node_id]['tv'] = tv
     
     # Enhance edges
     for u, v, key, data in graph.edges(keys=True, data=True):
@@ -308,7 +310,8 @@ def enhance_graph_with_textual_representations(graph: nx.DiGraph) -> nx.DiGraph:
         
         # Generate textual representation
         te = generate_edge_textual_value(u, v, data)
-        graph.edges[u, v, key]['te'] = te
+        if graph.has_edge(u, v, key):
+            graph.edges[u, v, key]['te'] = te
     
     logger.info(f"Enhanced {graph.number_of_nodes()} nodes and {graph.number_of_edges()} edges")
     return graph

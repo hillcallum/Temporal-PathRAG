@@ -134,7 +134,7 @@ class TemporalFlowPruning:
                 total_edges += 1
                 
                 # Preserve original capacity for restoration if needed
-                if not hasattr(edge, '_original_capacity'):
+                if not hasattr(edge, 'original_capacity'):
                     edge.original_capacity = getattr(edge, 'flow_capacity', 1.0)
                 
                 if hasattr(edge, 'timestamp') and edge.timestamp:
@@ -468,7 +468,7 @@ class TemporalFlowPruning:
             for path in test_paths:
                 for edge in path.edges:
                     total_edges += 1
-                    if hasattr(edge, '_original_capacity'):
+                    if hasattr(edge, 'original_capacity'):
                         if edge.flow_capacity != edge.original_capacity:
                             modified_edges += 1
                 

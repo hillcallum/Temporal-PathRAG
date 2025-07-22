@@ -113,13 +113,13 @@ def test_entity_resolution():
 
 def test_answer_extraction():
     """Test improved answer extraction"""
-    from src.evaluation.answer_extractor import ImprovedAnswerExtractor
+    from src.evaluation.answer_extractor import AnswerExtractor
     
     print("\n" + "="*80)
     print("Testing Improved Answer Extraction")
     print("="*80)
     
-    extractor = ImprovedAnswerExtractor()
+    extractor = AnswerExtractor()
     
     # Test cases
     test_cases = [

@@ -15,7 +15,8 @@ from ..utils.temporal_path_filtering import TemporalPathFilter
 from .temporal_embedding_retriever import TemporalEmbeddingRetriever
 from ..scoring.updated_temporal_scoring import UpdatedTemporalScorer
 from ..utils.entity_resolution import EntityResolver
-from ..utils.updated_query_decomposer import UpdatedQueryDecomposer
+from ..utils.updated_query_decomposer import QueryDecomposer as UpdatedQueryDecomposer
+from ..utils.graph_utils import safe_get_edge_data
 from ..models import PathRAG
 
 logger = logging.getLogger(__name__)
@@ -63,9 +64,7 @@ class EnhancedTemporalPathRAG(PathRAG):
             self.temporal_filter = None
             
         # Use updated components
-        self.query_decomposer = UpdatedQueryDecomposer(
-            entity_resolver=self.entity_resolver
-        )
+        self.query_decomposer = None  # Will be initialised when graph is available
         self.temporal_scorer = UpdatedTemporalScorer()
         
     def retrieve_paths(
@@ -79,8 +78,16 @@ class EnhancedTemporalPathRAG(PathRAG):
         """
         Retrieve relevant paths for a query
         """
+        # Initialise query decomposer with graph if needed
+        if self.query_decomposer is None:
+            # Create a dummy LLM manager for now - this should be passed in properly
+            from src.llm.llm_manager import LLMManager
+            llm_manager = LLMManager()
+            self.query_decomposer = UpdatedQueryDecomposer(graph, llm_manager)
+        
         # Decompose query
-        sub_queries = self.query_decomposer.decompose(query, graph)
+        decomposition_result = self.query_decomposer.decompose_query(query)
+        sub_queries = decomposition_result.get('sub_queries', [query])
         logger.info(f"Decomposed into {len(sub_queries)} sub-queries")
         
         all_paths = []
@@ -234,15 +241,21 @@ class EnhancedTemporalPathRAG(PathRAG):
         Extract entities from query
         """
         if self.entity_resolver:
-            # Use entity resolver
-            entities = self.entity_resolver.extract_entities(query)
+            # Initialise entity resolver with graph if needed
+            if not hasattr(self.entity_resolver, 'graph') or self.entity_resolver.graph is None:
+                self.entity_resolver = EntityResolver(graph)
+            
+            # Use query decomposer to extract entities
+            if self.query_decomposer is None:
+                from src.llm.llm_manager import LLMManager
+                llm_manager = LLMManager()
+                self.query_decomposer = UpdatedQueryDecomposer(graph, llm_manager)
+            
+            entities = self.query_decomposer.extract_entities_from_query(query)
             resolved = []
             
             for entity in entities:
-                resolved_entity = self.entity_resolver.resolve_entity(
-                    entity,
-                    list(graph.nodes())
-                )
+                resolved_entity = self.entity_resolver.resolve(entity)
                 if resolved_entity:
                     resolved.append(resolved_entity)
             
@@ -252,8 +265,10 @@ class EnhancedTemporalPathRAG(PathRAG):
             # This will be replaced with more sophisticated NER
             entities = []
             for node in graph.nodes():
-                if node.lower() in query.lower():
-                    entities.append(node)
+                # Type check to ensure both node and query are strings
+                if isinstance(node, str) and isinstance(query, str):
+                    if node.lower() in query.lower():
+                        entities.append(node)
             return entities
     
     def find_paths_between(
@@ -285,11 +300,8 @@ class EnhancedTemporalPathRAG(PathRAG):
                     target = node_path[i + 1]
                     
                     # Get edge relation
-                    if graph.has_edge(source, target):
-                        edge_data = graph[source][target]
-                        relation = edge_data.get('relation', 'connected_to')
-                    else:
-                        relation = 'connected_to'
+                    edge_data = safe_get_edge_data(graph, source, target)
+                    relation = edge_data.get('relation', 'connected_to')
                     
                     triple_path.append((source, relation, target))
                 
@@ -377,16 +389,15 @@ class EnhancedTemporalPathRAG(PathRAG):
                 context_parts.append(f" - {source} {relation} {target}")
                 
                 # Add temporal context if available
-                if graph.has_edge(source, target):
-                    edge_data = graph[source][target]
-                    if 'te' in edge_data:
-                        start, end = edge_data['te']
-                        if start and end:
-                            context_parts.append(f"(from {start} to {end})")
-                        elif start:
-                            context_parts.append(f"(since {start})")
-                        elif end:
-                            context_parts.append(f"(until {end})")
+                edge_data = safe_get_edge_data(graph, source, target)
+                if 'te' in edge_data:
+                    start, end = edge_data['te']
+                    if start and end:
+                        context_parts.append(f"(from {start} to {end})")
+                    elif start:
+                        context_parts.append(f"(since {start})")
+                    elif end:
+                        context_parts.append(f"(until {end})")
             
             context_parts.append("")  # Empty line between paths
         

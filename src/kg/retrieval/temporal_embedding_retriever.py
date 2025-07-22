@@ -8,7 +8,7 @@ import numpy as np
 from typing import List, Tuple, Dict, Any, Optional
 from pathlib import Path
 import logging
-from transformers import AutoModel, AutoTokenizer
+from transformers import AutoModel
 import json
 from datetime import datetime
 import networkx as nx
@@ -56,13 +56,13 @@ class TemporalEmbeddingRetriever:
                 "use_lora": True
             }
         
-        # Initialise model
-        self.model = TemporalEmbeddingModel(
-            model_name=config["base_model"],
-            temporal_dim=config["temporal_dim"],
-            num_heads=config["num_heads"],
-            use_lora=config.get("use_lora", True)
-        )
+        # Initialise model with TrainingConfig
+        from ...training.train_temporal_embeddings import TrainingConfig
+        training_config = TrainingConfig()
+        training_config.model_name = config["base_model"]
+        training_config.use_lora = config.get("use_lora", True)
+        
+        self.model = TemporalEmbeddingModel(training_config)
         
         # Load trained weights
         model_file = Path(model_path) / "pytorch_model.bin"
@@ -76,8 +76,8 @@ class TemporalEmbeddingRetriever:
         self.model.to(self.device)
         self.model.eval()
         
-        # Initialise tokenizer
-        self.tokenizer = AutoTokenizer.from_pretrained(config["base_model"])
+        # Tokenizer is handled internally by the model
+        # self.tokenizer = AutoTokenizer.from_pretrained(config["base_model"])
         
     def encode_query(self, query: str, temporal_context: Optional[Dict] = None) -> torch.Tensor:
         """
@@ -88,24 +88,14 @@ class TemporalEmbeddingRetriever:
         if self.cache_embeddings and cache_key in self.embedding_cache:
             return self.embedding_cache[cache_key]
         
-        # Tokenize
-        inputs = self.tokenizer(
-            query,
-            return_tensors="pt",
-            padding=True,
-            truncation=True,
-            max_length=512
-        ).to(self.device)
-        
         # Extract temporal signals
-        temporal_signals = self.extract_temporal_signals(query, temporal_context)
+        temporal_indices = self.extract_temporal_signals(query, temporal_context)
         
-        # Encode
+        # Encode - the model expects raw text strings
         with torch.no_grad():
             embeddings = self.model(
-                input_ids=inputs.input_ids,
-                attention_mask=inputs.attention_mask,
-                temporal_signals=temporal_signals
+                texts=[query],
+                temporal_indices=temporal_indices
             )
         
         # Cache if enabled
@@ -131,24 +121,14 @@ class TemporalEmbeddingRetriever:
         # Convert path to text representation
         path_text = self.path_to_text(path, graph)
         
-        # Tokenize
-        inputs = self.tokenizer(
-            path_text,
-            return_tensors="pt",
-            padding=True,
-            truncation=True,
-            max_length=512
-        ).to(self.device)
-        
         # Extract temporal signals from path
-        temporal_signals = self.extract_path_temporal_signals(path, graph)
+        temporal_indices = self.extract_path_temporal_signals(path, graph)
         
-        # Encode
+        # Encode - the model expects raw text strings
         with torch.no_grad():
             embeddings = self.model(
-                input_ids=inputs.input_ids,
-                attention_mask=inputs.attention_mask,
-                temporal_signals=temporal_signals
+                texts=[path_text],
+                temporal_indices=temporal_indices
             )
         
         # Cache if enabled

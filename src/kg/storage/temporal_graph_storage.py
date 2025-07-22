@@ -13,6 +13,7 @@ import pandas as pd
 import pickle
 from datetime import datetime
 import re
+from ..utils.graph_utils import safe_get_edge_data
 
 class TemporalGraphDatabase:
     """NetworkX-based temporal knowledge graph database"""
@@ -95,8 +96,10 @@ class TemporalGraphDatabase:
                                          relations=set([predicate]),
                                          datasets=set([dataset_name]))
             else:
-                self.entity_graph[subject][obj]['relations'].add(predicate)
-                self.entity_graph[subject][obj]['datasets'].add(dataset_name)
+                edge_data = safe_get_edge_data(self.entity_graph, subject, obj)
+                if edge_data:
+                    edge_data['relations'].add(predicate)
+                    edge_data['datasets'].add(dataset_name)
             
             loaded_count += 1
             
@@ -194,8 +197,10 @@ class TemporalGraphDatabase:
                                              relations=set([predicate]),
                                              datasets=set([dataset_name]))
                 else:
-                    self.entity_graph[subject][obj]['relations'].add(predicate)
-                    self.entity_graph[subject][obj]['datasets'].add(dataset_name)
+                    edge_data = safe_get_edge_data(self.entity_graph, subject, obj)
+                    if edge_data:
+                        edge_data['relations'].add(predicate)
+                        edge_data['datasets'].add(dataset_name)
                 
                 loaded_count += 1
                 
@@ -271,14 +276,20 @@ class TemporalGraphDatabase:
         }
         
         for neighbour in neighbours["outgoing"]:
-            for key, data in self.main_graph[entity][neighbour].items():
-                relations["outgoing"].append(data['relation'])
-                break  # Take first relation for each neighbour
+            edge_data = self.main_graph.get_edge_data(entity, neighbour)
+            if edge_data:
+                # For MultiDiGraph, edge_data is a dict of dicts
+                for key, data in edge_data.items():
+                    relations["outgoing"].append(data['relation'])
+                    break  # Take first relation for each neighbour
         
         for pred in neighbours["incoming"]:
-            for key, data in self.main_graph[pred][entity].items():
-                relations["incoming"].append(data['relation'])
-                break  # Take first relation for each neighbour
+            edge_data = self.main_graph.get_edge_data(pred, entity)
+            if edge_data:
+                # For MultiDiGraph, edge_data is a dict of dicts
+                for key, data in edge_data.items():
+                    relations["incoming"].append(data['relation'])
+                    break  # Take first relation for each neighbour
         
         # Multi-hop traversal
         if max_hops > 1:

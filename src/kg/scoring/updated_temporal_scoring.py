@@ -189,14 +189,17 @@ class UpdatedTemporalScorer:
                 return semantic_scores[path_key]
                 
         # Simple heuristic based on query terms
-        query_terms = set(query.lower().split())
+        query_terms = set(query.lower().split()) if query and isinstance(query, str) else set()
         path_terms = set()
         
         for source, relation, target in path:
             # Add entity and relation terms
-            path_terms.update(source.lower().split('_'))
-            path_terms.update(relation.lower().split('_'))
-            path_terms.update(target.lower().split('_'))
+            if source and isinstance(source, str):
+                path_terms.update(source.lower().split('_'))
+            if relation and isinstance(relation, str):
+                path_terms.update(relation.lower().split('_'))
+            if target and isinstance(target, str):
+                path_terms.update(target.lower().split('_'))
             
         # Compute overlap
         overlap = len(query_terms.intersection(path_terms))

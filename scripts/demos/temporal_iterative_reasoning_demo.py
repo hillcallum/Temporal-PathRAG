@@ -11,7 +11,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(
 import json
 import pickle
 from datetime import datetime
-from src.kg.temporal_iterative_reasoner import TemporalIterativeReasoner
+from src.kg.reasoning.temporal_iterative_reasoner import TemporalIterativeReasoner
 from src.kg.core.tkg_query_engine import TKGQueryEngine
 from src.llm.llm_manager import LLMManager
 from src.utils.config import get_config
@@ -171,7 +171,7 @@ def test_query_decomposition():
     # Initialise LLM manager
     llm_manager = LLMManager(llm_config)
     
-    from src.kg.temporal_iterative_reasoner import TemporalQueryDecomposer
+    from src.kg.reasoning.temporal_iterative_reasoner import TemporalQueryDecomposer
     decomposer = TemporalQueryDecomposer(llm_manager)
     
     test_queries = [

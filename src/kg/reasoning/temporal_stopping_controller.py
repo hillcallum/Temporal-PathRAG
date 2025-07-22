@@ -16,7 +16,7 @@ from dataclasses import dataclass, field
 from collections import defaultdict
 
 from ..models import TemporalQuery, Path, TemporalReliabilityMetrics, IterativeStep, TemporalCoverageMetrics, TemporalStoppingDecision
-from ..llm.llm_manager import LLMManager
+from ...llm.llm_manager import LLMManager
 
 
 class TemporalStoppingController:
@@ -350,6 +350,8 @@ class TemporalStoppingController:
     def is_temporal_entity(self, entity: str) -> bool:
         """Check if entity is temporal in nature"""
         temporal_indicators = ['date', 'time', 'year', 'month', 'day', 'period', 'era', 'age']
+        if not entity or not isinstance(entity, str):
+            return False
         return any(indicator in entity.lower() for indicator in temporal_indicators)
     
     def calculate_chronological_continuity(self, timestamps: List[datetime]) -> float:

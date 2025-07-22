@@ -230,6 +230,7 @@ class TKGQueryEngine:
         self.graph = graph
         self.graph_statistics = graph_statistics or {}
         self.use_updated_scoring = use_updated_scoring
+        self.reliability_threshold = reliability_threshold
         
         # Initialise query processor
         self.query_processor = TemporalQueryProcessor()
@@ -247,7 +248,7 @@ class TKGQueryEngine:
         self.updated_scorer = None
         if self.use_updated_scoring:
             try:
-                from .scoring.embedding_temporal_scorer import EmbeddingTemporalScorer
+                from ..scoring.embedding_temporal_scorer import EmbeddingTemporalScorer
                 self.updated_scorer = EmbeddingTemporalScorer(
                     graph=self.graph,
                     temporal_weighting=self.temporal_weighting,
@@ -367,7 +368,7 @@ class TKGQueryEngine:
                 ]
             else:
                 final_paths = self.reliability_scorer.filter_reliable_paths(
-                    paths_only, temporal_query.query_time, query_context
+                    reliability_scored_paths, temporal_query.query_time, query_context
                 )
         else:
             final_paths = reliability_scored_paths

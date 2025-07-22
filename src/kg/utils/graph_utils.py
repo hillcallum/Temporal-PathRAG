@@ -67,6 +67,20 @@ def safe_get_neighbours_with_edges(graph: nx.Graph, node: str) -> List[Tuple[str
     return neighbours
 
 
+def safe_get_neighbors_with_edges(graph: nx.Graph, node: str) -> List[Tuple[str, Dict[str, Any]]]:
+    """
+    Alias for safe_get_neighbours_with_edges (American spelling)
+    
+    Args:
+        graph: NetworkX graph
+        node: Node to get neighbors for
+        
+    Returns:
+        List of (neighbor, edge_data) tuples
+    """
+    return safe_get_neighbours_with_edges(graph, node)
+
+
 def iterate_all_edges(graph: nx.Graph, node: str, neighbour: str) -> List[Dict[str, Any]]:
     """
     Iterate over all edges between two nodes (handling multi-edges)
