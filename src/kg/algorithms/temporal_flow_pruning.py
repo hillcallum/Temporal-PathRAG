@@ -12,8 +12,8 @@ from collections import defaultdict
 from typing import List, Dict, Optional, Tuple
 from datetime import datetime
 
-from .models import TemporalPathRAGNode, TemporalPathRAGEdge, Path
-from .temporal_scoring import TemporalWeightingFunction, TemporalPath, TemporalRelevanceMode
+from ..models import TemporalPathRAGNode, TemporalPathRAGEdge, Path
+from ..scoring.temporal_scoring import TemporalWeightingFunction, TemporalPath, TemporalRelevanceMode
 
 
 class TemporalFlowPruning:
@@ -135,7 +135,7 @@ class TemporalFlowPruning:
                 
                 # Preserve original capacity for restoration if needed
                 if not hasattr(edge, '_original_capacity'):
-                    edge._original_capacity = getattr(edge, 'flow_capacity', 1.0)
+                    edge.original_capacity = getattr(edge, 'flow_capacity', 1.0)
                 
                 if hasattr(edge, 'timestamp') and edge.timestamp:
                     # Calculate temporal weight with alpha parameter influence
@@ -148,12 +148,12 @@ class TemporalFlowPruning:
                     alpha_adjusted_weight = temporal_weight ** (1.0 + self.alpha)
                     
                     # Update edge capacity with temporal weighting
-                    edge.flow_capacity = edge._original_capacity * alpha_adjusted_weight
+                    edge.flow_capacity = edge.original_capacity * alpha_adjusted_weight
                     temporal_modifications += 1
                 else:
                     # For edges without timestamps, apply neutral capacity with alpha penalty
                     neutral_penalty = 1.0 - (self.alpha * 0.1)  # Small penalty for missing temporal data
-                    edge.flow_capacity = edge._original_capacity * max(0.1, neutral_penalty)
+                    edge.flow_capacity = edge.original_capacity * max(0.1, neutral_penalty)
         
         # Track modification statistics for validation
         modification_rate = temporal_modifications / max(total_edges, 1)
@@ -469,7 +469,7 @@ class TemporalFlowPruning:
                 for edge in path.edges:
                     total_edges += 1
                     if hasattr(edge, '_original_capacity'):
-                        if edge.flow_capacity != edge._original_capacity:
+                        if edge.flow_capacity != edge.original_capacity:
                             modified_edges += 1
                 
                 temporal_flow = self.calculate_temporal_path_flow(path, query_time)

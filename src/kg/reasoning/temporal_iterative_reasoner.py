@@ -14,10 +14,10 @@ import numpy as np
 from typing import List, Dict, Any, Optional, Tuple
 from datetime import datetime
 
-from .tkg_query_engine import TKGQueryEngine
-from .models import TemporalQuery, Path, QueryResult, TemporalReliabilityMetrics, IterativeStep, IterativeResult
+from ..core.tkg_query_engine import TKGQueryEngine
+from ..models import TemporalQuery, Path, QueryResult, TemporalReliabilityMetrics, IterativeStep, IterativeResult
 from .temporal_stopping_controller import TemporalStoppingController
-from ..llm.llm_manager import LLMManager
+from ...llm.llm_manager import LLMManager
 
 
 class TemporalQueryDecomposer:

@@ -6,10 +6,12 @@ from typing import List, Tuple, Optional, Any, Dict
 import logging
 from dataclasses import dataclass
 
-from .temporal_reliability_scorer import TemporalReliabilityScorer, TemporalReliabilityMetrics
+from .temporal_reliability_scorer import TemporalReliabilityScorer
+from ..models import TemporalReliabilityMetrics
 from .temporal_scoring import TemporalWeightingFunction
-from ..embeddings.embedding_integration import EmbeddingIntegration
-from ..embeddings.temporal_embeddings import TemporalEmbeddings
+from .updated_temporal_scoring import UpdatedTemporalScorer
+from ...embeddings.embedding_integration import EmbeddingIntegration
+from ...embeddings.temporal_embeddings import TemporalEmbeddings
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +26,7 @@ class TemporalScoringMetrics:
     reliability_metrics: TemporalReliabilityMetrics
 
 
-class UpdatedTemporalScorer:
+class EmbeddingTemporalScorer:
     """
     Updated scorer that blends temporal reliability with learned embeddings
     """
@@ -254,7 +256,7 @@ def create_updated_temporal_scorer(temporal_weighting: TemporalWeightingFunction
     with manual temporal reliability scoring
     """
     try:
-        scorer = UpdatedTemporalScorer(
+        scorer = EmbeddingTemporalScorer(
             graph=temporal_weighting.graph if hasattr(temporal_weighting, 'graph') else None,
             temporal_weighting=temporal_weighting,
             embedding_integration=embedding_integration,

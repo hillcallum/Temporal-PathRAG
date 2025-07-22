@@ -18,7 +18,7 @@ from typing import List, Dict, Optional, Tuple, Set, Any
 from datetime import datetime, timedelta
 import statistics
 
-from .models import (
+from ..models import (
     TemporalPathRAGNode, TemporalPathRAGEdge, Path, TemporalReliabilityMetrics,
     GraphStatistics
 )

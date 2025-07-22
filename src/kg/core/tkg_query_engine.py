@@ -12,11 +12,11 @@ from typing import List, Dict, Optional, Tuple, Any
 from datetime import datetime
 import networkx as nx
 
-from .temporal_path_retriever import TemporalPathRetriever
-from .temporal_reliability_scorer import TemporalReliabilityScorer
-from .temporal_scoring import TemporalWeightingFunction
-from .embedding_temporal_scorer import UpdatedTemporalScorer, create_updated_temporal_scorer
-from .models import (
+from ..retrieval.temporal_path_retriever import TemporalPathRetriever
+from ..scoring.temporal_reliability_scorer import TemporalReliabilityScorer
+from ..scoring.temporal_scoring import TemporalWeightingFunction
+from ..scoring.embedding_temporal_scorer import EmbeddingTemporalScorer, create_updated_temporal_scorer
+from ..models import (
     Path, TemporalQuery, TemporalReliabilityMetrics, QueryResult, 
     PathExplanation, GraphStatistics
 )
@@ -247,8 +247,8 @@ class TKGQueryEngine:
         self.updated_scorer = None
         if self.use_updated_scoring:
             try:
-                from .embedding_temporal_scorer import UpdatedTemporalScorer
-                self.updated_scorer = UpdatedTemporalScorer(
+                from .scoring.embedding_temporal_scorer import EmbeddingTemporalScorer
+                self.updated_scorer = EmbeddingTemporalScorer(
                     graph=self.graph,
                     temporal_weighting=self.temporal_weighting,
                     embedding_integration=embedding_integration,
@@ -305,7 +305,7 @@ class TKGQueryEngine:
         # Stage 1: Process natural language query or use provided parameters
         if source_entities is not None or target_entities is not None:
             # Use provided entities directly
-            from .models import TemporalQuery
+            from ..models import TemporalQuery
             temporal_query = TemporalQuery(
                 query_text=query_text,
                 source_entities=source_entities or [],

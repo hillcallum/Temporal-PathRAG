@@ -15,7 +15,7 @@ from datetime import datetime, timedelta
 from dataclasses import dataclass, field
 from collections import defaultdict
 
-from .models import TemporalQuery, Path, TemporalReliabilityMetrics, IterativeStep, TemporalCoverageMetrics, TemporalStoppingDecision
+from ..models import TemporalQuery, Path, TemporalReliabilityMetrics, IterativeStep, TemporalCoverageMetrics, TemporalStoppingDecision
 from ..llm.llm_manager import LLMManager
 
 

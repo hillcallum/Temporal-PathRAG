@@ -5,9 +5,10 @@ import heapq
 import torch
 import numpy as np
 
-from .models import TemporalPathRAGNode, TemporalPathRAGEdge, Path
-from .temporal_scoring import TemporalWeightingFunction, TemporalPathRanker, TemporalPath, TemporalRelevanceMode
-from .temporal_flow_pruning import TemporalFlowPruning
+from ..models import TemporalPathRAGNode, TemporalPathRAGEdge, Path
+from ..scoring.temporal_scoring import TemporalWeightingFunction, TemporalPathRanker, TemporalPath, TemporalRelevanceMode
+from ..algorithms.temporal_flow_pruning import TemporalFlowPruning
+from ..utils.graph_utils import safe_get_edge_data, safe_get_neighbors_with_edges, iterate_all_edges
 
 class TemporalPathTraversal:
     """
@@ -34,8 +35,8 @@ class TemporalPathTraversal:
         self.temporal_flow_pruning = TemporalFlowPruning(
             temporal_weighting=self.temporal_weighting,
             temporal_mode=temporal_mode,
-            alpha=0.01,  # Temporal decay rate alpha (optimized)
-            base_theta=0.1  # Base pruning threshold theta (optimized)
+            alpha=0.01,  # Temporal decay rate alpha (optimised)
+            base_theta=0.1  # Base pruning threshold theta (optimised)
         )
         
         # Setup device for GPU acceleration
@@ -257,12 +258,17 @@ class TemporalPathTraversal:
         
         if self.graph.has_node(node_id):
             for neighbour in self.graph.neighbors(node_id):
-                # Get all edges between these nodes, not just the most recent
-                edge_dict = self.graph.get_edge_data(node_id, neighbour)
+                # Get all edges between these nodes using safe method
+                edge_list = iterate_all_edges(self.graph, node_id, neighbour)
                 
-                if edge_dict:
+                if edge_list:
                     # Add each edge as a separate neighbour entry for multi-temporal exploration
-                    for edge_data in edge_dict.values():
+                    for edge_data in edge_list:
+                        neighbours.append((neighbour, edge_data))
+                else:
+                    # Fallback: use safe edge data getter
+                    edge_data = safe_get_edge_data(self.graph, node_id, neighbour)
+                    if edge_data:
                         neighbours.append((neighbour, edge_data))
         
         return neighbours

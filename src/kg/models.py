@@ -11,6 +11,11 @@ from dataclasses import dataclass, field
 from typing import List, Dict, Any, Optional, Tuple
 from datetime import datetime
 import uuid
+from abc import ABC, abstractmethod
+import networkx as nx
+import logging
+
+logger = logging.getLogger(__name__)
 
 @dataclass
 class TemporalPathRAGNode:
@@ -409,3 +414,92 @@ class TemporalStoppingDecision:
     # Performance metrics
     information_quality_score: float = 0.0
     retrieval_efficiency_score: float = 0.0
+
+
+# BASE PATHRAG ABSTRACT CLASS
+
+class PathRAG(ABC):
+    """
+    Abstract base class for PathRAG implementations.
+    Defines the interface for path-based retrieval augmented generation.
+    """
+    
+    def __init__(self, **kwargs):
+        """
+        Initialize PathRAG base class.
+        
+        Args:
+            **kwargs: Additional configuration parameters
+        """
+        self.config = kwargs
+        logger.info(f"Initialized {self.__class__.__name__} with config: {kwargs}")
+    
+    @abstractmethod
+    def retrieve_paths(
+        self,
+        query: str,
+        graph: nx.Graph,
+        top_k: int = 10,
+        max_path_length: int = 3,
+        **kwargs
+    ) -> List[Tuple[List[Tuple[str, str, str]], float]]:
+        """
+        Retrieve relevant paths from the knowledge graph for a given query.
+        
+        Args:
+            query: The input query string
+            graph: The knowledge graph as a NetworkX graph
+            top_k: Number of top paths to return
+            max_path_length: Maximum length of paths to consider
+            **kwargs: Additional parameters for specific implementations
+            
+        Returns:
+            List of tuples containing (path, score) where:
+            - path is a list of (source, relation, target) triples
+            - score is the relevance score for the path
+        """
+        pass
+    
+    @abstractmethod
+    def score_path(
+        self,
+        path: List[Tuple[str, str, str]],
+        query: str,
+        graph: nx.Graph,
+        **kwargs
+    ) -> float:
+        """
+        Score a single path based on its relevance to the query.
+        
+        Args:
+            path: List of (source, relation, target) triples
+            query: The input query string
+            graph: The knowledge graph
+            **kwargs: Additional scoring parameters
+            
+        Returns:
+            Relevance score for the path
+        """
+        pass
+    
+    @abstractmethod
+    def answer_query(
+        self,
+        query: str,
+        graph: nx.Graph,
+        llm_client: Any,
+        **kwargs
+    ) -> str:
+        """
+        Generate an answer to the query using retrieved paths and an LLM.
+        
+        Args:
+            query: The input query string
+            graph: The knowledge graph
+            llm_client: Language model client for generating answers
+            **kwargs: Additional parameters
+            
+        Returns:
+            Generated answer as a string
+        """
+        pass

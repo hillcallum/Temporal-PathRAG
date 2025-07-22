@@ -5,7 +5,7 @@ Updated TKG loader that adds textual representations to graphs
 import networkx as nx
 from typing import Dict, Any, Optional
 import logging
-from .entity_resolution import enhance_graph_with_textual_representations, EntityResolver
+from ..utils.entity_resolution import enhance_graph_with_textual_representations, EntityResolver
 from src.utils.dataset_loader import load_dataset as original_load_dataset
 
 logger = logging.getLogger(__name__)
