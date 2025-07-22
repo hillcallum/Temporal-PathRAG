@@ -297,10 +297,8 @@ class TemporalQABenchmark(ABC):
         return metrics
     
     def print_results(self, metrics: TemporalMetrics) -> None:
-        """Print detailed evaluation results"""
-        print(f"\n{'='*60}")
+        """Print evaluation results"""
         print(f"Temporal QA Evaluation Results - {self.dataset_type.value}")
-        print(f"{'='*60}")
         print(f"Total Questions: {metrics.total_questions}")
         print(f"Correct Predictions: {metrics.correct_predictions}")
         print(f"\nOverall Metrics:")
@@ -335,7 +333,6 @@ class TemporalQABenchmark(ABC):
             print(f"\nError Analysis:")
             for error_type, count in metrics.error_types.items():
                 print(f"{error_type}: {count}")
-        print(f"{'='*60}\n")
         
     def save_results(self, metrics: TemporalMetrics, output_path: Path) -> None:
         """Save evaluation results to JSON file"""
@@ -497,7 +494,7 @@ class TimeQuestionsBenchmark(TemporalQABenchmark):
 
 def create_benchmark(dataset_name: str, split: str = "test") -> TemporalQABenchmark:
     """
-    Factory function to create appropriate benchmark instance
+    Function to create appropriate benchmark instance
     """
     if dataset_name.lower() == "multitq":
         return MultiTQBenchmark(split)

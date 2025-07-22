@@ -19,11 +19,11 @@ import numpy as np
 from typing import List, Dict, Tuple, Any
 import json
 
-from src.kg.tkg_query_engine import TKGQueryEngine
-from src.kg.temporal_path_retriever import TemporalPathRetriever
-from src.kg.temporal_reliability_scorer import TemporalReliabilityScorer
+from src.kg.core.tkg_query_engine import TKGQueryEngine
+from src.kg.retrieval.temporal_path_retriever import TemporalPathRetriever
+from src.kg.scoring.temporal_reliability_scorer import TemporalReliabilityScorer
 from src.kg.models import TemporalPathRAGNode, TemporalPathRAGEdge, Path, TemporalQuery
-from src.kg.temporal_scoring import TemporalWeightingFunction
+from src.kg.scoring.temporal_scoring import TemporalWeightingFunction
 
 
 def create_test_tkg():
@@ -430,7 +430,6 @@ def validate_path_non_redundancy(paths, similarity_threshold=0.7):
 def run_temporal_path_tests():
     """Run temporal path retrieval tests"""
     print("Temporal Path Retrieval Tests")
-    print("=" * 80)
     
     # Create test TKG
     print("\n1. Creating test TKG")
@@ -531,7 +530,6 @@ def run_temporal_path_tests():
 def analyse_test_results(test_results):
     """Analyse and report test results"""
     print("\n5. Analysing test results")
-    print("=" * 80)
     
     # Overall statistics
     total_queries = len(test_results)
@@ -615,7 +613,6 @@ def analyse_test_results(test_results):
 def debug_temporal_weighting_and_pruning(graph, graph_stats):
     """Debug and refine temporal weighting and pruning logic"""
     print("\n6. Debugging temporal weighting and pruning logic")
-    print("=" * 80)
     
     # Test different alpha values
     alpha_values = [0.05, 0.1, 0.15, 0.2, 0.3]
@@ -735,7 +732,6 @@ def debug_temporal_weighting_and_pruning(graph, graph_stats):
 def generate_test_report(test_results, analysis_results, debug_results):
     """Generate test report"""
     print("\n7. Generating test report")
-    print("=" * 80)
     
     report = {
         'test_summary': {
@@ -777,7 +773,6 @@ def generate_test_report(test_results, analysis_results, debug_results):
 def main():
     """Main function to run all tests"""
     print("Starting Temporal Path Retrieval Tests")
-    print("=" * 80)
     
     try:
         # Create test results directory
@@ -795,9 +790,7 @@ def main():
         # Generate report
         report = generate_test_report(test_results, analysis_results, debug_results)
         
-        print("\n" + "=" * 80)
         print("Temporal Path Retrieval Tests Completed")
-        print("=" * 80)
         
         return 0
         

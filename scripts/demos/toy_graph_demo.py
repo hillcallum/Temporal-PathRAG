@@ -15,7 +15,7 @@ if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
 from datasets.toy.expanded_toy_graph import ExpandedToyGraphBuilder
-from src.kg.path_traversal import BasicPathTraversal
+from scripts.version_history.basic_path_traversal import BasicPathTraversal
 from src.utils.device import setup_device_and_logging, optimise_for_pathrag
 
 def main():

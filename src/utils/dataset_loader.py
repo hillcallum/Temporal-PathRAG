@@ -10,7 +10,7 @@ import hashlib
 import json
 
 from .config import get_config, DatasetType
-from ..kg.temporal_graph_storage import TemporalGraphDatabase
+from ..kg.storage.temporal_graph_storage import TemporalGraphDatabase
 
 
 # Module-level cache for loaded datasets

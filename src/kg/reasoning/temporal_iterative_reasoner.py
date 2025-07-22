@@ -303,7 +303,7 @@ class TemporalIterativeReasoner:
         if accumulated_paths:
             context_parts.append(f"Previous knowledge gathered:")
             for path, metrics in accumulated_paths[-5:]:  # Last 5 paths
-                context_parts.append(f"  - {path.path_text} (reliability: {metrics.overall_reliability:.2f})")
+                context_parts.append(f" - {path.path_text} (reliability: {metrics.overall_reliability:.2f})")
         
         # Add new findings
         if new_paths:

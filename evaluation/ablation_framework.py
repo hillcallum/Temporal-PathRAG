@@ -392,7 +392,7 @@ class AblationStudy:
         return analysis
         
     def visualise_results(self, analysis: Dict[str, Any]) -> None:
-        """Generate visualisations of ablation results."""
+        """Generate visualisations of ablation results"""
         # Component importance bar chart
         if analysis.get('component_importance'):
             plt.figure(figsize=(10, 6))
@@ -514,9 +514,7 @@ def run_ablation(dataset_names: List[str] = ["MultiTQ", "TimeQuestions"],
     """
     for dataset in dataset_names:
         for ablation_type in ablation_types:
-            print(f"\n{'='*60}")
             print(f"Running {ablation_type} ablation on {dataset}")
-            print(f"{'='*60}")
             
             study = AblationStudy(dataset)
             study.run_full_ablation_study(

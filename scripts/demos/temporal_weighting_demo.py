@@ -13,14 +13,14 @@ from typing import List
 import matplotlib.pyplot as plt
 import numpy as np
 
-from src.kg.temporal_scoring import (
+from src.kg.scoring.temporal_scoring import (
     TemporalWeightingFunction, 
     TemporalPathRanker, 
     TemporalPath, 
     TemporalRelevanceMode
 )
 from src.kg.models import TemporalPathRAGNode, TemporalPathRAGEdge, Path
-from src.kg.path_traversal import TemporalPathTraversal
+from src.kg.core.path_traversal import TemporalPathTraversal
 
 
 def create_sample_temporal_graph() -> nx.DiGraph:

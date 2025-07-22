@@ -62,7 +62,7 @@ cat > "${LOCAL_MODEL_DIR}/README.md" << EOF
 
 ## Usage
 \`\`\`python
-from src.kg.temporal_embedding_retriever import TemporalEmbeddingRetriever
+from src.kg.retrieval.temporal_embedding_retriever import TemporalEmbeddingRetriever
 
 # Load the model
 retriever = TemporalEmbeddingRetriever(

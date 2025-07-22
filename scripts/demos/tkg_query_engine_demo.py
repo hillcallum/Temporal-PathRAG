@@ -8,8 +8,8 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../'))
 
-from src.kg.updated_tkg_loader import load_enhanced_dataset
-from src.kg.tkg_query_engine import TKGQueryEngine
+from src.kg.storage.updated_tkg_loader import load_enhanced_dataset
+from src.kg.core.tkg_query_engine import TKGQueryEngine
 from src.utils.device import setup_device_and_logging
 from datetime import datetime
 import json

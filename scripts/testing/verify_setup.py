@@ -31,9 +31,7 @@ def setup_device_and_logging():
 
 def test_pathrag_environment():
     """Test PathRAG-specific functionality"""
-    print("\n" + "="*50)
     print("PathRAG Environment Test")
-    print("="*50)
     
     # System info
     print(f"Python: {sys.version}")
@@ -44,7 +42,7 @@ def test_pathrag_environment():
     device = setup_device_and_logging()
     
     # Test core libraries
-    print("\nTesting core libraries...")
+    print("\nTesting core libraries")
     try:
         import transformers
         import networkx
@@ -70,7 +68,7 @@ def test_pathrag_environment():
     print("\nTesting PathRAG modules")
     try:
         from src.kg.models import TemporalPathRAGNode, TemporalPathRAGEdge, Path
-        from src.kg.path_traversal import BasicPathTraversal
+        from scripts.version_history.basic_path_traversal import BasicPathTraversal
         from data.toy_graph import ToyGraphBuilder
         print("PathRAG modules imported successfully")
         
@@ -89,7 +87,7 @@ def test_pathrag_environment():
         return False
     
     # Test device operations
-    print(f"\nTesting device operations on {device}...")
+    print(f"\nTesting device operations on {device}")
     try:
         # Test basic tensor operations
         x = torch.randn(100, 768).to(device)

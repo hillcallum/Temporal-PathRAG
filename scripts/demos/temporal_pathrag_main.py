@@ -12,9 +12,9 @@ from datetime import datetime
 import networkx as nx
 from typing import List, Dict
 
-from src.kg.temporal_graph_storage import TemporalGraphDatabase
-from src.kg.path_traversal import BasicPathTraversal
-from src.kg.temporal_scoring import TemporalWeightingFunction, TemporalPathRanker, TemporalRelevanceMode
+from src.kg.storage.temporal_graph_storage import TemporalGraphDatabase
+from scripts.version_history.basic_path_traversal import BasicPathTraversal
+from src.kg.scoring.temporal_scoring import TemporalWeightingFunction, TemporalPathRanker, TemporalRelevanceMode
 from src.utils.device import setup_device_and_logging, optimise_for_pathrag
 
 
@@ -174,7 +174,7 @@ def demonstrate_chronological_validation(traversal: BasicPathTraversal):
                 
                 if temp_info['timestamps']:
                     # Convert to TemporalPath for scoring
-                    from src.kg.temporal_scoring import TemporalPath
+                    from src.kg.scoring.temporal_scoring import TemporalPath
                     temporal_path = TemporalPath(
                         nodes=[node.id for node in path.nodes],
                         edges=[(edge.source_id, edge.relation_type, edge.target_id, 

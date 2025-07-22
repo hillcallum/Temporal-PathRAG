@@ -507,8 +507,8 @@ class TemporalPathRAGBaseline(BaselineRunner):
         self.config_override = config_override or {}
         
         # Import our system components
-        from src.kg.tkg_query_engine import TKGQueryEngine
-        from src.kg.temporal_iterative_reasoner import TemporalIterativeReasoner
+        from src.kg.core.tkg_query_engine import TKGQueryEngine
+        from src.kg.reasoning.temporal_iterative_reasoner import TemporalIterativeReasoner
         
         # Won't initialise query engine here - will be done when dataset is loaded
         self.query_engine = None
@@ -522,9 +522,9 @@ class TemporalPathRAGBaseline(BaselineRunner):
         # Load the appropriate dataset if not already loaded
         # Use dataset name as key to check if we need to reload
         if not hasattr(self, '_current_dataset') or self._current_dataset != dataset_name:
-            from src.kg.updated_tkg_loader import load_enhanced_dataset
-            from src.kg.tkg_query_engine import TKGQueryEngine
-            from src.kg.temporal_iterative_reasoner import TemporalIterativeReasoner
+            from src.kg.storage.updated_tkg_loader import load_enhanced_dataset
+            from src.kg.core.tkg_query_engine import TKGQueryEngine
+            from src.kg.reasoning.temporal_iterative_reasoner import TemporalIterativeReasoner
             
             # Load dataset with enhancements and caching enabled
             graph = load_enhanced_dataset(dataset_name, use_cache=True)
@@ -547,7 +547,7 @@ class TemporalPathRAGBaseline(BaselineRunner):
             )
             
             # Integrate enhanced query decomposer
-            from src.kg.updated_query_decomposer import integrate_with_reasoner
+            from src.kg.utils.updated_query_decomposer import integrate_with_reasoner
             integrate_with_reasoner(self.reasoner)
             
             self._current_dataset = dataset_name

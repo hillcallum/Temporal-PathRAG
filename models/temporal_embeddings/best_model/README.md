@@ -27,7 +27,7 @@
 
 ## Usage
 ```python
-from src.kg.temporal_embedding_retriever import TemporalEmbeddingRetriever
+from src.kg.retrieval.temporal_embedding_retriever import TemporalEmbeddingRetriever
 
 # Load the model
 retriever = TemporalEmbeddingRetriever(

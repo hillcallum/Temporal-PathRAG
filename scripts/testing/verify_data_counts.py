@@ -6,7 +6,7 @@ Verifoes that the temporal graph database has loaded the expected number of enti
 
 import json
 from pathlib import Path
-from src.kg.temporal_graph_storage import TemporalGraphDatabase
+from src.kg.storage.temporal_graph_storage import TemporalGraphDatabase
 
 def verify_data_counts():
     """Compare actual vs expected data counts"""
@@ -34,7 +34,7 @@ def verify_data_counts():
     expected_total_entities = sum(d["entities"] for d in expected_counts.values())
     expected_total_timestamps = sum(d["timestamps"] for d in expected_counts.values())
     
-    print("=== Data Count Verification ===")
+    print("Data Count Verification")
     print(f"Expected total quadruplets: {expected_total_quadruplets:,}")
     print(f"Actual total quadruplets: {actual_counts['total_quadruplets']:,}")
     print(f"Match: {expected_total_quadruplets == actual_counts['total_quadruplets']}")
@@ -50,7 +50,7 @@ def verify_data_counts():
     print(f"\nActual relations: {actual_counts['total_relations']:,}")
     
     # Analyse discrepancies
-    print("\n=== Discrepancy Analysis ===")
+    print("\nDiscrepancy Analysis")
     
     # Check if there are overlapping entities between datasets
     print("Checking for entity overlap between datasets")
@@ -111,7 +111,7 @@ def verify_data_counts():
         print(f"Combined unique timestamps: {len(multitq_timestamps.union(timequestions_timestamps)):,}")
     
     # Summary
-    print("\n=== Verification Summary ===")
+    print("\nVerification Summary")
     quadruplet_mismatch = expected_total_quadruplets != actual_counts['total_quadruplets']
     entity_mismatch = expected_total_entities != actual_counts['total_nodes']
     timestamp_mismatch = expected_total_timestamps != actual_counts['total_timestamps']

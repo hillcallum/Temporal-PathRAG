@@ -12,7 +12,7 @@ import json
 import pickle
 from datetime import datetime
 from src.kg.temporal_iterative_reasoner import TemporalIterativeReasoner
-from src.kg.tkg_query_engine import TKGQueryEngine
+from src.kg.core.tkg_query_engine import TKGQueryEngine
 from src.llm.llm_manager import LLMManager
 from src.utils.config import get_config
 from src.utils.device import get_device

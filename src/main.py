@@ -16,8 +16,8 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 import networkx as nx
 
-from src.kg.path_traversal import TemporalPathTraversal
-from src.kg.temporal_scoring import TemporalWeightingFunction, TemporalRelevanceMode
+from src.kg.core.path_traversal import TemporalPathTraversal
+from src.kg.scoring.temporal_scoring import TemporalWeightingFunction, TemporalRelevanceMode
 from src.utils.device import setup_device_and_logging, optimise_for_pathrag
 from src.utils.dataset_loader import load_dataset
 
@@ -150,7 +150,7 @@ def validate_chronological_consistency(traversal: TemporalPathTraversal):
                 temporal_paths_found += 1
                 
                 # Convert to TemporalPath for analysis
-                from src.kg.temporal_scoring import TemporalPath
+                from src.kg.scoring.temporal_scoring import TemporalPath
                 temporal_path = TemporalPath(
                     nodes=[node.id for node in path.nodes],
                     edges=[(edge.source_id, edge.relation_type, edge.target_id,

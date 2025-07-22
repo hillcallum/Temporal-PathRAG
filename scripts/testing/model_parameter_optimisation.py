@@ -17,7 +17,7 @@ from datetime import datetime
 from typing import List, Dict, Any
 from scipy import stats
 
-from src.kg.temporal_path_retriever import TemporalPathRetriever
+from src.kg.retrieval.temporal_path_retriever import TemporalPathRetriever
 from src.kg.models import TemporalQuery
 from scripts.testing.test_temporal_path_retrieval import create_test_tkg, create_graph_statistics
 
@@ -392,7 +392,6 @@ def validate_optimal_parameters(best_params: Dict, validation_scenarios: List[Di
     """Validate optimal parameters on held-out validation set"""
     
     print(f"\n7. Validating optimal parameters")
-    print("=" * 70)
     
     alpha_opt = best_params['alpha']
     theta_opt = best_params['theta']
@@ -534,9 +533,7 @@ def generate_report(results: List[Dict], analysis: Dict, validation: Dict,
     print(f"Report saved to: {report_file}")
     
     # Print summary
-    print(f"\n" + "=" * 70)
     print("Parameter Optimisation Results")
-    print("=" * 70)
     
     print(f"Recommended Optimal Parameters:")
     print(f"Alpha (temporal decay): {best['alpha']:.3f}")
@@ -589,9 +586,7 @@ def main():
             results, analysis, validation, training_scenarios, validation_scenarios
         )
         
-        print(f"\n" + "=" * 70)
         print("Parameter Optimisation Completed")
-        print("=" * 70)
         
         return 0
         

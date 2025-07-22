@@ -9,7 +9,7 @@ from pathlib import Path
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from src.kg.tkg_query_engine import TKGQueryEngine
+from src.kg.core.tkg_query_engine import TKGQueryEngine
 from src.utils.dataset_loader import load_dataset
 from src.embeddings.embedding_integration import EmbeddingIntegration
 from src.embeddings.temporal_embeddings import TemporalEmbeddingConfig
@@ -67,9 +67,9 @@ def main():
                 path, metrics = result.paths[0]
                 if hasattr(metrics, 'combined_score'):
                     print(f"Top path score: {metrics.combined_score:.3f}")
-                    print(f"  - Reliability: {metrics.reliability_score:.3f}")
-                    print(f"  - Embedding: {metrics.embedding_score:.3f}")
-                    print(f"  - Confidence: {metrics.confidence:.3f}")
+                    print(f" - Reliability: {metrics.reliability_score:.3f}")
+                    print(f" - Embedding: {metrics.embedding_score:.3f}")
+                    print(f" - Confidence: {metrics.confidence:.3f}")
                 else:
                     print(f"Top path score: {metrics:.3f}")
             else:

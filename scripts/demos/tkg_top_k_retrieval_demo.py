@@ -17,11 +17,11 @@ import networkx as nx
 from datetime import datetime, timedelta
 import numpy as np
 
-from src.kg.tkg_query_engine import TKGQueryEngine
-from src.kg.temporal_path_retriever import TemporalPathRetriever
-from src.kg.temporal_reliability_scorer import TemporalReliabilityScorer
+from src.kg.core.tkg_query_engine import TKGQueryEngine
+from src.kg.retrieval.temporal_path_retriever import TemporalPathRetriever
+from src.kg.scoring.temporal_reliability_scorer import TemporalReliabilityScorer
 from src.kg.models import TemporalPathRAGNode, TemporalPathRAGEdge, Path, TemporalQuery
-from src.kg.temporal_scoring import TemporalWeightingFunction
+from src.kg.scoring.temporal_scoring import TemporalWeightingFunction
 
 
 def create_test_tkg():

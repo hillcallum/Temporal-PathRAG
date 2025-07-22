@@ -15,8 +15,8 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../'))
 
-from src.kg.temporal_flow_pruning import TemporalFlowPruning
-from src.kg.temporal_scoring import TemporalWeightingFunction, TemporalRelevanceMode
+from src.kg.algorithms.temporal_flow_pruning import TemporalFlowPruning
+from src.kg.scoring.temporal_scoring import TemporalWeightingFunction, TemporalRelevanceMode
 from src.kg.models import Path, TemporalPathRAGNode, TemporalPathRAGEdge
 import numpy as np
 import matplotlib.pyplot as plt

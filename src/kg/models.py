@@ -253,7 +253,6 @@ class PathExplanation:
 
 # TEMPORAL FLOW PRUNING MODELS
 
-
 @dataclass
 class FlowPruningConfig:
     """Configuration for temporal flow pruning"""
@@ -276,7 +275,6 @@ class FlowPruningConfig:
             raise ValueError(f"Diversity threshold must be between 0.0 and 1.0, got {self.diversity_threshold}")
         if not 0.0 <= self.reliability_threshold <= 1.0:
             raise ValueError(f"Reliability threshold must be between 0.0 and 1.0, got {self.reliability_threshold}")
-
 
 @dataclass
 class PerformanceMetrics:
@@ -420,19 +418,19 @@ class TemporalStoppingDecision:
 
 class PathRAG(ABC):
     """
-    Abstract base class for PathRAG implementations.
-    Defines the interface for path-based retrieval augmented generation.
+    Abstract base class for PathRAG implementations
+    Defines the interface for path-based RAG
     """
     
     def __init__(self, **kwargs):
         """
-        Initialize PathRAG base class.
+        Initialise PathRAG base class.
         
         Args:
             **kwargs: Additional configuration parameters
         """
         self.config = kwargs
-        logger.info(f"Initialized {self.__class__.__name__} with config: {kwargs}")
+        logger.info(f"Initialised {self.__class__.__name__} with config: {kwargs}")
     
     @abstractmethod
     def retrieve_paths(
@@ -444,7 +442,7 @@ class PathRAG(ABC):
         **kwargs
     ) -> List[Tuple[List[Tuple[str, str, str]], float]]:
         """
-        Retrieve relevant paths from the knowledge graph for a given query.
+        Retrieve relevant paths from the knowledge graph for a given query
         
         Args:
             query: The input query string
@@ -469,7 +467,7 @@ class PathRAG(ABC):
         **kwargs
     ) -> float:
         """
-        Score a single path based on its relevance to the query.
+        Score a single path based on its relevance to the query
         
         Args:
             path: List of (source, relation, target) triples
@@ -491,7 +489,7 @@ class PathRAG(ABC):
         **kwargs
     ) -> str:
         """
-        Generate an answer to the query using retrieved paths and an LLM.
+        Generate an answer to the query using retrieved paths and an LLM
         
         Args:
             query: The input query string

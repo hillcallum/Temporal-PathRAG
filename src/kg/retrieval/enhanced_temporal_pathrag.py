@@ -157,8 +157,8 @@ class EnhancedTemporalPathRAG(PathRAG):
             traditional_scores.append(score)
         
         # Normalise scores
-        embedding_scores = self._normalize_scores(embedding_scores)
-        traditional_scores = self._normalize_scores(traditional_scores)
+        embedding_scores = self.normalise_scores(embedding_scores)
+        traditional_scores = self.normalise_scores(traditional_scores)
         
         # Combine scores
         path_scores = []
@@ -340,7 +340,7 @@ class EnhancedTemporalPathRAG(PathRAG):
             return "I couldn't find relevant information to answer your query."
         
         # Format paths as context
-        context = self._format_paths_as_context(path_scores, graph)
+        context = self.format_paths_as_context(path_scores, graph)
         
         # Generate answer using LLM
         prompt = f"""Based on the following information from the knowledge graph, please answer the query.

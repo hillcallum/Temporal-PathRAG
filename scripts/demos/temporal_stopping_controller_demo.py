@@ -14,7 +14,7 @@ from datetime import datetime
 from typing import List, Tuple
 
 from src.kg.models import TemporalQuery, Path, TemporalReliabilityMetrics, IterativeStep
-from src.kg.temporal_stopping_controller import TemporalStoppingController
+from src.kg.reasoning.temporal_stopping_controller import TemporalStoppingController
 from src.llm.llm_manager import LLMManager
 
 

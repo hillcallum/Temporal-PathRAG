@@ -13,11 +13,11 @@ logger = logging.getLogger(__name__)
 
 
 class TemporalPathFilter:
-    """Filter paths based on temporal constraints and relevance."""
+    """Filter paths based on temporal constraints and relevance"""
     
     def __init__(self, temporal_weight: float = 0.5):
         """
-        Initialize the temporal path filter.
+        Initialise the temporal path filter.
         
         Args:
             temporal_weight: Weight for temporal relevance scoring (0-1)
@@ -32,7 +32,7 @@ class TemporalPathFilter:
         top_k: Optional[int] = None
     ) -> List[List[Tuple[str, str, str]]]:
         """
-        Filter paths based on temporal relevance.
+        Filter paths based on temporal relevance
         
         Args:
             paths: List of paths, where each path is a list of (source, relation, target) triples
@@ -58,7 +58,7 @@ class TemporalPathFilter:
         # Score and filter paths
         scored_paths = []
         for path in paths:
-            score = self._score_path_temporal_relevance(path, graph, temporal_context)
+            score = self.score_path_temporal_relevance(path, graph, temporal_context)
             if score > 0:  # Only keep paths with positive temporal relevance
                 scored_paths.append((path, score))
                 
@@ -71,14 +71,14 @@ class TemporalPathFilter:
             return filtered_paths[:top_k]
         return filtered_paths
         
-    def _score_path_temporal_relevance(
+    def score_path_temporal_relevance(
         self,
         path: List[Tuple[str, str, str]],
         graph: nx.Graph,
         temporal_context: Dict[str, Any]
     ) -> float:
         """
-        Score a single path for temporal relevance.
+        Score a single path for temporal relevance
         
         Args:
             path: A path as list of (source, relation, target) triples
@@ -96,7 +96,7 @@ class TemporalPathFilter:
         
         # Check each edge in the path
         for source, relation, target in path:
-            edge_score = self._score_edge_temporal_relevance(
+            edge_score = self.score_edge_temporal_relevance(
                 source, relation, target, graph, temporal_context
             )
             total_score += edge_score
@@ -111,7 +111,7 @@ class TemporalPathFilter:
             
         node_scores = []
         for node in nodes:
-            node_score = self._score_node_temporal_relevance(node, graph, temporal_context)
+            node_score = self.score_node_temporal_relevance(node, graph, temporal_context)
             node_scores.append(node_score)
             
         # Combine edge and node scores
@@ -131,7 +131,7 @@ class TemporalPathFilter:
         
         return final_score
         
-    def _score_edge_temporal_relevance(
+    def score_edge_temporal_relevance(
         self,
         source: str,
         relation: str,
@@ -148,22 +148,22 @@ class TemporalPathFilter:
         
         # Check for temporal validity attribute
         if 'te' in edge_data:  # temporal edge
-            return self._check_temporal_overlap(edge_data['te'], temporal_context)
+            return self.check_temporal_overlap(edge_data['te'], temporal_context)
         elif 'timestamp' in edge_data:
-            return self._check_temporal_overlap(edge_data['timestamp'], temporal_context)
+            return self.check_temporal_overlap(edge_data['timestamp'], temporal_context)
         elif 'time' in edge_data:
-            return self._check_temporal_overlap(edge_data['time'], temporal_context)
+            return self.check_temporal_overlap(edge_data['time'], temporal_context)
             
         # No temporal information - neutral score
         return 0.5
         
-    def _score_node_temporal_relevance(
+    def score_node_temporal_relevance(
         self,
         node: str,
         graph: nx.Graph,
         temporal_context: Dict[str, Any]
     ) -> float:
-        """Score temporal relevance of a single node."""
+        """Score temporal relevance of a single node"""
         if node not in graph:
             return 0.0
             
@@ -171,24 +171,24 @@ class TemporalPathFilter:
         
         # Check for temporal validity attribute
         if 'tv' in node_data:  # temporal validity
-            return self._check_temporal_overlap(node_data['tv'], temporal_context)
+            return self.check_temporal_overlap(node_data['tv'], temporal_context)
         elif 'timestamp' in node_data:
-            return self._check_temporal_overlap(node_data['timestamp'], temporal_context)
+            return self.check_temporal_overlap(node_data['timestamp'], temporal_context)
         elif 'time' in node_data:
-            return self._check_temporal_overlap(node_data['time'], temporal_context)
+            return self.check_temporal_overlap(node_data['time'], temporal_context)
             
         # No temporal information - neutral score
         return 0.5
         
-    def _check_temporal_overlap(
+    def check_temporal_overlap(
         self,
         temporal_value: Any,
         temporal_context: Dict[str, Any]
     ) -> float:
         """
-        Check if a temporal value overlaps with the query temporal context.
+        Check if a temporal value overlaps with the query temporal context
         
-        Returns a score between 0 and 1 indicating degree of overlap.
+        Returns a score between 0 and 1 indicating degree of overlap
         """
         # Handle different temporal value formats
         if isinstance(temporal_value, (list, tuple)) and len(temporal_value) == 2:
@@ -211,9 +211,9 @@ class TemporalPathFilter:
                 
             # Check if query time falls within the range
             if start and end:
-                if self._compare_times(start, query_time) <= 0 and self._compare_times(query_time, end) <= 0:
+                if self.compare_times(start, query_time) <= 0 and self.compare_times(query_time, end) <= 0:
                     return 1.0
-            elif start and self._compare_times(start, query_time) == 0:
+            elif start and self.compare_times(start, query_time) == 0:
                 return 1.0
                 
         elif query_type == 'range':
@@ -223,27 +223,27 @@ class TemporalPathFilter:
             # Check for overlap between ranges
             if start and end and query_start and query_end:
                 # Check if ranges overlap
-                if (self._compare_times(start, query_end) <= 0 and 
-                    self._compare_times(query_start, end) <= 0):
+                if (self.compare_times(start, query_end) <= 0 and 
+                    self.compare_times(query_start, end) <= 0):
                     return 1.0
                     
         elif query_type == 'before':
             query_time = temporal_context.get('query_time')
             if end and query_time:
-                if self._compare_times(end, query_time) < 0:
+                if self.compare_times(end, query_time) < 0:
                     return 1.0
                     
         elif query_type == 'after':
             query_time = temporal_context.get('query_time')
             if start and query_time:
-                if self._compare_times(start, query_time) > 0:
+                if self.compare_times(start, query_time) > 0:
                     return 1.0
                     
         return 0.0
         
-    def _compare_times(self, time1: Any, time2: Any) -> int:
+    def compare_times(self, time1: Any, time2: Any) -> int:
         """
-        Compare two time values.
+        Compare two time values
         
         Returns:
             -1 if time1 < time2

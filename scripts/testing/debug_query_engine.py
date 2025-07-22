@@ -7,7 +7,7 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '../'))
 
-from src.kg.tkg_query_engine import TKGQueryEngine
+from src.kg.core.tkg_query_engine import TKGQueryEngine
 from src.kg.models import TemporalQuery
 from scripts.testing.test_temporal_path_retrieval import create_test_tkg, create_graph_statistics
 

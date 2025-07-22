@@ -47,15 +47,11 @@ def test_specific_questions():
         }
     ]
     
-    print("\n" + "="*80)
     print("Testing Temporal PathRAG with Enhanced Components")
-    print("="*80)
     
     for q_data in test_questions:
-        print(f"\n{'='*60}")
         print(f"Testing Question: {q_data['question']}")
         print(f"Expected Answer Type: {q_data['answer_type']}")
-        print(f"{'='*60}")
         
         # Create question object
         question = TemporalQAQuestion(
@@ -75,22 +71,20 @@ def test_specific_questions():
             
             # Check if we got any answers
             if prediction.predicted_answers:
-                print("\n✓ SUCCESS: Got answers from the system")
+                print("\nSuccess: Got answers from the system")
             else:
-                print("\n✗ FAILURE: No answers extracted")
+                print("\nFailure: No answers extracted")
                 
         except Exception as e:
-            print(f"\n✗ ERROR: {str(e)}")
+            print(f"\nError: {str(e)}")
             logger.exception("Error during prediction")
 
 
 def test_entity_resolution():
     """Test entity resolution capabilities"""
-    from src.kg.updated_tkg_loader import load_enhanced_dataset, create_enhanced_entity_resolver
+    from src.kg.storage.updated_tkg_loader import load_enhanced_dataset, create_enhanced_entity_resolver
     
-    print("\n" + "="*80)
     print("Testing Entity Resolution")
-    print("="*80)
     
     # Load enhanced graph
     graph = load_enhanced_dataset("MultiTQ", use_cache=True)
@@ -111,10 +105,10 @@ def test_entity_resolution():
         if resolved:
             info = resolver.get_entity_info(resolved)
             print(f"\n'{mention}' -> '{resolved}'")
-            print(f"  Variations: {info['variations'][:3]}...")  # Show first 3
-            print(f"  Connections: {info['total_connections']}")
+            print(f" Variations: {info['variations'][:3]}...")  # Show first 3
+            print(f" Connections: {info['total_connections']}")
         else:
-            print(f"\n'{mention}' -> NOT FOUND")
+            print(f"\n'{mention}' -> Not Found")
 
 
 def test_answer_extraction():
@@ -166,7 +160,7 @@ def test_answer_extraction():
 
 def test_graph_enhancement():
     """Test that graph nodes have textual representations"""
-    from src.kg.updated_tkg_loader import load_enhanced_dataset
+    from src.kg.storage.updated_tkg_loader import load_enhanced_dataset
     
     print("\n" + "="*80)
     print("Testing Graph Enhancement")
@@ -182,7 +176,7 @@ def test_graph_enhancement():
     for node_id in sample_nodes:
         node_data = graph.nodes[node_id]
         tv = node_data.get('tv', 'MISSING')
-        print(f"  {node_id[:50]}... -> tv: {tv[:50]}...")
+        print(f" {node_id[:50]}... -> tv: {tv[:50]}...")
     
     # Check edges
     sample_edges = list(graph.edges(data=True))[:5]
@@ -206,11 +200,6 @@ def main():
     
     # Test full pipeline
     test_specific_questions()
-    
-    print("\n" + "="*80)
-    print("Tests Completed")
-    print("="*80)
-
 
 if __name__ == "__main__":
     main()

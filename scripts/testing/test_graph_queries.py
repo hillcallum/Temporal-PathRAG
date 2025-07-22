@@ -4,7 +4,7 @@ Graph Query Testing Script - inspired by PathRAG's query patterns
 Test various temporal graph queries to confirm schema adherence and connectivity
 """
 
-from src.kg.temporal_graph_storage import TemporalGraphDatabase
+from src.kg.storage.temporal_graph_storage import TemporalGraphDatabase
 import random
 from typing import List
 
@@ -24,7 +24,7 @@ def run_comprehensive_graph_queries():
     print(f"Graph is connected: {len(list(tg_db.main_graph.nodes())) > 0}")
     
     # 2. Temporal query tests
-    print("\n2. Temporal Query Testing ")
+    print("\n2. Temporal Query Testing")
     
     # Test temporal facts by year range
     facts_90s = tg_db.query_temporal_range("1990", "1999", limit=10)
@@ -186,7 +186,7 @@ def run_comprehensive_graph_queries():
     large_query_facts = tg_db.query_temporal_range("1900", "2023", limit=1000)
     print(f"Large temporal range query returned: {len(large_query_facts)} facts")
     
-    print("\n=== Query Testing All Completed ===")
+    print("\nQuery Testing All Completed")
     print("All query tests completed successfully")
     
     return True

@@ -14,8 +14,6 @@ import pickle
 from datetime import datetime
 import re
 
-
-
 class TemporalGraphDatabase:
     """NetworkX-based temporal knowledge graph database"""
     

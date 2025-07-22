@@ -7,7 +7,7 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '../'))
 
-from src.kg.temporal_path_retriever import TemporalPathRetriever
+from src.kg.retrieval.temporal_path_retriever import TemporalPathRetriever
 from src.kg.models import TemporalQuery
 from scripts.testing.test_temporal_path_retrieval import create_test_tkg
 
@@ -77,7 +77,7 @@ def test_direct_query():
         if graph.has_node(entity):
             print(f"{entity} found in graph")
         else:
-            print(f"{entity} NOT found in graph")
+            print(f"{entity} not found in graph")
     
     # Retrieve paths
     results2 = retriever.retrieve_temporal_paths(query2, verbose=True)

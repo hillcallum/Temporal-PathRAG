@@ -13,7 +13,7 @@ from pathlib import Path
 import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from src.kg.temporal_graph_storage import TemporalGraphDatabase
+from src.kg.storage.temporal_graph_storage import TemporalGraphDatabase
 
 # Set style
 plt.style.use('seaborn-v0_8')

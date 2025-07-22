@@ -9,7 +9,7 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../'))
 
 from src.kg.models import TemporalPathRAGNode, TemporalPathRAGEdge, Path
-from src.kg.temporal_scoring import TemporalWeightingFunction, TemporalPathRanker, TemporalPath, TemporalRelevanceMode
+from src.kg.scoring.temporal_scoring import TemporalWeightingFunction, TemporalPathRanker, TemporalPath, TemporalRelevanceMode
 
 class BasicPathTraversal:
     """

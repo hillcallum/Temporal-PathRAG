@@ -8,7 +8,7 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 import networkx as nx
-from src.kg.entity_resolution import EntityResolver, enhance_graph_with_textual_representations
+from src.kg.utils.entity_resolution import EntityResolver, enhance_graph_with_textual_representations
 from src.evaluation.answer_extractor import AnswerExtractor
 
 

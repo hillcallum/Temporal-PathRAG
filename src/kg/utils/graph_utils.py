@@ -1,5 +1,5 @@
 """
-Utility functions for handling graph operations and fixing compatibility issues.
+Utility functions for handling graph operations and fixing compatibility issues
 """
 
 import networkx as nx
@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 def safe_get_edge_data(graph: nx.Graph, source: str, target: str) -> Dict[str, Any]:
     """
-    Safely get edge data from a NetworkX graph, handling different edge data structures.
+    Safely get edge data from a NetworkX graph, handling different edge data structures
     
     Args:
         graph: NetworkX graph
@@ -44,45 +44,45 @@ def safe_get_edge_data(graph: nx.Graph, source: str, target: str) -> Dict[str, A
         return {}
 
 
-def safe_get_neighbors_with_edges(graph: nx.Graph, node: str) -> List[Tuple[str, Dict[str, Any]]]:
+def safe_get_neighbours_with_edges(graph: nx.Graph, node: str) -> List[Tuple[str, Dict[str, Any]]]:
     """
-    Safely get all neighbors of a node with their edge data.
+    Safely get all neighbours of a node with their edge data
     
     Args:
         graph: NetworkX graph
-        node: Node to get neighbors for
+        node: Node to get neighbours for
         
     Returns:
-        List of (neighbor, edge_data) tuples
+        List of (neighbour, edge_data) tuples
     """
-    neighbors = []
+    neighbours = []
     
     if not graph.has_node(node):
-        return neighbors
+        return neighbours
         
-    for neighbor in graph.neighbors(node):
-        edge_data = safe_get_edge_data(graph, node, neighbor)
-        neighbors.append((neighbor, edge_data))
+    for neighbour in graph.neighbors(node):
+        edge_data = safe_get_edge_data(graph, node, neighbour)
+        neighbours.append((neighbour, edge_data))
         
-    return neighbors
+    return neighbours
 
 
-def iterate_all_edges(graph: nx.Graph, node: str, neighbor: str) -> List[Dict[str, Any]]:
+def iterate_all_edges(graph: nx.Graph, node: str, neighbour: str) -> List[Dict[str, Any]]:
     """
-    Iterate over all edges between two nodes (handling multi-edges).
+    Iterate over all edges between two nodes (handling multi-edges)
     
     Args:
         graph: NetworkX graph
         node: Source node
-        neighbor: Target node
+        neighbour: Target node
         
     Returns:
         List of edge data dictionaries
     """
-    if not graph.has_edge(node, neighbor):
+    if not graph.has_edge(node, neighbour):
         return []
         
-    edge_data = graph.get_edge_data(node, neighbor)
+    edge_data = graph.get_edge_data(node, neighbour)
     
     if edge_data is None:
         return []
@@ -98,19 +98,19 @@ def iterate_all_edges(graph: nx.Graph, node: str, neighbor: str) -> List[Dict[st
         return []
 
 
-def normalize_edge_attributes(edge_data: Dict[str, Any]) -> Dict[str, Any]:
+def normalise_edge_attributes(edge_data: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Normalize edge attributes to handle different naming conventions.
+    Normalise edge attributes to handle different naming conventions.
     
     Args:
         edge_data: Raw edge data
         
     Returns:
-        Normalized edge data with standard attribute names
+        Normalised edge data with standard attribute names
     """
-    normalized = edge_data.copy()
+    normalised = edge_data.copy()
     
-    # Normalize temporal attributes
+    # Normalise temporal attributes
     temporal_mappings = {
         'timestamp': ['time', 'date', 'year', 't'],
         'te': ['temporal_edge', 'time_validity', 'temporal_validity'],
@@ -119,13 +119,13 @@ def normalize_edge_attributes(edge_data: Dict[str, Any]) -> Dict[str, Any]:
     }
     
     for standard_name, alternatives in temporal_mappings.items():
-        if standard_name not in normalized:
+        if standard_name not in normalised:
             for alt in alternatives:
                 if alt in edge_data:
-                    normalized[standard_name] = edge_data[alt]
+                    normalised[standard_name] = edge_data[alt]
                     break
                     
-    return normalized
+    return normalised
 
 
 def fix_graph_for_pathfinding(graph: nx.Graph) -> nx.Graph:

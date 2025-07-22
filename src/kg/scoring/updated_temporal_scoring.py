@@ -27,7 +27,7 @@ class UpdatedTemporalScorer:
         temporal_weight: float = 0.3
     ):
         """
-        Initialize the updated temporal scorer.
+        Initialise the updated temporal scorer
         
         Args:
             alpha: Exponential decay parameter for temporal distance
@@ -40,7 +40,7 @@ class UpdatedTemporalScorer:
         self.use_decay = use_decay
         self.temporal_weight = temporal_weight
         
-        # Initialize base temporal weighting function
+        # Initialise base temporal weighting function
         self.temporal_weighting = TemporalWeightingFunction(decay_rate=alpha)
         
     def score_path(
@@ -68,10 +68,10 @@ class UpdatedTemporalScorer:
             return 0.0
             
         # Compute temporal score
-        temporal_score = self._compute_temporal_score(path, graph, query_time)
+        temporal_score = self.compute_temporal_score(path, graph, query_time)
         
         # Compute semantic score
-        semantic_score = self._compute_semantic_score(path, query, semantic_scores)
+        semantic_score = self.compute_semantic_score(path, query, semantic_scores)
         
         # Combine scores
         combined_score = (
@@ -93,7 +93,7 @@ class UpdatedTemporalScorer:
         top_k: Optional[int] = None
     ) -> List[Tuple[List[Tuple[str, str, str]], float]]:
         """
-        Score multiple paths and return sorted results.
+        Score multiple paths and return sorted results
         
         Args:
             paths: List of paths to score
@@ -118,7 +118,7 @@ class UpdatedTemporalScorer:
             return scored_paths[:top_k]
         return scored_paths
         
-    def _compute_temporal_score(
+    def compute_temporal_score(
         self,
         path: List[Tuple[str, str, str]],
         graph: nx.Graph,
@@ -135,11 +135,11 @@ class UpdatedTemporalScorer:
         for source, relation, target in path:
             if graph.has_edge(source, target):
                 edge_data = safe_get_edge_data(graph, source, target)
-                edge_time = self._extract_time(edge_data)
+                edge_time = self.extract_time(edge_data)
                 
                 if edge_time is not None:
                     # Compute temporal distance
-                    distance = self._compute_time_distance(edge_time, query_time)
+                    distance = self.compute_time_distance(edge_time, query_time)
                     
                     # Apply temporal weighting
                     if self.use_decay:
@@ -158,10 +158,10 @@ class UpdatedTemporalScorer:
         for node in nodes:
             if node in graph:
                 node_data = graph.nodes[node]
-                node_time = self._extract_time(node_data)
+                node_time = self.extract_time(node_data)
                 
                 if node_time is not None:
-                    distance = self._compute_time_distance(node_time, query_time)
+                    distance = self.compute_time_distance(node_time, query_time)
                     
                     if self.use_decay:
                         score = np.exp(-self.alpha * distance)
@@ -175,13 +175,13 @@ class UpdatedTemporalScorer:
             return np.mean(temporal_scores)
         return 0.5  # Neutral if no temporal information
         
-    def _compute_semantic_score(
+    def compute_semantic_score(
         self,
         path: List[Tuple[str, str, str]],
         query: str,
         semantic_scores: Optional[Dict[str, float]] = None
     ) -> float:
-        """Compute semantic relevance score for a path."""
+        """Compute semantic relevance score for a path"""
         if semantic_scores:
             # Use pre-computed scores if available
             path_key = str(path)
@@ -204,48 +204,48 @@ class UpdatedTemporalScorer:
             return overlap / len(query_terms)
         return 0.0
         
-    def _extract_time(self, data: Dict[str, Any]) -> Optional[Any]:
-        """Extract temporal information from node/edge data."""
+    def extract_time(self, data: Dict[str, Any]) -> Optional[Any]:
+        """Extract temporal information from node/edge data"""
         # Check various temporal attribute names
         for attr in ['te', 'tv', 'timestamp', 'time', 'date', 'year']:
             if attr in data:
                 return data[attr]
         return None
         
-    def _compute_time_distance(
+    def compute_time_distance(
         self,
         time1: Any,
         time2: Any
     ) -> float:
-        """Compute normalized distance between two time points."""
+        """Compute normalised distance between two time points"""
         try:
             # Handle various time formats
             if isinstance(time1, (list, tuple)) and len(time1) == 2:
                 # Time range - use midpoint
                 start, end = time1
                 if start and end:
-                    time1 = (self._parse_time(start) + self._parse_time(end)) / 2
+                    time1 = (self.parse_time(start) + self.parse_time(end)) / 2
                 elif start:
-                    time1 = self._parse_time(start)
+                    time1 = self.parse_time(start)
                 else:
-                    time1 = self._parse_time(end)
+                    time1 = self.parse_time(end)
             else:
-                time1 = self._parse_time(time1)
+                time1 = self.parse_time(time1)
                 
-            time2 = self._parse_time(time2)
+            time2 = self.parse_time(time2)
             
             # Compute absolute difference in years
             diff = abs(time1 - time2)
             
-            # Normalize (assuming max relevant time span is 100 years)
+            # Normalise (assuming max relevant time span is 100 years)
             return diff / 100.0
             
         except Exception as e:
             logger.debug(f"Error computing time distance: {e}")
             return 1.0  # Maximum distance on error
             
-    def _parse_time(self, time_value: Any) -> float:
-        """Parse time value to numeric year representation."""
+    def parse_time(self, time_value: Any) -> float:
+        """Parse time value to numeric year representation"""
         if isinstance(time_value, (int, float)):
             return float(time_value)
             
@@ -274,14 +274,7 @@ class UpdatedTemporalScorer:
         default_time: Optional[Any] = None
     ) -> Dict[str, Any]:
         """
-        Extract temporal context from a query.
-        
-        Args:
-            query: The query string
-            default_time: Default time to use if none found in query
-            
-        Returns:
-            Dictionary with temporal context information
+        Extract temporal context from a query
         """
         temporal_context = {
             'temporal_type': 'point',

@@ -11,9 +11,9 @@ import networkx as nx
 from datetime import datetime
 import json
 
-from src.kg.temporal_path_retriever import TemporalPathRetriever
+from src.kg.retrieval.temporal_path_retriever import TemporalPathRetriever
 from src.kg.models import TemporalQuery
-from src.kg.temporal_scoring import TemporalWeightingFunction
+from src.kg.scoring.temporal_scoring import TemporalWeightingFunction
 
 
 def create_simple_test_graph():
