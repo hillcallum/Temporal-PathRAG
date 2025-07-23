@@ -231,20 +231,40 @@ def integrate_with_reasoner(reasoner: Any) -> None:
     decomposer = QueryDecomposer(reasoner.tkg_engine.graph, reasoner.llm_manager)
     
     # Monkey-patch the decompose_query method
-    original_decompose = reasoner.decompose_query
-    
-    def decompose_query(query: str, iteration: int = 0, 
-                                previous_findings: Optional[List] = None) -> Dict[str, Any]:
-        # Use decomposer
-        result = decomposer.decompose_query(query, iteration, 
-                                           previous_findings[-1] if previous_findings else None)
+    # The method is actually at reasoner.temporal_decomposer.decompose_query
+    if hasattr(reasoner, 'temporal_decomposer') and hasattr(reasoner.temporal_decomposer, 'decompose_query'):
+        original_decompose = reasoner.temporal_decomposer.decompose_query
         
-        # Maintain compatibility with original format
-        return {
-            'sub_query': result['sub_query'],
-            'temporal_constraints': result['temporal_constraints'],
-            'entities': result['source_entities']
-        }
-    
-    reasoner.decompose_query = decompose_query
+        def decompose_query(query: str, iteration: int = 0, 
+                                    previous_findings: Optional[List] = None) -> Dict[str, Any]:
+            # Use decomposer
+            result = decomposer.decompose_query(query, iteration, 
+                                               previous_findings[-1] if previous_findings else None)
+            
+            # Maintain compatibility with original format
+            return {
+                'sub_query': result['sub_query'],
+                'temporal_constraints': result['temporal_constraints'],
+                'entities': result['source_entities']
+            }
+        
+        reasoner.temporal_decomposer.decompose_query = decompose_query
+    else:
+        # Fallback to original location if structure is different
+        original_decompose = reasoner.decompose_query
+        
+        def decompose_query(query: str, iteration: int = 0, 
+                                    previous_findings: Optional[List] = None) -> Dict[str, Any]:
+            # Use decomposer
+            result = decomposer.decompose_query(query, iteration, 
+                                               previous_findings[-1] if previous_findings else None)
+            
+            # Maintain compatibility with original format
+            return {
+                'sub_query': result['sub_query'],
+                'temporal_constraints': result['temporal_constraints'],
+                'entities': result['source_entities']
+            }
+        
+        reasoner.decompose_query = decompose_query
     logger.info("Query decomposer integrated with reasoner")
