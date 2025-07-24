@@ -1,0 +1,217 @@
+[
+  {
+    "id": "complex_000",
+    "query": "Who were the first European leaders that Joe Biden met after the Ukraine War started?",
+    "type": "sequence_after_event",
+    "complexity": "complex",
+    "answer": "Emmanuel Macron and Olaf Scholz at NATO summit March 2022",
+    "metadata": {
+      "required_capabilities": [
+        "event_detection",
+        "temporal_ordering",
+        "entity_classification",
+        "multi_hop_reasoning"
+      ],
+      "reasoning_steps": [
+        "Identify when Ukraine War started (Feb 24, 2022)",
+        "Find all Biden meetings with leaders after this date",
+        "Filter for European leaders only",
+        "Order by date to find 'first'"
+      ],
+      "notes": "Requires understanding 'European', temporal ordering, and event causality"
+    }
+  },
+  {
+    "id": "complex_001",
+    "query": "Which sanctions were imposed on Russia between the annexation of Crimea and the start of the Ukraine War?",
+    "type": "range_between_events",
+    "complexity": "complex",
+    "answer": "Multiple rounds including SWIFT restrictions, asset freezes, travel bans",
+    "metadata": {
+      "required_capabilities": [
+        "event_boundary_detection",
+        "temporal_range_filtering",
+        "entity_relation_tracking"
+      ],
+      "reasoning_steps": [
+        "Identify Crimea annexation date (March 2014)",
+        "Identify Ukraine War start (February 2022)",
+        "Find all sanctions in 2014-2022 range",
+        "Filter for Russia as target"
+      ],
+      "notes": "Requires precise event dating and range queries"
+    }
+  },
+  {
+    "id": "complex_002",
+    "query": "Which COVID vaccines were approved before any variant of concern was identified?",
+    "type": "sequence_before_event",
+    "complexity": "complex",
+    "answer": "None - first VOC identified before first approval",
+    "metadata": {
+      "required_capabilities": [
+        "temporal_precedence",
+        "entity_subtype_understanding",
+        "negative_temporal_reasoning"
+      ],
+      "reasoning_steps": [
+        "Identify first variant of concern date (Alpha, Dec 2020)",
+        "Find vaccine approvals before this date",
+        "Distinguish approvals from development/trials"
+      ],
+      "notes": "Requires understanding 'variant of concern' vs regular variants"
+    }
+  },
+  {
+    "id": "complex_003",
+    "query": "How did tech company layoffs change in frequency during the 6 months after the Fed's first 2022 rate hike?",
+    "type": "temporal_trend_analysis",
+    "complexity": "extreme",
+    "answer": "Increased 3x from baseline, with major layoffs at Meta, Twitter, Amazon",
+    "metadata": {
+      "required_capabilities": [
+        "event_frequency_analysis",
+        "temporal_window_calculation",
+        "trend_detection",
+        "causal_reasoning"
+      ],
+      "reasoning_steps": [
+        "Identify Fed's first 2022 rate hike (March 16, 2022)",
+        "Define 6-month window (March-September 2022)",
+        "Count tech layoffs in this period",
+        "Compare to baseline frequency",
+        "Describe trend"
+      ],
+      "notes": "Requires frequency analysis and trend description"
+    }
+  },
+  {
+    "id": "complex_004",
+    "query": "Which world leaders attended both the Queen's funeral and COP27 in 2022?",
+    "type": "event_intersection",
+    "complexity": "moderate",
+    "answer": "Joe Biden, Emmanuel Macron, Justin Trudeau",
+    "metadata": {
+      "required_capabilities": [
+        "event_participant_tracking",
+        "set_intersection",
+        "temporal_proximity"
+      ],
+      "reasoning_steps": [
+        "Identify Queen's funeral attendees (Sept 19, 2022)",
+        "Identify COP27 attendees (Nov 6-18, 2022)",
+        "Find intersection of attendee lists",
+        "Verify both events in 2022"
+      ],
+      "notes": "Requires maintaining attendance lists and set operations"
+    }
+  },
+  {
+    "id": "complex_005",
+    "query": "Which company had the longest continuous period as the world's most valuable between 2010 and 2023?",
+    "type": "duration_supremacy",
+    "complexity": "extreme",
+    "answer": "Apple (2011-2022 with brief interruptions)",
+    "metadata": {
+      "required_capabilities": [
+        "continuous_period_tracking",
+        "value_comparison",
+        "temporal_aggregation",
+        "superlative_reasoning"
+      ],
+      "reasoning_steps": [
+        "Track market cap rankings 2010-2023",
+        "Identify #1 company each quarter",
+        "Find continuous periods for each company",
+        "Compare period lengths"
+      ],
+      "notes": "Requires tracking continuous periods and handling interruptions"
+    }
+  },
+  {
+    "id": "complex_006",
+    "query": "What major events happened within 30 days after each Fed rate hike in 2022?",
+    "type": "causal_window_multiple",
+    "complexity": "extreme",
+    "answer": "March: Russian oil sanctions; May: Luna crash; June: Celsius bankruptcy",
+    "metadata": {
+      "required_capabilities": [
+        "multiple_event_tracking",
+        "temporal_window_application",
+        "event_significance_filtering",
+        "causal_correlation"
+      ],
+      "reasoning_steps": [
+        "Identify all Fed rate hikes in 2022",
+        "Create 30-day window after each",
+        "Find major events in each window",
+        "Filter for significance",
+        "Group by rate hike"
+      ],
+      "notes": "Requires multiple temporal windows and event significance assessment"
+    }
+  },
+  {
+    "id": "complex_007",
+    "query": "Which G7 countries have never had a female head of government as of 2023?",
+    "type": "temporal_negation",
+    "complexity": "moderate",
+    "answer": "Japan and the United States",
+    "metadata": {
+      "required_capabilities": [
+        "historical_scanning",
+        "negative_existence",
+        "role_understanding"
+      ],
+      "reasoning_steps": [
+        "Identify G7 members",
+        "Scan all historical leaders",
+        "Check gender of each",
+        "Identify countries with no female leaders"
+      ],
+      "notes": "Requires exhaustive historical search and negation"
+    }
+  },
+  {
+    "id": "complex_008",
+    "query": "Who was the UK Prime Minister when the previous monarch before Elizabeth II died?",
+    "type": "relative_temporal_reference",
+    "complexity": "complex",
+    "answer": "Winston Churchill",
+    "metadata": {
+      "required_capabilities": [
+        "relative_reference_resolution",
+        "predecessor_identification",
+        "temporal_alignment"
+      ],
+      "reasoning_steps": [
+        "Identify Elizabeth II's predecessor (George VI)",
+        "Find George VI's death date (Feb 6, 1952)",
+        "Identify UK PM on that date"
+      ],
+      "notes": "Requires resolving 'previous monarch' and temporal alignment"
+    }
+  },
+  {
+    "id": "complex_009",
+    "query": "How many times did the Fed reverse its rate decision within 6 months between 2000-2023?",
+    "type": "periodic_reversal_count",
+    "complexity": "extreme",
+    "answer": "3 times: 2001, 2007, 2019",
+    "metadata": {
+      "required_capabilities": [
+        "decision_tracking",
+        "reversal_detection",
+        "temporal_window_counting",
+        "long_range_analysis"
+      ],
+      "reasoning_steps": [
+        "Track all Fed rate decisions 2000-2023",
+        "For each decision, check next 6 months",
+        "Identify reversals (hike\u2192cut or cut\u2192hike)",
+        "Count total reversals"
+      ],
+      "notes": "Requires tracking decisions and detecting reversals over 23 years"
+    }
+  }
+]
