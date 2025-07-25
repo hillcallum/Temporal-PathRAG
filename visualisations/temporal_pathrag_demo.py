@@ -1,405 +1,440 @@
 """
 Temporal PathRAG Demo
-Visualisation using actual complex queries from evaluation dataset
 """
 
 import streamlit as st
 import networkx as nx
 import plotly.graph_objects as go
-import json
 from pathlib import Path
 import sys
-from typing import List, Dict, Any, Optional, Tuple
+from typing import List, Dict, Set
 import random
 
 # Add parent directory for imports
 sys.path.append(str(Path(__file__).parent.parent))
 
-st.set_page_config(page_title="Temporal PathRAG Demo", layout="wide")
+# Import actual Temporal PathRAG components
+from src.kg.storage.updated_tkg_loader import load_enhanced_dataset
 
-# Clean styling
+st.set_page_config(page_title="Temporal PathRAG Demo", layout="wide", initial_sidebar_state="collapsed")
+
+# Fix styling 
 st.markdown("""
 <style>
-    .stApp { margin: 0; padding: 1rem; }
-    h1 { font-size: 2rem; margin-bottom: 1rem; }
-    .main > div { padding: 0; }
+    .block-container {
+        padding-top: 1rem;
+        padding-left: 2rem;
+        padding-right: 2rem;
+        max-width: none;
+    }
+    h1 { font-size: 24px; margin-bottom: 10px; }
+    .stMarkdown { font-size: 14px; }
 </style>
 """, unsafe_allow_html=True)
 
 @st.cache_resource
 def load_knowledge_graph():
     """Load the knowledge graph"""
-    try:
-        from src.kg.storage.updated_tkg_loader import load_enhanced_dataset
-        graph = load_enhanced_dataset("MultiTQ")
-        return graph, True
-    except Exception as e:
-        st.warning(f"Could not load real graph: {e}. Using synthetic data.")
-        return create_synthetic_graph(), False
+    graph = load_enhanced_dataset("MultiTQ")
+    return graph
 
-@st.cache_data
-def load_complex_queries():
-    """Load complex queries from evaluation dataset"""
-    query_file = Path("evaluation/complex_temporal_queries.json")
-    if query_file.exists():
-        with open(query_file, 'r') as f:
-            queries = json.load(f)
-            # Return queries with reasoning steps
-            return [q for q in queries if 'metadata' in q and 'reasoning_steps' in q['metadata']]
-    else:
-        st.error("Complex queries file not found!")
-        return []
+def get_initial_subgraph(graph: nx.DiGraph, centre_node: str = "Abdul_Kalam", max_nodes: int = 100) -> nx.DiGraph:
+    """Get an initial subgraph centred around a node"""
+    if centre_node not in graph:
+        # If centre node not found, use a random sample
+        nodes = list(graph.nodes())[:max_nodes]
+        return graph.subgraph(nodes)
+    
+    # BFS to get nearby nodes
+    nodes_to_include = set([centre_node])
+    current_layer = set([centre_node])
+    
+    while len(nodes_to_include) < max_nodes and current_layer:
+        next_layer = set()
+        for node in current_layer:
+            if node in graph:
+                # Add neighbours
+                neighbours = list(graph.neighbors(node))[:5]
+                next_layer.update(neighbours)
+                # Add predecessors
+                predecessors = list(graph.predecessors(node))[:5]
+                next_layer.update(predecessors)
+        
+        # Add nodes from next layer up to max_nodes
+        for node in next_layer:
+            if len(nodes_to_include) >= max_nodes:
+                break
+            nodes_to_include.add(node)
+        
+        current_layer = next_layer
+    
+    return graph.subgraph(list(nodes_to_include))
 
-def create_synthetic_graph():
-    """Fallback synthetic graph"""
-    G = nx.DiGraph()
-    
-    # Add some basic nodes for demo
-    people = ['Joe Biden', 'Emmanuel Macron', 'Olaf Scholz', 'Volodymyr Zelensky']
-    events = ['Ukraine War', 'NATO Summit', 'G7 Meeting']
-    
-    for person in people:
-        G.add_node(person, type='Person')
-    for event in events:
-        G.add_node(event, type='Event')
-    
-    # Add edges
-    G.add_edge('Joe Biden', 'NATO Summit', date='2022-03-24')
-    G.add_edge('Emmanuel Macron', 'NATO Summit', date='2022-03-24')
-    G.add_edge('Ukraine War', 'Volodymyr Zelensky', date='2022-02-24')
-    
-    return G
-
-def extract_entities_from_query(query: str, reasoning_steps: List[str]) -> Dict[str, Any]:
-    """Extract entities and constraints from query and reasoning steps"""
-    entities = []
-    temporal_constraints = []
-    
-    # Simple extraction based on common patterns
-    query_lower = query.lower()
-    
-    # Extract person names (basic heuristic)
-    if "joe biden" in query_lower:
-        entities.append("Joe Biden")
-    if "emmanuel macron" in query_lower:
-        entities.append("Emmanuel Macron")
-    if "european leaders" in query_lower:
-        entities.extend(["Emmanuel Macron", "Olaf Scholz", "Boris Johnson"])
-    
-    # Extract events
-    if "ukraine war" in query_lower:
-        entities.append("Ukraine War")
-        temporal_constraints.append("After February 24, 2022")
-    if "crimea" in query_lower:
-        temporal_constraints.append("After March 2014")
-    
-    # Extract from reasoning steps
-    for step in reasoning_steps:
-        if "Feb" in step or "February" in step:
-            if "2022" in step:
-                temporal_constraints.append("After February 24, 2022")
-        if "March" in step and "2014" in step:
-            temporal_constraints.append("After March 2014")
-    
+def get_demo_query():
+    """Get a demo query with iterative reasoning steps"""
     return {
-        'entities': entities,
-        'temporal_constraints': temporal_constraints
+        "query": "Which government officials did Abdul Kalam work with in India?",
+        "iterations": [
+            {
+                "step": 1,
+                "sub_question": "Who is Abdul Kalam?",
+                "reasoning": "First, identify the entity Abdul Kalam in the knowledge graph",
+                "entities_found": ["Abdul_Kalam"],
+                "pruning_strategy": "Keep only nodes within 2 hops of Abdul_Kalam"
+            },
+            {
+                "step": 2,
+                "sub_question": "What organizations did Abdul Kalam work for?",
+                "reasoning": "Find employment/affiliation relationships",
+                "entities_found": ["Government_of_India", "India"],
+                "pruning_strategy": "Filter to government-related organizations"
+            },
+            {
+                "step": 3,
+                "sub_question": "Who were the officials in these organizations?",
+                "reasoning": "Find people connected to these government organizations",
+                "entities_found": ["Prime_Minister_(India)", "Head_of_Government_(India)"],
+                "pruning_strategy": "Keep only person entities with official roles"
+            },
+            {
+                "step": 4,
+                "sub_question": "Which officials did Abdul Kalam directly interact with?",
+                "reasoning": "Find direct paths between Abdul Kalam and officials",
+                "entities_found": ["Prime_Minister_(India)", "Head_of_Government_(India)"],
+                "pruning_strategy": "Keep only paths with direct interactions"
+            }
+        ],
+        "final_answer": "Abdul Kalam worked with the Prime Minister and Head of Government of India"
     }
 
-def visualise_graph_interactive(graph: nx.DiGraph, 
-                              highlight_nodes: List[str] = [],
-                              subset_nodes: Optional[List[str]] = None,
-                              title: str = "",
-                              max_nodes: int = 500):
-    """Create an interactive graph visualisation"""
+def create_graph_visualisation(graph: nx.DiGraph, 
+                             highlight_nodes: Set[str] = None,
+                             pruned_nodes: Set[str] = None,
+                             active_paths: List[List[str]] = None,
+                             iteration: int = 0) -> go.Figure:
+    """Create a clean, interactive graph visualisation"""
     
-    # Handle subset
-    if subset_nodes:
-        subgraph = graph.subgraph(subset_nodes)
+    # Determine which nodes to show
+    if pruned_nodes:
+        visible_nodes = [n for n in graph.nodes() if n not in pruned_nodes]
     else:
-        # Sample if too large
-        if len(graph.nodes()) > max_nodes:
-            all_nodes = list(graph.nodes())
-            sampled = set(highlight_nodes) if highlight_nodes else set()
-            
-            remaining = [n for n in all_nodes if n not in sampled]
-            sample_size = min(max_nodes - len(sampled), len(remaining))
-            if sample_size > 0:
-                sampled.update(random.sample(remaining, sample_size))
-            
-            subgraph = graph.subgraph(list(sampled))
-        else:
-            subgraph = graph
+        visible_nodes = list(graph.nodes())
     
-    # Layout
-    pos = nx.spring_layout(subgraph, k=3 if len(subgraph.nodes()) > 50 else 2, 
-                          iterations=30, seed=42)
+    # Create subgraph
+    subgraph = graph.subgraph(visible_nodes)
+    
+    # Create layout
+    if len(subgraph) == 0:
+        # Empty graph
+        fig = go.Figure()
+        fig.add_annotation(
+            text="No nodes to display",
+            xref="paper", yref="paper",
+            x=0.5, y=0.5,
+            showarrow=False,
+            font=dict(size=20, color='gray')
+        )
+        fig.update_layout(
+            plot_bgcolor='white',
+            height=700,
+            margin=dict(t=0, r=0, b=0, l=0)
+        )
+        return fig
+    
+    # Use spring layout for positioning
+    pos = nx.spring_layout(subgraph, k=2, iterations=50, seed=42)
+    
+    # Extract active path edges
+    active_edges = set()
+    if active_paths:
+        for path in active_paths:
+            for i in range(len(path) - 1):
+                if path[i] in subgraph and path[i+1] in subgraph:
+                    active_edges.add((path[i], path[i+1]))
     
     fig = go.Figure()
     
     # Draw edges
-    for u, v, data in subgraph.edges(data=True):
-        x0, y0 = pos.get(u, (0, 0))
-        x1, y1 = pos.get(v, (0, 0))
+    edge_x = []
+    edge_y = []
+    path_edge_x = []
+    path_edge_y = []
+    
+    for edge in subgraph.edges():
+        x0, y0 = pos[edge[0]]
+        x1, y1 = pos[edge[1]]
         
-        edge_date = data.get('date', '')
-        edge_trace = go.Scatter(
-            x=[x0, x1, None], y=[y0, y1, None],
+        if edge in active_edges or (edge[1], edge[0]) in active_edges:
+            path_edge_x.extend([x0, x1, None])
+            path_edge_y.extend([y0, y1, None])
+        else:
+            edge_x.extend([x0, x1, None])
+            edge_y.extend([y0, y1, None])
+    
+    # Add normal edges
+    if edge_x:
+        fig.add_trace(go.Scatter(
+            x=edge_x, y=edge_y,
             mode='lines',
-            line=dict(width=0.5, colour='rgba(200,200,200,0.5)'),
-            hoverinfo='text',
-            hovertext=f"{u} → {v}<br>Date: {edge_date}" if edge_date else f"{u} → {v}",
+            line=dict(width=0.5, color='#e0e0e0'),
+            hoverinfo='none',
             showlegend=False
-        )
-        fig.add_trace(edge_trace)
+        ))
+    
+    # Add path edges
+    if path_edge_x:
+        fig.add_trace(go.Scatter(
+            x=path_edge_x, y=path_edge_y,
+            mode='lines',
+            line=dict(width=3, color='#e74c3c'),
+            hoverinfo='none',
+            showlegend=False
+        ))
     
     # Prepare node data
     node_x = []
     node_y = []
-    node_colour = []
+    node_text = []
+    node_color = []
     node_size = []
     hover_text = []
     
     for node in subgraph.nodes():
-        x, y = pos.get(node, (0, 0))
+        x, y = pos[node]
         node_x.append(x)
         node_y.append(y)
         
         # Node styling
-        if node in highlight_nodes:
-            node_colour.append('#ff4444')
-            node_size.append(15)
-        else:
-            node_type = subgraph.nodes[node].get('type', 'Unknown')
-            if node_type == 'Person':
-                node_colour.append('#4A90E2')
-            elif node_type == 'Event':
-                node_colour.append('#50C878')
+        if highlight_nodes and node in highlight_nodes:
+            if node == "Abdul_Kalam":
+                node_color.append('#2ecc71')  # Green for source
+                node_size.append(25)
+            elif iteration == 4 and "Prime_Minister" in node or "Head_of_Government" in node:
+                node_color.append('#e74c3c')  # Red for answers
+                node_size.append(20)
             else:
-                node_colour.append('#95A5A6')
+                node_color.append('#3498db')  # Blue for highlighted
+                node_size.append(15)
+        else:
+            node_color.append('#bdc3c7')  # Light gray for others
             node_size.append(8)
         
-        # Hover text
-        node_data = subgraph.nodes[node]
-        text = f"<b>{node}</b><br>"
-        text += f"Type: {node_data.get('type', 'Unknown')}<br>"
-        text += f"Connections: {subgraph.degree(node)}"
-        hover_text.append(text)
+        # Node label
+        label = str(node).replace('_', ' ')
+        if len(label) > 30:
+            label = label[:27] + '...'
+        
+        # Only show labels for highlighted nodes
+        if highlight_nodes and node in highlight_nodes:
+            node_text.append(label)
+        else:
+            node_text.append('')
+        
+        # Hover information
+        hover = f"<b>{node}</b><br>"
+        hover += f"Connections: {subgraph.degree(node)}"
+        hover_text.append(hover)
     
-    # Draw nodes
-    node_trace = go.Scatter(
+    # Add nodes
+    fig.add_trace(go.Scatter(
         x=node_x, y=node_y,
         mode='markers+text',
+        text=node_text,
+        textposition="top centre",
+        textfont=dict(size=10, color='#2c3e50'),
         marker=dict(
             size=node_size,
-            colour=node_colour,
-            line=dict(width=1, colour='white')
+            color=node_color,
+            line=dict(width=1, color='white')
         ),
-        text=[str(n)[:20] + '...' if len(str(n)) > 20 else str(n) for n in subgraph.nodes()],
-        textposition='top center',
-        textfont=dict(size=8),
         hovertext=hover_text,
         hoverinfo='text',
-        hoverlabel=dict(bgcolour='white', font_size=12),
+        hoverlabel=dict(bgcolor='white', font_size=12),
         showlegend=False
-    )
-    fig.add_trace(node_trace)
+    ))
     
     # Update layout
     fig.update_layout(
-        title=dict(text=title, font=dict(size=14)),
         showlegend=False,
         hovermode='closest',
-        margin=dict(t=30, r=0, b=0, l=0),
+        margin=dict(t=20, r=20, b=20, l=20),
         xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
         yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-        plot_bgcolour='white',
-        height=600,
+        plot_bgcolor='white',
+        paper_bgcolor='white',
+        height=650,
         dragmode='pan'
     )
     
-    config = {
-        'displayModeBar': True,
-        'displaylogo': False,
-        'modeBarButtonsToRemove': ['toImage', 'autoScale2d']
-    }
+    # Add graph stats
+    fig.add_annotation(
+        text=f"Nodes: {len(visible_nodes)} | Edges: {len(subgraph.edges())}",
+        xref="paper", yref="paper",
+        x=0.02, y=0.98,
+        showarrow=False,
+        font=dict(size=12, color='#7f8c8d'),
+        bgcolor='rgba(255,255,255,0.8)',
+        borderpad=4
+    )
     
-    return fig, config
+    return fig
 
-def show_reasoning_step(graph: nx.DiGraph, step_num: int, query_data: Dict[str, Any]):
-    """Show a specific reasoning step"""
-    query = query_data['query']
-    reasoning_steps = query_data['metadata']['reasoning_steps']
+def apply_pruning_strategy(graph: nx.DiGraph, full_graph: nx.DiGraph, iteration: Dict) -> Set[str]:
+    """Apply pruning strategy for current iteration"""
+    step = iteration['step']
     
-    # Extract entities and constraints
-    extracted = extract_entities_from_query(query, reasoning_steps)
-    entities = extracted['entities']
-    
-    # Ensure entities exist in graph
-    existing_entities = [e for e in entities if e in graph]
-    if not existing_entities and len(graph.nodes()) > 0:
-        # Use random entities as fallback
-        existing_entities = random.sample(list(graph.nodes()), min(3, len(graph.nodes())))
-    
-    if step_num == 0:
-        # Full graph
-        fig, config = visualise_graph_interactive(
-            graph,
-            title=f"Complete Knowledge Graph ({len(graph.nodes()):,} nodes, {len(graph.edges()):,} edges)",
-            max_nodes=500
-        )
-    
-    elif step_num == 1:
-        # Extract entities
-        subset = set(existing_entities)
-        for entity in existing_entities:
-            if entity in graph:
-                neighbours = list(graph.neighbors(entity))[:10]
-                subset.update(neighbours)
+    if step == 1:
+        # Keep only nodes within 2 hops of Abdul_Kalam
+        keep_nodes = set(['Abdul_Kalam'])
+        current_layer = set(['Abdul_Kalam'])
         
-        subset_list = list(subset)[:100]
-        fig, config = visualise_graph_interactive(
-            graph,
-            highlight_nodes=existing_entities,
-            subset_nodes=subset_list,
-            title=f"Step 2: {reasoning_steps[1] if len(reasoning_steps) > 1 else 'Extract Key Entities'} ({len(subset_list)} nodes)"
-        )
-    
-    elif step_num == 2:
-        # Temporal filter
-        subset = set(existing_entities[:2])
-        for entity in existing_entities[:2]:
-            if entity in graph:
-                neighbours = list(graph.neighbors(entity))[:5]
-                subset.update(neighbours)
+        for _ in range(2):
+            next_layer = set()
+            for node in current_layer:
+                if node in graph:
+                    next_layer.update(list(graph.neighbors(node))[:10])
+                    next_layer.update(list(graph.predecessors(node))[:10])
+            keep_nodes.update(next_layer)
+            current_layer = next_layer
         
-        subset_list = list(subset)[:50]
-        fig, config = visualise_graph_interactive(
-            graph,
-            highlight_nodes=existing_entities,
-            subset_nodes=subset_list,
-            title=f"Step 3: {reasoning_steps[2] if len(reasoning_steps) > 2 else 'Apply Temporal Filter'} ({len(subset_list)} nodes)"
-        )
-    
-    elif step_num == 3:
-        # Path finding
-        path_nodes = existing_entities[:3] if len(existing_entities) >= 3 else existing_entities
-        subset = path_nodes + random.sample(list(set(graph.nodes()) - set(path_nodes)), 
-                                          min(3, len(set(graph.nodes()) - set(path_nodes))))
+        return set(graph.nodes()) - keep_nodes
         
-        fig, config = visualise_graph_interactive(
-            graph,
-            highlight_nodes=path_nodes,
-            subset_nodes=subset[:10],
-            title=f"Step 4: {reasoning_steps[3] if len(reasoning_steps) > 3 else 'Find Relevant Paths'} ({len(subset)} nodes)"
-        )
-    
-    else:
-        # Final answer
-        answer = query_data.get('answer', 'Emmanuel Macron and Olaf Scholz')
-        # Extract answer entities
-        answer_entities = []
-        for entity in existing_entities:
-            if entity in answer:
-                answer_entities.append(entity)
+    elif step == 2:
+        # Keep government organisations and related nodes
+        keep_nodes = set()
+        for node in graph.nodes():
+            node_str = str(node).lower()
+            if any(term in node_str for term in ['government', 'india', 'abdul']):
+                keep_nodes.add(node)
+                # Add neighbours
+                if node in graph:
+                    keep_nodes.update(list(graph.neighbors(node))[:5])
         
-        if not answer_entities:
-            answer_entities = existing_entities[:2]
+        return set(graph.nodes()) - keep_nodes
         
-        fig, config = visualise_graph_interactive(
-            graph,
-            highlight_nodes=answer_entities,
-            subset_nodes=answer_entities,
-            title=f"Final Answer: {answer}"
-        )
+    elif step == 3:
+        # Keep only person entities and officials
+        keep_nodes = set(['Abdul_Kalam'])
+        for node in graph.nodes():
+            node_str = str(node).lower()
+            if any(term in node_str for term in ['minister', 'prime', 'president', 'head_of_government', 'india']):
+                keep_nodes.add(node)
+        
+        # Add connections between these nodes
+        for node in list(keep_nodes):
+            if node in graph:
+                for neighbour in graph.neighbors(node):
+                    if any(term in str(neighbour).lower() for term in ['minister', 'government', 'india']):
+                        keep_nodes.add(neighbour)
+        
+        return set(graph.nodes()) - keep_nodes
+        
+    elif step == 4:
+        # Keep only direct paths
+        keep_nodes = {'Abdul_Kalam'}
+        target_nodes = set()
+        
+        for node in graph.nodes():
+            if 'Prime_Minister' in node or 'Head_of_Government' in node:
+                target_nodes.add(node)
+        
+        # Find short paths
+        for target in target_nodes:
+            if target in graph:
+                try:
+                    for path in nx.all_simple_paths(graph, 'Abdul_Kalam', target, cutoff=3):
+                        keep_nodes.update(path)
+                except:
+                    pass
+        
+        return set(graph.nodes()) - keep_nodes
     
-    return fig, config
+    return set()
 
 def main():
-    # Hide Streamlit components
-    hide_style = """
-    <style>
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-    </style>
-    """
-    st.markdown(hide_style, unsafe_allow_html=True)
+    st.title("Temporal PathRAG: Iterative Reasoning Demo")
     
-    # Title
-    st.markdown("<h1 style='text-align: center;'>Temporal PathRAG Demo</h1>", unsafe_allow_html=True)
+    # Load full graph
+    with st.spinner("Loading knowledge graph"):
+        full_graph = load_knowledge_graph()
     
-    # Load data
-    graph, is_real = load_knowledge_graph()
-    queries = load_complex_queries()
+    # Get initial subgraph for visualisation
+    initial_graph = get_initial_subgraph(full_graph, "Abdul_Kalam", max_nodes=100)
     
-    if not queries:
-        st.error("No complex queries found! Please ensure evaluation/complex_temporal_queries.json exists.")
-        return
-    
-    # Initialise session state
-    if 'query_idx' not in st.session_state:
-        st.session_state.query_idx = 0
-    if 'step' not in st.session_state:
-        st.session_state.step = 0
-    
-    # Get current query
-    current_query = queries[st.session_state.query_idx]
+    # Get demo query
+    query_data = get_demo_query()
     
     # Layout
-    col1, col2 = st.columns([1, 2])
+    col1, col2 = st.columns([1, 3])
     
     with col1:
-        st.markdown(f"**Query {st.session_state.query_idx + 1} of {len(queries)}:**")
-        st.write(current_query['query'])
+        st.markdown(f"**Query:** {query_data['query']}")
+        st.markdown("---")
         
-        st.markdown("**Query Type:** " + current_query.get('type', 'Unknown'))
-        st.markdown("**Complexity:** " + current_query.get('complexity', 'Unknown'))
+        # Iteration control
+        iteration = st.slider("Reasoning Step", 0, 4, 0, key="iteration_slider")
         
-        st.markdown("**Reasoning Steps:**")
-        reasoning_steps = current_query['metadata']['reasoning_steps']
-        
-        # Show all steps with current highlighted
-        all_steps = ["Full Knowledge Graph"] + reasoning_steps[:4]
-        for i, step in enumerate(all_steps):
-            if i <= st.session_state.step:
-                st.markdown(f"**{i+1}. {step}**")
-            else:
-                st.markdown(f"<span style='colour: gray;'>{i+1}. {step}</span>", 
-                          unsafe_allow_html=True)
-        
-        # Controls
-        st.markdown("<br>", unsafe_allow_html=True)
-        col_prev, col_next = st.columns(2)
-        with col_prev:
-            if st.button("← Previous Step", disabled=st.session_state.step == 0):
-                st.session_state.step -= 1
-                st.rerun()
-        with col_next:
-            if st.button("Next Step →", disabled=st.session_state.step >= 4):
-                st.session_state.step += 1
-                st.rerun()
-        
-        st.markdown("<br>", unsafe_allow_html=True)
-        
-        # Query navigation
-        st.markdown("**Navigate Queries:**")
-        col_prev_q, col_next_q = st.columns(2)
-        with col_prev_q:
-            if st.button("← Previous Query", disabled=st.session_state.query_idx == 0):
-                st.session_state.query_idx -= 1
-                st.session_state.step = 0
-                st.rerun()
-        with col_next_q:
-            if st.button("Next Query →", disabled=st.session_state.query_idx >= len(queries)-1):
-                st.session_state.query_idx += 1
-                st.session_state.step = 0
-                st.rerun()
+        if iteration == 0:
+            st.markdown("**Initial State**")
+            st.markdown("Subgraph centred on Abdul Kalam")
+            st.markdown(f"- Showing: {len(initial_graph.nodes())} nodes")
+            st.markdown(f"- Total graph: {len(full_graph.nodes())} nodes")
+        else:
+            current_iteration = query_data['iterations'][iteration - 1]
+            
+            st.markdown(f"**Step {iteration}:** {current_iteration['sub_question']}")
+            st.markdown(f"*{current_iteration['reasoning']}*")
+            
+            st.markdown("**Entities Found:**")
+            for entity in current_iteration['entities_found']:
+                st.markdown(f"- `{entity}`")
+            
+            st.markdown("**Pruning:**")
+            st.markdown(current_iteration['pruning_strategy'])
+            
+            if iteration == 4:
+                st.markdown("---")
+                st.markdown(f"**Answer:** {query_data['final_answer']}")
     
     with col2:
-        # Show graph for current step
-        fig, config = show_reasoning_step(graph, st.session_state.step, current_query)
-        st.plotly_chart(fig, use_container_width=True, config=config)
+        # Create visualisation
+        if iteration == 0:
+            # Show initial subgraph
+            fig = create_graph_visualisation(initial_graph, iteration=iteration)
+        else:
+            # Apply iterative pruning
+            current_iter = query_data['iterations'][iteration - 1]
+            highlight_nodes = set(current_iter['entities_found'])
+            highlight_nodes.add('Abdul_Kalam')
+            
+            # Apply pruning to the subgraph
+            pruned_nodes = apply_pruning_strategy(initial_graph, full_graph, current_iter)
+            
+            # Create paths for final iteration
+            active_paths = []
+            if iteration == 4:
+                active_paths = [
+                    ['Abdul_Kalam', 'India', 'Prime_Minister_(India)'],
+                    ['Abdul_Kalam', 'Government_of_India', 'Head_of_Government_(India)']
+                ]
+            
+            fig = create_graph_visualisation(
+                initial_graph,
+                highlight_nodes=highlight_nodes,
+                pruned_nodes=pruned_nodes,
+                active_paths=active_paths,
+                iteration=iteration
+            )
+        
+        # Display graph
+        st.plotly_chart(fig, use_container_width=True)
+        
+        # Legend
+        if iteration > 0:
+            st.markdown(
+                "Green = Source ; Blue = Found Entities ; Red = Answer ; White = Context",
+                help="Node colors indicate their role in the reasoning process"
+            )
 
 if __name__ == "__main__":
     main()
